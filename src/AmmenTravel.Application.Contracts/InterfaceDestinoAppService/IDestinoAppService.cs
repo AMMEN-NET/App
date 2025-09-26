@@ -4,7 +4,7 @@ using Volo.Abp.Application.Services;
 using Volo.Abp.Application.Dtos;
 
 namespace AmmenTravel.InterfaceDestinoAppService;
-    internal interface IDestinoAppService:
+    public interface IDestinoAppService:
 
         ICrudAppService< //Defines CRUD methods
         guardarDestinoDTO, //Used to show books

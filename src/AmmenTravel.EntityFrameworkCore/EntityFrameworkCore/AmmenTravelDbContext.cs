@@ -85,10 +85,10 @@ public class AmmenTravelDbContext :
         {
             b.ToTable(AmmenTravelConsts.DbTablePrefix + "Destinos", AmmenTravelConsts.DbSchema);
             b.ConfigureByConvention(); //auto configure for the base class props
-            b.Property(x => x.nombre).IsRequired().HasMaxLength(200);
-            b.Property(x => x.pais).IsRequired().HasMaxLength(100);
-            b.Property(x => x.poblacion);
-            b.Property(x => x.fotoURL).HasMaxLength(1000);
+            b.Property(x => x.Nombre).IsRequired().HasMaxLength(200);
+            b.Property(x => x.Pais).IsRequired().HasMaxLength(100);
+            b.Property(x => x.Poblacion);
+            b.Property(x => x.FotoURL).HasMaxLength(1000);
         });
     }
 }

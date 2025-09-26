@@ -9,11 +9,11 @@ namespace AmmenTravel.DestinosDTO;
 
 public class guardarDestinoDTO : AuditedEntityDto<Guid>
 {
-    public string nombre { get; set; }
+    public required string Nombre { get; set; }
 
-    public string pais { get; set; }
+    public required string Pais { get; set; }
 
-    public int poblacion { get; set; }
+    public required int Poblacion { get; set; }
 
-    public string fotoURL { get; set; }
+    public required string FotoURL { get; set; }
 }
