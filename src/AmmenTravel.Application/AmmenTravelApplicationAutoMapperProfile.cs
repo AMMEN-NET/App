@@ -9,6 +9,8 @@ public class AmmenTravelApplicationAutoMapperProfile : Profile
 {
     public AmmenTravelApplicationAutoMapperProfile()
     {
-        CreateMap<DestinoTuristico, destinoDTO>();
+        CreateMap<DestinoTuristico, guardarDestinoDTO>();
+        CreateMap<CreateUpdateDestinoDTO, DestinoTuristico>();
     }
+
 }

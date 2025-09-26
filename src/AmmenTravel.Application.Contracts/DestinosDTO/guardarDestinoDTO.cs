@@ -7,7 +7,7 @@ using Volo.Abp.Application.Dtos;
 
 namespace AmmenTravel.DestinosDTO;
 
-public class destinoDTO : AuditedEntityDto<Guid>
+public class guardarDestinoDTO : AuditedEntityDto<Guid>
 {
     public string nombre { get; set; }
 

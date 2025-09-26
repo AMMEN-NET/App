@@ -1,12 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using AmmenTravel.DestinosDTO;
+using System;
+using Volo.Abp.Application.Services;
+using Volo.Abp.Application.Dtos;
 
-namespace AmmenTravel.InterfaceDestinoAppService
-{
-    internal interface IDestinoAppService
+namespace AmmenTravel.InterfaceDestinoAppService;
+    internal interface IDestinoAppService:
+
+        ICrudAppService< //Defines CRUD methods
+        guardarDestinoDTO, //Used to show books
+        Guid, //Primary key of the book entity
+        PagedAndSortedResultRequestDto, //Used for paging/sorting
+        CreateUpdateDestinoDTO> //Used to create/update a book
     {
+
     }
-}
+    
