@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <Import Project="..\..\common.props" />
 
@@ -11,6 +11,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\AmmenTravel.Application\AmmenTravel.Application.csproj" />
     <ProjectReference Include="..\AmmenTravel.Domain.Tests\AmmenTravel.Domain.Tests.csproj" />
+		<ProjectReference Include="..\AmmenTravel.EntityFrameworkCore\AmmenTravel.EntityFrameworkCore.csproj" />
   </ItemGroup>
 
   <ItemGroup>
