@@ -9,10 +9,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\AmmenTravel.Application\AmmenTravel.Application.csproj" />
-    <ProjectReference Include="..\AmmenTravel.Domain.Tests\AmmenTravel.Domain.Tests.csproj" />
-		<ProjectReference Include="..\AmmenTravel.EntityFrameworkCore\AmmenTravel.EntityFrameworkCore.csproj" />
-  </ItemGroup>
+		<ProjectReference Include="..\..\src\AmmenTravel.Application\AmmenTravel.Application.csproj" />
+		<ProjectReference Include="..\..\src\AmmenTravel.EntityFrameworkCore\AmmenTravel.EntityFrameworkCore.csproj" />
+		<ProjectReference Include="..\AmmenTravel.Domain.Tests\AmmenTravel.Domain.Tests.csproj" />
+	</ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.13.0" />

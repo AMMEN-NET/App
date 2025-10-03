@@ -19,7 +19,7 @@ namespace AmmenTravel.DestinosDTO
         public string Pais { get; set; } = string.Empty;
 
         [Required]
-        public long Poblacion { get; set; }
+        public int Poblacion { get; set; }
 
         [Required]
         public string FotoURL { get; set; } = string.Empty;

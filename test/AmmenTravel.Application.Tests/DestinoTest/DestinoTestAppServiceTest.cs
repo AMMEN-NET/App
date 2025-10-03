@@ -11,6 +11,9 @@ using Volo.Abp.Application.Dtos;
 using Volo.Abp.Modularity;
 using Xunit;
 using Shouldly;
+using Volo.Abp.Uow;
+using AmmenTravel.EntityFrameworkCore;
+
 
 namespace AmmenTravel.DestinoTest
 {
@@ -34,7 +37,7 @@ namespace AmmenTravel.DestinoTest
                 Poblacion = 2048000,
                 FotoURL = "https://example.com/paris.jpg"
             };
-
+                
             //Act
             var result = await _service.CreateAsync(input);
 

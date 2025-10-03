@@ -13,7 +13,7 @@ public class guardarDestinoDTO : AuditedEntityDto<Guid>
 
     public required string Pais { get; set; }
 
-    public required long Poblacion { get; set; }
+    public int Poblacion { get; set; }
 
-    public required string FotoURL { get; set; }
+    public  required string FotoURL { get; set; }
 }

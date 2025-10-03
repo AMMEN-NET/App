@@ -14,7 +14,7 @@ namespace AmmenTravel.Destinos
 
         public required string Pais { get; set; }
 
-        public required long Poblacion { get; set; }
+        public required int Poblacion { get; set; }
 
         public required string FotoURL { get; set; }
 
