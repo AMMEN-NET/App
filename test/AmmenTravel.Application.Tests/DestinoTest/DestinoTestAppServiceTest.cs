@@ -13,6 +13,9 @@ using Xunit;
 using Shouldly;
 using Volo.Abp.Uow;
 using AmmenTravel.EntityFrameworkCore;
+using JetBrains.Annotations;
+using Volo.Abp.EntityFrameworkCore;
+using Volo.Abp.Validation;
 
 
 namespace AmmenTravel.DestinoTest
@@ -21,10 +24,15 @@ namespace AmmenTravel.DestinoTest
         where TStartupModule : IAbpModule
     {
         private readonly IDestinoAppService _service;
+        private readonly IDbContextProvider<AmmenTravelDbContext> _dbContextProvider;
+        private readonly IUnitOfWorkManager _unitOfWorkManager;
+
 
         protected classDestinoTestAppServiceTest()
         {
             _service = GetRequiredService<IDestinoAppService>();
+            _dbContextProvider = GetRequiredService<IDbContextProvider<AmmenTravelDbContext>>();
+            _unitOfWorkManager = GetRequiredService<IUnitOfWorkManager>();
         }
 
         [Fact]
@@ -49,6 +57,58 @@ namespace AmmenTravel.DestinoTest
             result.Poblacion.ShouldBe(input.Poblacion);
             result.FotoURL.ShouldBe(input.FotoURL);
         }
+
+        [Fact]
+        public async Task CreateAsync_ShouldPersistDestinoInDatabase()
+        {
+
+            using (var uow = _unitOfWorkManager.Begin())
+            {
+                //Arrange
+                var input = new CreateUpdateDestinoDTO
+                {
+                    Nombre = "Tokio",
+                    Pais = "Japon",
+                    Poblacion = 13960000,
+                    FotoURL = "https://ejemplo.com/tokyo.jpg"
+                };
+
+                //Act
+                var result = await _service.CreateAsync(input);
+
+
+                //Assert
+                var dbContext = await _dbContextProvider.GetDbContextAsync();
+                var savedDestino = await dbContext.Destinos.FindAsync(result.Id);
+
+                savedDestino.ShouldNotBeNull();
+                savedDestino.Nombre.ShouldBe(input.Nombre);
+                savedDestino.Pais.ShouldBe(input.Pais);
+                savedDestino.Poblacion.ShouldBe(input.Poblacion);
+                savedDestino.FotoURL.ShouldBe(input.FotoURL);
+            }
+
+        }
+
+        [Fact]
+        public async Task CreateAsync_ShouldThrowException_WhenNombreIsMissing()
+        {
+            //Arrange
+            var input = new CreateUpdateDestinoDTO
+            {
+                Nombre = null, // Falta Nombre
+                Pais = "Belgica",
+                Poblacion = 195500,
+                FotoURL = "https://example.com/rome.jpg"
+            };
+
+            //Act & Assert
+            await Should.ThrowAsync<AbpValidationException>(async () =>
+            {
+                await _service.CreateAsync(input);
+            });
+        }
+
     }
 
 
