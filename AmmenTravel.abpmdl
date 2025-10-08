@@ -1,0 +1,97 @@
+{
+  "template": "app",
+  "imports": {
+    "Volo.Abp.LeptonXLiteTheme": {
+      "version": "4.3.2",
+      "isInstalled": true
+    },
+    "Volo.Abp.Account": {
+      "version": "9.3.2",
+      "isInstalled": true
+    },
+    "Volo.Abp.OpenIddict": {
+      "version": "9.3.2",
+      "isInstalled": true
+    },
+    "Volo.Abp.Identity": {
+      "version": "9.3.2",
+      "isInstalled": true
+    },
+    "Volo.Abp.SettingManagement": {
+      "version": "9.3.2",
+      "isInstalled": true
+    },
+    "Volo.Abp.PermissionManagement": {
+      "version": "9.3.2",
+      "isInstalled": true
+    },
+    "Volo.Abp.FeatureManagement": {
+      "version": "9.3.2",
+      "isInstalled": true
+    }
+  },
+  "folders": {
+    "items": {
+      "src": {},
+      "test": {}
+    }
+  },
+  "packages": {
+    "AmmenTravel.Application": {
+      "path": "src/AmmenTravel.Application/AmmenTravel.Application.abppkg",
+      "folder": "src"
+    },
+    "AmmenTravel.Application.Tests": {
+      "path": "test/AmmenTravel.Application.Tests/AmmenTravel.Application.Tests.abppkg",
+      "folder": "test"
+    },
+    "AmmenTravel.Domain.Shared": {
+      "path": "src/AmmenTravel.Domain.Shared/AmmenTravel.Domain.Shared.abppkg",
+      "folder": "src"
+    },
+    "AmmenTravel.Application.Contracts": {
+      "path": "src/AmmenTravel.Application.Contracts/AmmenTravel.Application.Contracts.abppkg",
+      "folder": "src"
+    },
+    "AmmenTravel.HttpApi": {
+      "path": "src/AmmenTravel.HttpApi/AmmenTravel.HttpApi.abppkg",
+      "folder": "src"
+    },
+    "AmmenTravel.HttpApi.Client": {
+      "path": "src/AmmenTravel.HttpApi.Client/AmmenTravel.HttpApi.Client.abppkg",
+      "folder": "src"
+    },
+    "AmmenTravel.EntityFrameworkCore.Tests": {
+      "path": "test/AmmenTravel.EntityFrameworkCore.Tests/AmmenTravel.EntityFrameworkCore.Tests.abppkg",
+      "folder": "test"
+    },
+    "AmmenTravel.EntityFrameworkCore": {
+      "path": "src/AmmenTravel.EntityFrameworkCore/AmmenTravel.EntityFrameworkCore.abppkg",
+      "folder": "src"
+    },
+    "AmmenTravel.TestBase": {
+      "path": "test/AmmenTravel.TestBase/AmmenTravel.TestBase.abppkg",
+      "folder": "test"
+    },
+    "AmmenTravel.Domain.Tests": {
+      "path": "test/AmmenTravel.Domain.Tests/AmmenTravel.Domain.Tests.abppkg",
+      "folder": "test"
+    },
+    "AmmenTravel.HttpApi.Client.ConsoleTestApp": {
+      "path": "test/AmmenTravel.HttpApi.Client.ConsoleTestApp/AmmenTravel.HttpApi.Client.ConsoleTestApp.abppkg",
+      "folder": "test"
+    },
+    "AmmenTravel.DbMigrator": {
+      "path": "src/AmmenTravel.DbMigrator/AmmenTravel.DbMigrator.abppkg",
+      "folder": "src"
+    },
+    "AmmenTravel.HttpApi.Host": {
+      "path": "src/AmmenTravel.HttpApi.Host/AmmenTravel.HttpApi.Host.abppkg",
+      "folder": "src"
+    },
+    "AmmenTravel.Domain": {
+      "path": "src/AmmenTravel.Domain/AmmenTravel.Domain.abppkg",
+      "folder": "src"
+    }
+  }
+}
