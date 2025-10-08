@@ -1,3 +1,4 @@
+using AmmenTravel.Destinos;
 using Microsoft.EntityFrameworkCore;
 using Volo.Abp.AuditLogging.EntityFrameworkCore;
 using Volo.Abp.BackgroundJobs.EntityFrameworkCore;
@@ -9,9 +10,9 @@ using Volo.Abp.EntityFrameworkCore.Modeling;
 using Volo.Abp.FeatureManagement.EntityFrameworkCore;
 using Volo.Abp.Identity;
 using Volo.Abp.Identity.EntityFrameworkCore;
+using Volo.Abp.OpenIddict.EntityFrameworkCore;
 using Volo.Abp.PermissionManagement.EntityFrameworkCore;
 using Volo.Abp.SettingManagement.EntityFrameworkCore;
-using Volo.Abp.OpenIddict.EntityFrameworkCore;
 
 namespace AmmenTravel.EntityFrameworkCore;
 
@@ -23,6 +24,7 @@ public class AmmenTravelDbContext :
 {
     /* Add DbSet properties for your Aggregate Roots / Entities here. */
 
+    public DbSet<DestinoTuristico> Destinos { get; set; }
 
     #region Entities from the modules
 
@@ -78,5 +80,15 @@ public class AmmenTravelDbContext :
         //    b.ConfigureByConvention(); //auto configure for the base class props
         //    //...
         //});
+
+        builder.Entity<DestinoTuristico>(b =>
+        {
+            b.ToTable(AmmenTravelConsts.DbTablePrefix + "Destinos", AmmenTravelConsts.DbSchema);
+            b.ConfigureByConvention(); //auto configure for the base class props
+            b.Property(x => x.Nombre).IsRequired().HasMaxLength(200);
+            b.Property(x => x.Pais).IsRequired().HasMaxLength(100);
+            b.Property(x => x.Poblacion);
+            b.Property(x => x.FotoURL).HasMaxLength(1000);
+        });
     }
 }
