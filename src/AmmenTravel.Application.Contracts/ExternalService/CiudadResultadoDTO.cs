@@ -5,8 +5,6 @@ namespace AmmenTravel.ExternalService
 {
     public class CiudadResultadoDTO
     {
-        [Required]
-        [StringLength(128)]
         public List<CiudadDTO> Ciudades { get; set; } = new();
     }
 }
