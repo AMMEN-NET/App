@@ -5,6 +5,9 @@ using Volo.Abp.Identity;
 using Volo.Abp.AutoMapper;
 using Volo.Abp.FeatureManagement;
 using Volo.Abp.Modularity;
+using Microsoft.Extensions.DependencyInjection;
+using AmmenTravel.ExternalService;
+using AmmenTravel.Application.ExternalServices;
 
 namespace AmmenTravel;
 
@@ -17,13 +20,20 @@ namespace AmmenTravel;
     typeof(AbpAccountApplicationModule),
     typeof(AbpSettingManagementApplicationModule)
     )]
+
+
 public class AmmenTravelApplicationModule : AbpModule
 {
+
     public override void ConfigureServices(ServiceConfigurationContext context)
     {
         Configure<AbpAutoMapperOptions>(options =>
         {
             options.AddMaps<AmmenTravelApplicationModule>();
         });
+
+        // Registro de GeoDbCitySearchService como implementación de ICitySearchService
+        context.Services.AddTransient<IBuscarCiudadService, GeoDdBuscarCiudadService>();
     }
+
 }
