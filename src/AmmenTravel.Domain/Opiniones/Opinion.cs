@@ -1,22 +1,32 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Volo.Abp.Domain.Entities.Auditing;
+using AmmenTravel.Common;
 
 namespace AmmenTravel.Opiniones
 {
-    public class Opinion : FullAuditedEntity<Guid> 
+    public class Opinion : FullAuditedEntity<Guid>, IUserOwned
     {
-        public required ValorPuntuacion Puntuacion { get; set; }
-        public required string Comentario { get; set; }
-        public required Guid DestinoTuristicoId { get; set; } //Es para hacer la foreign key
-        public required Guid UserId { get; set; } //Es para hacer la foreign key
-        
+        // Constructor para uso de la aplicación (asegura invariantes)
+        public Opinion(Guid destinoTuristicoId, Guid userId, ValorPuntuacion puntuacion, string comentario)
+        {
+            DestinoTuristicoId = destinoTuristicoId;
+            UserId = userId;
+            Puntuacion = puntuacion;
+            Comentario = comentario;
+        }
+
+        // Constructor parameterless para EF Core
+        protected Opinion()
+        {
+        }
+
+        public  ValorPuntuacion Puntuacion { get; set; }
+        public  string Comentario { get; set; }
+        public  Guid DestinoTuristicoId { get; set; } // foreign key
+        public  Guid UserId { get; set; } // foreign key
     }
-    
-    public enum ValorPuntuacion 
+
+    public enum ValorPuntuacion
     {
         Uno = 1,
         Dos = 2,
