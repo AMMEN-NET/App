@@ -12,7 +12,7 @@ namespace AmmenTravel.Opiniones
         public required ValorPuntuacion Puntuacion { get; set; }
         public required string Comentario { get; set; }
         public required Guid DestinoTuristicoId { get; set; } //Es para hacer la foreign key
-        public required Guid UsuarioId { get; set; } //Es para hacer la foreign key
+        public required Guid UserId { get; set; } //Es para hacer la foreign key
         
     }
     

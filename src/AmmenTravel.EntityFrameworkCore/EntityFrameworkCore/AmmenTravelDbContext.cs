@@ -1,4 +1,5 @@
 using AmmenTravel.Destinos;
+using AmmenTravel.Opiniones;
 using Microsoft.EntityFrameworkCore;
 using Volo.Abp.AuditLogging.EntityFrameworkCore;
 using Volo.Abp.BackgroundJobs.EntityFrameworkCore;
@@ -25,19 +26,9 @@ public class AmmenTravelDbContext :
     /* Add DbSet properties for your Aggregate Roots / Entities here. */
 
     public DbSet<DestinoTuristico> Destinos { get; set; }
+    public DbSet<Opinion> Opiniones { get; set; }
 
     #region Entities from the modules
-
-    /* Notice: We only implemented IIdentityProDbContext 
-     * and replaced them for this DbContext. This allows you to perform JOIN
-     * queries for the entities of these modules over the repositories easily. You
-     * typically don't need that for other modules. But, if you need, you can
-     * implement the DbContext interface of the needed module and use ReplaceDbContext
-     * attribute just like IIdentityProDbContext .
-     *
-     * More info: Replacing a DbContext of a module ensures that the related module
-     * uses this DbContext on runtime. Otherwise, it will use its own DbContext class.
-     */
 
     // Identity
     public DbSet<IdentityUser> Users { get; set; }
@@ -74,13 +65,6 @@ public class AmmenTravelDbContext :
         
         /* Configure your own tables/entities inside here */
 
-        //builder.Entity<YourEntity>(b =>
-        //{
-        //    b.ToTable(AmmenTravelConsts.DbTablePrefix + "YourEntities", AmmenTravelConsts.DbSchema);
-        //    b.ConfigureByConvention(); //auto configure for the base class props
-        //    //...
-        //});
-
         builder.Entity<DestinoTuristico>(b =>
         {
             b.ToTable(AmmenTravelConsts.DbTablePrefix + "Destinos", AmmenTravelConsts.DbSchema);
@@ -89,6 +73,16 @@ public class AmmenTravelDbContext :
             b.Property(x => x.Pais).IsRequired().HasMaxLength(100);
             b.Property(x => x.Poblacion);
             b.Property(x => x.FotoURL).HasMaxLength(1000);
+        }); 
+
+        builder.Entity<Opinion>(b =>
+        {
+            b.ToTable(AmmenTravelConsts.DbTablePrefix + "Opiniones", AmmenTravelConsts.DbSchema);
+            b.ConfigureByConvention();
+            b.Property(x => x.Puntuacion).IsRequired();
+            b.Property(x => x.Comentario).IsRequired().HasMaxLength(2000);
+            b.Property(x => x.DestinoTuristicoId).IsRequired();
+            b.Property(x => x.UserId).IsRequired();
         });
     }
 }
