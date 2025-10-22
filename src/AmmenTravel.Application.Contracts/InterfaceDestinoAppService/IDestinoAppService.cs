@@ -2,6 +2,8 @@
 using System;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Application.Dtos;
+using System.Threading.Tasks;
+using AmmenTravel.ExternalService;
 
 namespace AmmenTravel.InterfaceDestinoAppService;
     public interface IDestinoAppService:
@@ -12,6 +14,6 @@ namespace AmmenTravel.InterfaceDestinoAppService;
         PagedAndSortedResultRequestDto, //Used for paging/sorting
         CreateUpdateDestinoDTO> //Used to create/update a book
     {
-
+    Task<CiudadResultadoDTO> BuscarCiudadesAsync(CiudadBuscadaDTO request); 
     }
     

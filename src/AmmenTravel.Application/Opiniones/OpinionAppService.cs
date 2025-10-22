@@ -17,9 +17,20 @@ namespace AmmenTravel.Opiniones
             _opinionRepository = opinionRepository;
         }
 
+        [AllowAnonymous]
         public async Task CrearOpinionAsync(Guid destinoId, ValorPuntuacion puntuacion, string comentario)
         {
-            var userId = CurrentUser.GetId(); // ✅ obtiene el ID del usuario autenticado
+            // Si permites anónimos, hay que evitar usar CurrentUser.GetId() sin comprobar.
+            Guid userId;
+            if (CurrentUser.IsAuthenticated)
+            {
+                userId = CurrentUser.GetId();
+            }
+            else
+            {
+                // Asignar un valor por defecto o lanzar si requieres userId.
+                userId = Guid.Empty; // <-- ajustar según lógica de negocio
+            }
 
             var opinion = new Opinion(destinoId, userId, puntuacion, comentario);
             await _opinionRepository.InsertAsync(opinion);
