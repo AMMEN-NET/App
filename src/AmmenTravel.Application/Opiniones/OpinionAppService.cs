@@ -4,6 +4,7 @@ using Volo.Abp.Application.Services;
 using Volo.Abp.Domain.Repositories;
 using Volo.Abp.Users;
 using Microsoft.AspNetCore.Authorization;
+using Volo.Abp.Authorization;
 
 namespace AmmenTravel.Opiniones
 {
@@ -17,20 +18,15 @@ namespace AmmenTravel.Opiniones
             _opinionRepository = opinionRepository;
         }
 
-        [AllowAnonymous]
         public async Task CrearOpinionAsync(Guid destinoId, ValorPuntuacion puntuacion, string comentario)
         {
-            // Si permites anónimos, hay que evitar usar CurrentUser.GetId() sin comprobar.
-            Guid userId;
-            if (CurrentUser.IsAuthenticated)
+            // No se permiten anónimos: asegurar que el usuario esté autenticado
+            if (!CurrentUser.IsAuthenticated)
             {
-                userId = CurrentUser.GetId();
+                throw new AbpAuthorizationException("Se requiere autenticación para crear una opinión.");
             }
-            else
-            {
-                // Asignar un valor por defecto o lanzar si requieres userId.
-                userId = Guid.Empty; // <-- ajustar según lógica de negocio
-            }
+
+            var userId = CurrentUser.GetId();
 
             var opinion = new Opinion(destinoId, userId, puntuacion, comentario);
             await _opinionRepository.InsertAsync(opinion);
