@@ -2,7 +2,7 @@ using AmmenTravel.DestinosDTO;
 using AutoMapper;
 using AmmenTravel.Destinos;
 using AmmenTravel.Opiniones;
-using AmmenTravel.OpinionesDTO;
+using AmmenTravel.Opiniones.OpinionesDTO;
 
 namespace AmmenTravel;
 

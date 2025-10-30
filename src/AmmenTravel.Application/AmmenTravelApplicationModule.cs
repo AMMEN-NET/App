@@ -6,8 +6,8 @@ using Volo.Abp.AutoMapper;
 using Volo.Abp.FeatureManagement;
 using Volo.Abp.Modularity;
 using Microsoft.Extensions.DependencyInjection;
-using AmmenTravel.ExternalService;
 using AmmenTravel.Application.ExternalServices;
+using AmmenTravel.ExternalService;
 
 namespace AmmenTravel;
 

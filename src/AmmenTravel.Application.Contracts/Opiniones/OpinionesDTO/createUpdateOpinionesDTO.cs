@@ -2,7 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using AmmenTravel.Opiniones;
 
-namespace AmmenTravel.OpinionesDTO
+namespace AmmenTravel.Opiniones.OpinionesDTO
 {
     public class createUpdateOpinionDto
     {

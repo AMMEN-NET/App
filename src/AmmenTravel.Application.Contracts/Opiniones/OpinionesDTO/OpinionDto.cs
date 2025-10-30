@@ -1,7 +1,7 @@
 ﻿using System;
 using AmmenTravel.Opiniones;
 
-namespace AmmenTravel.OpinionesDTO
+namespace AmmenTravel.Opiniones.OpinionesDTO
 {
     public class OpinionDto
     {
