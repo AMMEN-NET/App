@@ -21,7 +21,7 @@ namespace AmmenTravel.Opiniones
         }
 
         public  ValorPuntuacion Puntuacion { get; set; }
-        public  string Comentario { get; set; }
+        public  string? Comentario { get; set; }
         public  Guid DestinoTuristicoId { get; set; } // foreign key
         public  Guid UserId { get; set; } // foreign key
     }

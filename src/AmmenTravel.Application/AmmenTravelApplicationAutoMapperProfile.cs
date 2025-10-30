@@ -14,7 +14,7 @@ public class AmmenTravelApplicationAutoMapperProfile : Profile
         CreateMap<CreateUpdateDestinoDTO, DestinoTuristico>();
 
         CreateMap<Opinion, OpinionDto>()
-            .ForMember(d => d.DestinoId, opt => opt.MapFrom(s => s.DestinoTuristicoId));
+            .ForMember(d => d.DestinoTuristicoId, opt => opt.MapFrom(s => s.DestinoTuristicoId));
     }
 
 }

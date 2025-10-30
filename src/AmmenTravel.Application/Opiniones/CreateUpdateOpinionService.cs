@@ -1,9 +1,11 @@
 ﻿using AmmenTravel.Opiniones.OpinionesDTO;
 using System;
 using System.Threading.Tasks;
+using Volo.Abp;
 using Volo.Abp.Authorization;
 using Volo.Abp.Domain.Repositories;
 using Volo.Abp.Users;
+
 
 namespace AmmenTravel.Opiniones
 {
@@ -25,14 +27,23 @@ namespace AmmenTravel.Opiniones
 
             var userId = _currentUser.Id ?? throw new AbpAuthorizationException("No se pudo obtener el usuario.");
 
-            var opinion = new Opinion(input.DestinoId, userId, input.Puntuacion, input.Comentario);
+
+            // Esto es para evitar que un usuario califique el mismo destino más de una vez
+
+            var opinionExistente = await _opinionRepository.FirstOrDefaultAsync(
+            o => o.DestinoTuristicoId == input.DestinoTuristicoId && o.UserId == userId );
+
+            if (opinionExistente != null)
+                throw new UserFriendlyException("Ya has calificado este destino.");
+
+            var opinion = new Opinion(input.DestinoTuristicoId, userId, input.Puntuacion, input.Comentario);
             await _opinionRepository.InsertAsync(opinion, autoSave: true);
 
             return new OpinionDto
             {
                 Id = opinion.Id,
-                DestinoId = opinion.DestinoId,
-                UsuarioId = opinion.UsuarioId,
+                DestinoTuristicoId = opinion.DestinoTuristicoId,
+                UserId = opinion.UserId,
                 Puntuacion = opinion.Puntuacion,
                 Comentario = opinion.Comentario
             };

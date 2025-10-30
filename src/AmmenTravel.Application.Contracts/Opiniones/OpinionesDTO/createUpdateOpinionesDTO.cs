@@ -7,12 +7,12 @@ namespace AmmenTravel.Opiniones.OpinionesDTO
     public class createUpdateOpinionDto
     {
         [Required]
-        public Guid DestinoId { get; set; }
+        public Guid DestinoTuristicoId { get; set; }
 
         [Required]
         public ValorPuntuacion Puntuacion { get; set; } // Se enviará como entero desde el cliente
 
         [Required]
-        public string Comentario { get; set; }
+        public string? Comentario { get; set; }
     }
 }
