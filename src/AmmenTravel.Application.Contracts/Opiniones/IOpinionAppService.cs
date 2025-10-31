@@ -9,5 +9,6 @@ namespace AmmenTravel.Opiniones
     public interface IOpinionAppService : IApplicationService
     {
         Task <OpinionDto> CrearOpinionAsync(createUpdateOpinionDto input);
+        Task <List<OpinionDto>> ObtenerPorUsuarioAsync(Guid usuarioId);
     }
 }
