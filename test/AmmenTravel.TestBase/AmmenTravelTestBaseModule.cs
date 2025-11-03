@@ -1,11 +1,15 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using System;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Volo.Abp;
-using Volo.Abp.Authorization;
 using Volo.Abp.Autofac;
 using Volo.Abp.BackgroundJobs;
 using Volo.Abp.Data;
 using Volo.Abp.Modularity;
 using Volo.Abp.Threading;
+using NSubstitute;
+using Volo.Abp.Users;
+using Volo.Abp.Authorization;
 
 namespace AmmenTravel;
 
@@ -22,7 +26,13 @@ public class AmmenTravelTestBaseModule : AbpModule
         Configure<AbpBackgroundJobOptions>(options =>
         {
             options.IsJobExecutionEnabled = false;
-        });
+        }); 
+
+        // Registrar un mock global de ICurrentUser para los tests.
+        var currentUserMock = Substitute.For<ICurrentUser>();
+        currentUserMock.IsAuthenticated.Returns(true);
+        currentUserMock.Id.Returns(Guid.NewGuid());
+        context.Services.Replace(ServiceDescriptor.Singleton<ICurrentUser>(currentUserMock));
 
         context.Services.AddAlwaysAllowAuthorization();
     }

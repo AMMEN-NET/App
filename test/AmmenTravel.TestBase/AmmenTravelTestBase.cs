@@ -23,6 +23,8 @@ public abstract class AmmenTravelTestBase<TStartupModule> : AbpIntegratedTest<TS
         builder.AddJsonFile("appsettings.json", false);
         builder.AddJsonFile("appsettings.secrets.json", true);
         services.ReplaceConfiguration(builder.Build());
+
+        // NOTA: el mock de ICurrentUser ahora se registra en AmmenTravelTestBaseModule.ConfigureServices
     }
 
     protected virtual Task WithUnitOfWorkAsync(Func<Task> func)
