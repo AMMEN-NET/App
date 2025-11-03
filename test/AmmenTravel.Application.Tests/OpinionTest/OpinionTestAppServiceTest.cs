@@ -1,4 +1,5 @@
-﻿using AmmenTravel.Opiniones;
+﻿using AmmenTravel.ExternalService;
+using AmmenTravel.Opiniones;
 using AmmenTravel.Opiniones.OpinionesDTO;
 using NSubstitute;
 using Shouldly;
@@ -20,10 +21,13 @@ namespace AmmenTravel.OpinionTest
     {
         private readonly IOpinionAppService _opinionService;
         private readonly ICurrentUser _currentUser;
+        private readonly IBuscarCiudadService _buscarCiudadService;
 
         protected OpinionTestAppServiceTest()
         {
             _opinionService = GetRequiredService<IOpinionAppService>();
+            // Nota: En un entorno de prueba de ABP, ICurrentUser se mockea
+            // o se proporciona con un usuario de prueba autenticado por defecto.
             _currentUser = GetRequiredService<ICurrentUser>();
         }
 
@@ -61,6 +65,7 @@ namespace AmmenTravel.OpinionTest
 
             var primeraOpinion = await _opinionService.CrearOpinionAsync(input);
 
+            // Intenta crear la segunda opinión y espera la excepción
             var ex = await Assert.ThrowsAsync<UserFriendlyException>(() => _opinionService.CrearOpinionAsync(input));
             ex.Message.ShouldBe("Ya has calificado este destino.");
         }
@@ -68,7 +73,8 @@ namespace AmmenTravel.OpinionTest
         [Fact]
         public async Task Debe_RespetarFiltroPorUsuario_Y_RequerirAutenticacion()
         {
-            // El usuario actual está autenticado
+            // Requisito 1: Requerir Autenticación (se verifica al inicio)
+            // Se asume que el usuario de prueba está autenticado al iniciar el test.
             _currentUser.IsAuthenticated.ShouldBeTrue();
 
             var destinoId = Guid.NewGuid();
@@ -82,19 +88,21 @@ namespace AmmenTravel.OpinionTest
 
             var opinion = await _opinionService.CrearOpinionAsync(input);
 
+            // Requisito 2: Respetar Filtro por Usuario (El usuario solo ve su propia opinión)
             var opinionesUsuario = await _opinionService.ObtenerPorUsuarioAsync(_currentUser.Id.Value);
             opinionesUsuario.ShouldContain(o => o.Id == opinion.Id);
 
-            // 🔸 Simular un contexto sin autenticación
+            // 🔸 Simular un contexto sin autenticación (Usando NSubstitute, asumiendo ICurrentUser es un mock)
+            // Nota: Si ICurrentUser no es un Mock, esta línea debe ser adaptada al framework de testing de ABP.
+            // Para el contexto de pruebas ABP, a menudo se usa un 'using (AbpSession.Use(null))' o se ajusta el mock del usuario
+            // para el scope de la llamada.
             _currentUser.IsAuthenticated.Returns(false);
             _currentUser.Id.Returns((Guid?)null);
 
+            // Verificar que al intentar la operación sin autenticación, se lance la excepción de autorización de ABP.
             await Should.ThrowAsync<AbpAuthorizationException>(
                 async () => await _opinionService.ObtenerPorUsuarioAsync(Guid.NewGuid())
             );
         }
-
     }
-
-
 }
