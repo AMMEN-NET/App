@@ -28,7 +28,7 @@ namespace AmmenTravel.OpinionTest
         }
 
         [Fact]
-        public async Task CrearOpinionAsync_ShouldReturnOpinionDto()
+        public async Task CrearOpinionAsync_DebeRetornarOpinionDto()
         {
             var input = new createUpdateOpinionDto
             {
@@ -97,5 +97,31 @@ namespace AmmenTravel.OpinionTest
                 async () => await _opinionService.ObtenerPorUsuarioAsync(Guid.NewGuid())
             );
         }
+
+
+        //Asegurar que el endpoint de crear una opinion falla con 401 si no se provee token
+
+        [Fact]
+        public async Task CrearOpinionAsync_DebeFallarCon401SiNoSeProveeToken()
+        {
+            // Simular un contexto sin autenticación
+            CurrentUser.IsAuthenticated.Returns(false);
+            CurrentUser.Id.Returns((Guid?)null);
+            var input = new createUpdateOpinionDto
+            {
+                DestinoTuristicoId = Guid.NewGuid(),
+                Puntuacion = ValorPuntuacion.Dos,
+                Comentario = "No me gustó mucho."
+            };
+
+            // Verificar que al intentar crear una opinión sin autenticación, se lance la excepción de autorización de ABP.
+            await Should.ThrowAsync<AbpAuthorizationException>(
+                async () => await _opinionService.CrearOpinionAsync(input)
+            );
+
+
+
+        }
+
     }
 }
