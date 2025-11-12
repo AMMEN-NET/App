@@ -9,6 +9,6 @@ namespace AmmenTravel.ExternalService
     public interface IBuscarCiudadService
     {
         Task<CiudadResultadoDTO> BuscarCiudadesAsync(CiudadBuscadaDTO request);
-     
+
     }
 }

@@ -14,6 +14,6 @@ namespace AmmenTravel.InterfaceDestinoAppService;
         PagedAndSortedResultRequestDto, //Used for paging/sorting
         CreateUpdateDestinoDTO> //Used to create/update a book
     {
-        Task<CiudadResultadoDTO> BuscarCiudadesAsync(CiudadBuscadaDTO request);
+    Task<CiudadResultadoDTO> BuscarCiudadesAsync(CiudadBuscadaDTO request); 
     }
     

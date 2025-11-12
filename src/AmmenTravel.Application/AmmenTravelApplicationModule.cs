@@ -1,13 +1,14 @@
-﻿using Volo.Abp.PermissionManagement;
-using Volo.Abp.SettingManagement;
+﻿using AmmenTravel.Application.ExternalServices;
+using AmmenTravel.ExternalService;
+using AmmenTravel.Opiniones;
+using Microsoft.Extensions.DependencyInjection;
 using Volo.Abp.Account;
-using Volo.Abp.Identity;
 using Volo.Abp.AutoMapper;
 using Volo.Abp.FeatureManagement;
+using Volo.Abp.Identity;
 using Volo.Abp.Modularity;
-using Microsoft.Extensions.DependencyInjection;
-using AmmenTravel.ExternalService;
-using AmmenTravel.Application.ExternalServices;
+using Volo.Abp.PermissionManagement;
+using Volo.Abp.SettingManagement;
 
 namespace AmmenTravel;
 
@@ -34,6 +35,8 @@ public class AmmenTravelApplicationModule : AbpModule
 
         // Registro de GeoDbCitySearchService como implementación de ICitySearchService
         context.Services.AddTransient<IBuscarCiudadService, GeoDdBuscarCiudadService>();
+        context.Services.AddTransient<ICreateUpdateOpinion, CrearOpinionService>();
+
     }
 
 }

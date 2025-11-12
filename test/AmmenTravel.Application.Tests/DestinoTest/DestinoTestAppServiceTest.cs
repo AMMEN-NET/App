@@ -50,10 +50,9 @@ namespace AmmenTravel.DestinoTest
                 Poblacion = 2048000,
                 FotoURL = "https://example.com/paris.jpg"
             };
-                
+
             //Act
             var result = await _service.CreateAsync(input);
-
             //Assert
             result.ShouldNotBeNull();
             result.Id.ShouldNotBe(Guid.Empty);
@@ -62,11 +61,9 @@ namespace AmmenTravel.DestinoTest
             result.Poblacion.ShouldBe(input.Poblacion);
             result.FotoURL.ShouldBe(input.FotoURL);
         }
-
         [Fact]
         public async Task CreateAsync_ShouldPersistDestinoInDatabase()
         {
-
             using (var uow = _unitOfWorkManager.Begin())
             {
                 //Arrange
@@ -77,24 +74,18 @@ namespace AmmenTravel.DestinoTest
                     Poblacion = 13960000,
                     FotoURL = "https://ejemplo.com/tokyo.jpg"
                 };
-
                 //Act
                 var result = await _service.CreateAsync(input);
-
-
                 //Assert
                 var dbContext = await _dbContextProvider.GetDbContextAsync();
                 var savedDestino = await dbContext.Destinos.FindAsync(result.Id);
-
                 savedDestino.ShouldNotBeNull();
                 savedDestino.Nombre.ShouldBe(input.Nombre);
                 savedDestino.Pais.ShouldBe(input.Pais);
                 savedDestino.Poblacion.ShouldBe(input.Poblacion);
                 savedDestino.FotoURL.ShouldBe(input.FotoURL);
             }
-
         }
-
         [Fact]
         public async Task CreateAsync_ShouldThrowException_WhenNombreIsMissing()
         {
@@ -106,7 +97,6 @@ namespace AmmenTravel.DestinoTest
                 Poblacion = 195500,
                 FotoURL = "https://example.com/rome.jpg"
             };
-
             //Act & Assert
             await Should.ThrowAsync<AbpValidationException>(async () =>
             {
@@ -127,7 +117,7 @@ namespace AmmenTravel.DestinoTest
                     new CiudadDTO { Nombre = "TestCiudad2", Pais = "TestPais2" }
                 }
             };
-            var repomock = Substitute.For<IRepository<DestinoTuristico,Guid>>();
+            var repomock = Substitute.For<IRepository<DestinoTuristico, Guid>>();
             var ciudadBuscadaMock = Substitute.For<IBuscarCiudadService>();
             ciudadBuscadaMock.BuscarCiudadesAsync(request).Returns(expectedResponse);
             var service = new DestinoAppService(repomock, ciudadBuscadaMock);
@@ -139,7 +129,8 @@ namespace AmmenTravel.DestinoTest
 
         [Fact]
 
-        public async Task buscarCiudadesAsync_RetornoVacio()         {
+        public async Task buscarCiudadesAsync_RetornoVacio()
+        {
             var request = new CiudadBuscadaDTO { Nombre = "" };
             var expectedResponse = new CiudadResultadoDTO
             {
@@ -174,7 +165,8 @@ namespace AmmenTravel.DestinoTest
 
         [Fact]
 
-        public async Task buscarCiudadesAsync_APIError_LanzaExcepcion()       {
+        public async Task buscarCiudadesAsync_APIError_LanzaExcepcion()
+        {
             var request = new CiudadBuscadaDTO { Nombre = "ErrorCity" };
             var repomock = Substitute.For<IRepository<DestinoTuristico, Guid>>();
             var ciudadBuscadaMock = Substitute.For<IBuscarCiudadService>();
@@ -187,8 +179,6 @@ namespace AmmenTravel.DestinoTest
                 await service.BuscarCiudadesAsync(request);
             });
         }
-
-
 
     }
 

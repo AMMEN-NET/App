@@ -7,6 +7,6 @@ namespace AmmenTravel.ExternalService
         [Required]
         [StringLength(128)]
         public string Nombre { get; set; }
-     
+
     }
 }
