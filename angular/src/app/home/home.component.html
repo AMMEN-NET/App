@@ -1,8 +1,92 @@
-<section class="flex flex-col items-center justify-start p-4 border rounded-lg shadow-md bg-whithe-200">
-    <h2>Buscar ciudad por nombre</h2>
-    <p>¡ Anímate a buscar y visitar ciudades de <span class="font-bold">todo el mundo</span> !</p>
-    <div>
-        <input type="text" placeholder="ej: Roma - Venice" class="border p-2   rounded-lg" />
-    </div>
+<!-- Contenedor principal para centrar y añadir padding -->
+<div class="container mx-auto p-8">
 
-</section>
+  <!-- Esta es la sección que proporcionaste, ahora conectada a la lógica de Angular -->
+  <section class="flex flex-col items-center justify-start p-6 border rounded-lg shadow-md bg-white max-w-lg mx-auto">
+    
+    <h2 class="text-2xl font-bold text-gray-800">Buscar ciudad por nombre</h2>
+    <p class="mt-2 text-gray-600 text-center">
+      ¡ Anímate a buscar y visitar ciudades de <span class="font-bold">todo el mundo</span> !
+    </p>
+    
+    <!-- Contenedor para el input y el botón -->
+    <div class="flex space-x-2 mt-6 w-full">
+        
+        <!-- 
+          Input conectado a la señal 'terminoBusqueda'
+          - [ngModel] lee el valor de la señal.
+          - (ngModelChange) actualiza la señal.
+          - (keyup.enter) permite buscar presionando "Enter".
+        -->
+        <input 
+            type="text" 
+            placeholder="ej: Roma - Venice" 
+            class="flex-grow p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" 
+            [ngModel]="terminoBusqueda()"
+            (ngModelChange)="terminoBusqueda.set($event)"
+            (keyup.enter)="buscarCiudades()"
+        />
+        
+        <!-- 
+          Botón conectado al método 'buscarCiudades'
+          - (click) llama al método.
+          - [disabled] se activa con la señal 'estaCargando'.
+          - @if cambia el texto del botón.
+        -->
+        <button
+            (click)="buscarCiudades()"
+            [disabled]="estaCargando()"
+            class="px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+            @if (estaCargando()) {
+              <span>Buscando...</span>
+            } @else {
+              <span>Buscar</span>
+            }
+        </button>
+    </div>
+  </section>
+
+  <!-- Sección de Resultados y Errores (basada en la lógica del .ts) -->
+  <div class="results-container max-w-lg mx-auto mt-8">
+    
+    <!-- Muestra mensaje de error si existe -->
+    @if (error(); as msg) {
+      <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg" role="alert">
+        <strong class="font-bold">Error:</strong>
+        <span class="block sm:inline"> {{ msg }}</span>
+      </div>
+    }
+
+    <!-- Muestra los resultados si la señal 'ciudades' tiene datos -->
+    @if (ciudades(); as resultado) {
+      
+      <!-- Comprueba si hay ciudades en el array de resultados -->
+      @if (resultado.ciudades && resultado.ciudades.length > 0) {
+        <h2 class="text-2xl font-semibold mb-4 text-gray-700">Resultados</h2>
+        <ul class="space-y-3">
+          
+          <!-- Itera sobre los resultados y los muestra -->
+          @for (ciudad of resultado.ciudades; track ciudad.id) {
+            <li class="bg-white p-4 rounded-lg shadow border border-gray-200">
+              <span class="font-medium text-lg text-gray-800">{{ ciudad.nombre }}</span>
+              <span class="text-gray-500 text-sm block">{{ ciudad.pais }}</span>
+            </li>
+          }
+        </ul>
+      } @else {
+        
+        <!-- 
+          Muestra "No se encontraron" solo si la búsqueda ya terminó 
+          (no está cargando) y no hubo un error.
+        -->
+        @if (!estaCargando() && !error()) {
+            <div class="text-center text-gray-500 mt-4 bg-white p-6 rounded-lg shadow border">
+              No se encontraron ciudades con ese nombre.
+            </div>
+        }
+      }
+    }
+  </div>
+
+</div>
