@@ -2,15 +2,15 @@
 <div class="container mx-auto p-8">
 
   <!-- Esta es la sección que proporcionaste, ahora conectada a la lógica de Angular -->
-  <section class="flex flex-col items-center justify-start p-6 border rounded-lg shadow-md bg-white max-w-lg mx-auto">
+  <section class="flex flex-col items-center justify-center p-6  rounded rounded-lg shadow-xl bg-[#161616]">
     
-    <h2 class="text-2xl font-bold text-gray-800">Buscar ciudad por nombre</h2>
-    <p class="mt-2 text-gray-600 text-center">
-      ¡ Anímate a buscar y visitar ciudades de <span class="font-bold">todo el mundo</span> !
+    <h2 class="text-2xl font-bold"><span class="text-blue-600">Buscar ciudad por nombre</span></h2>
+    <p class="mt-2 text-white text-center">
+      ¡ Anímate a buscar y visitar ciudades de <span class="font-bold text-red-700">todo el mundo</span> !
     </p>
     
     <!-- Contenedor para el input y el botón -->
-    <div class="flex space-x-2 mt-6 w-full">
+    <div class="flex space-x-2 mt-6 w-full gap-2">
         
         <!-- 
           Input conectado a la señal 'terminoBusqueda'
@@ -21,7 +21,7 @@
         <input 
             type="text" 
             placeholder="ej: Roma - Venice" 
-            class="flex-grow p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" 
+            class="flex-grow w-full p-3 border border-gray-600 rounded rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" 
             [ngModel]="terminoBusqueda()"
             (ngModelChange)="terminoBusqueda.set($event)"
             (keyup.enter)="buscarCiudades()"
@@ -36,7 +36,7 @@
         <button
             (click)="buscarCiudades()"
             [disabled]="estaCargando()"
-            class="px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            class="px-6 py-3 bg-blue-600 text-white rounded rounded-xl font-semibold shadow-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition:all duration-200 hover:scale-95 transition:easy-in-out"
         >
             @if (estaCargando()) {
               <span>Buscando...</span>
@@ -48,7 +48,7 @@
   </section>
 
   <!-- Sección de Resultados y Errores (basada en la lógica del .ts) -->
-  <div class="results-container max-w-lg mx-auto mt-8">
+  <div class="results-container mt-8 p-6">
     
     <!-- Muestra mensaje de error si existe -->
     @if (error(); as msg) {
@@ -63,13 +63,13 @@
       
       <!-- Comprueba si hay ciudades en el array de resultados -->
       @if (resultado.ciudades && resultado.ciudades.length > 0) {
-        <h2 class="text-2xl font-semibold mb-4 text-gray-700">Resultados</h2>
+        <h2 class="text-2xl font-semibold mb-4 text-black-700 w-full">Ciudades encontradas para ti</h2>
         <ul class="space-y-3">
           
           <!-- Itera sobre los resultados y los muestra -->
           @for (ciudad of resultado.ciudades; track ciudad.id) {
-            <li class="bg-white p-4 rounded-lg shadow border border-gray-200">
-              <span class="font-medium text-lg text-gray-800">{{ ciudad.nombre }}</span>
+            <li class="bg-white p-4 rounded rounded-lg shadow-xl border border-gray-400 cursor-pointer hover:bg-gray-50 transition:all duration-150 hover:scale-105 easy-in-out" >
+              <span class="font-medium text-lg text-gray-900">{{ ciudad.nombre }}</span>
               <span class="text-gray-500 text-sm block">{{ ciudad.pais }}</span>
             </li>
           }

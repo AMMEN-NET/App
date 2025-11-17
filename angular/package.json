@@ -33,8 +33,11 @@
     "@angular/router": "~20.0.0",
     "@swimlane/ngx-datatable": "^22.0.0",
     "@tailwindcss/postcss": "^4.1.17",
+    "angular": "^1.8.3",
+    "cli": "^1.0.1",
     "postcss": "^8.5.6",
     "rxjs": "~7.8.0",
+    "tailwind": "^2.3.1",
     "tailwindcss": "^4.1.17",
     "tslib": "^2.0.0",
     "zone.js": "~0.15.0"
