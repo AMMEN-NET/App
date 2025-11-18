@@ -71,6 +71,8 @@
             <li class="bg-white p-4 rounded rounded-lg shadow-xl border border-gray-400 cursor-pointer hover:bg-gray-50 transition:all duration-150 hover:scale-105 easy-in-out" >
               <span class="font-medium text-lg text-gray-900">{{ ciudad.nombre }}</span>
               <span class="text-gray-500 text-sm block">{{ ciudad.pais }}</span>
+              <span class="text-gray-400 text-xs block">Población: {{ ciudad.poblacion | number }}</span>
+              <span class="text-gray-400 text-xs block">Latitud: {{ ciudad.latitud }}, Longitud: {{ ciudad.longitud }}</span>
             </li>
           }
         </ul>
