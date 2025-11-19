@@ -52,6 +52,9 @@ namespace AmmenTravel.Application.ExternalServices
                 {
                     Nombre = c.City ?? string.Empty,
                     Pais = c.Country ?? string.Empty,
+                    Poblacion = c.Population ?? 0,
+                    Latitud = c.Latitude ?? 0,
+                    Longitud = c.Longitude ?? 0
                 }).ToList();
 
                 return new CiudadResultadoDTO { Ciudades = cities };
@@ -71,6 +74,9 @@ namespace AmmenTravel.Application.ExternalServices
         {
             public string? City { get; set; }
             public string? Country { get; set; }
+            public int? Population { get; set; }
+            public float? Latitude { get; set; }
+            public float? Longitude { get; set; }
         }
     }
 }

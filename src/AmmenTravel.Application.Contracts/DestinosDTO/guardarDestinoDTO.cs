@@ -16,4 +16,6 @@ public class guardarDestinoDTO : AuditedEntityDto<Guid>
     public int Poblacion { get; set; }
 
     public  required string FotoURL { get; set; }
+    public required float Latitud { get; set; }
+    public required float Longitud { get; set; }
 }
