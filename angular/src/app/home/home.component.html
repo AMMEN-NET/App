@@ -2,7 +2,7 @@
 <div class="container mx-auto p-8">
 
   <!-- Esta es la sección que proporcionaste, ahora conectada a la lógica de Angular -->
-  <section class="flex flex-col items-center justify-center p-6 sm:p-8 rounded-xl shadow-2xl bg-[#0A4570] border border-[#045288] text-white">
+  <section class="flex flex-col items-center justify-center p-6 sm:p-8 rounded-xl bg-l border border-[#045288] text-white bg-gradient-to-r from-[#045288]  to-[#0079CC]">
   
   <!-- Título y Subtítulo: Título ahora en el color más claro (100) para máxima visibilidad -->
   <h2 class="text-3xl font-extrabold mb-1">
@@ -30,12 +30,11 @@
     <button
       (click)="buscarCiudades()"
       [disabled]="estaCargando()"
-      class="flex items-center justify-center min-w-[120px] px-6 py-3 text-white rounded-xl font-bold transition-all duration-300 
-            bg-[#0999EE] 
-            hover:bg-[#0060A5] 
+      class="flex items-center justify-center min-w-[120px] px-5 py-2 text-white rounded rounded-xl font-bolder transition-all duration-300 
+            bg-[#0A4570] 
             disabled:opacity-40 disabled:cursor-not-allowed 
             hover:scale-105 active:scale-95 
-            shadow-md shadow-[#0999EE]/40 hover:shadow-lg hover:shadow-[#0060A5]/60"
+            shadow-md drop-shadow-[#0999EE]/50 hover:shadow-lg hover:shadow-[#0060A5]/60"
     >
       @if (estaCargando()) {
         <span class="animate-spin mr-2">◷</span>
@@ -74,18 +73,15 @@
         
         @for (ciudad of resultado.ciudades; track ciudad.id) {
           <!-- Tarjeta individual de la ciudad (MEJORADA) -->
-          <div 
-            class="card group border border-[#DFF0FF] cursor-pointer transition-all duration-300 ease-in-out bg-[#F0F8FF] rounded-xl shadow-lg flex flex-col justify-between 
-                  hover:shadow-[0_0_20px_0_rgba(9,153,238,0.7)] hover:border-[#0999EE] hover:scale-[1.03]"
-          >
+          <div class="flex flex-col justify-between group border border-[#DFF0FF] cursor-pointer transition-all duration-300 ease-in-out bg-[#F0F8FF] rounded rounded-4xl hover:scale-95 drop-shadow-2xl/25">
             <div class="card-body p-5 flex-grow">
               <!-- Nombre de la ciudad: Usando un color oscuro (900) -->
-              <p class="mb-2 font-extrabold text-3xl text-[#0A4570] group-hover:text-[#0999EE] transition-colors duration-200">{{ ciudad.nombre }}</p>
+              <p class="mb-2 font-extrabold text-3xl text-[#045288] group-hover:text-[#0999EE] transition-all duration-200 ease-in-out ">{{ ciudad.nombre }}</p>
               
               <!-- Datos de la ciudad: Mejor estructura y tipografía -->
               <div class="text-gray-600 text-base mb-0 mt-3">
                 <span class="block font-bold text-xl text-[#0060A5] mb-2">{{ ciudad.pais }}</span>
-                <div class="border-t border-gray-300 pt-2 mt-2 space-y-1">
+                <div class="border-t border-gray-800 pt-2 mt-2 space-y-1 w-full">
                   <span class="block text-gray-700 text-sm flex justify-between">
                     <span class="font-medium">Población:</span>
                     <span class="font-mono text-base">{{ ciudad.poblacion | number }}</span>
@@ -103,14 +99,14 @@
             </div>
 
             <!-- Acciones con los colores de la paleta -->
-            <div class="card-actions flex justify-between items-center p-4 border-t border-[#DFF0FF]">
+            <div class="card-actions flex justify-between items-center p-4 border-t border-gray-800">
               <!-- Botón de Calificar: Borde primario -->
-              <button class="text-sm px-4 py-2 rounded-lg border-2 border-[#0999EE] text-[#0999EE] font-semibold hover:bg-[#0999EE] hover:text-white transition duration-200 shadow-sm">
-                ⭐ Calificar
+              <button class="text-sm px-4 py-2 rounded rounded-4xl border-2 border-[#0A4570] text-[#0A4570] font-semibold hover:bg-[#0A4570] hover:text-white transition-all duration-350 ease-in-out shadow-2xl hover:scale-105 active:scale-95">
+                CALIFICAR
               </button> 
               <!-- Botón de Favoritos: Fondo primario, hover oscuro (800) -->
-              <button class="text-sm px-4 py-2 rounded-lg bg-[#0999EE] text-white font-semibold hover:bg-[#045288] transition duration-200 shadow-lg hover:scale-105 active:scale-95">
-                ❤️ Favoritos
+              <button class="text-sm px-4 py-2 rounded rounded-4xl bg-[#0999EE] text-[#DFF0FF] hover:text-[#045288] font-semibold hover:bg-white shadow-lg hover:scale-105 active:scale-95 hover:border-2 hover:border-[#045288] transition-all duration-350 ease-in-out">
+                FAVORITOS
               </button>
             </div>
           </div>
