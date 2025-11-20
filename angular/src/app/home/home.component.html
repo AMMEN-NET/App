@@ -20,7 +20,7 @@
     <input 
       type="text" 
       placeholder="ej: Roma, Tokio, Buenos Aires" 
-      class="flex-grow w-full p-3 border border-[#0060A5] rounded rounded-full focus:outline-none focus:ring-2 focus:ring-[#0999EE] text-gray-900 bg-white placeholder-gray-800 text-base shadow-inner" 
+      class="flex-grow w-full p-3 border border-[#0060A5] rounded rounded-full focus:outline-none focus:ring-2 focus:ring-[#0999EE] text-gray-900 text-2xl bg-white placeholder-gray-600 shadow-inner" 
       [ngModel]="terminoBusqueda()"
       (ngModelChange)="terminoBusqueda.set($event)"
       (keyup.enter)="buscarCiudades()"
@@ -40,7 +40,7 @@
         <span class="animate-spin mr-2">◷</span>
         <span>Buscando...</span>
       } @else {
-        <span>Buscar</span>
+        <span class="text-xl">Buscar</span>
       }
     </button>
   </div>
@@ -69,11 +69,11 @@
         Ciudades encontradas para: "{{ terminoBusqueda() }}"
       </h2>
       
-      <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-2">
         
         @for (ciudad of resultado.ciudades; track ciudad.id) {
           <!-- Tarjeta individual de la ciudad (MEJORADA) -->
-          <div class="flex flex-col justify-between group border border-[#DFF0FF] cursor-pointer transition-all duration-300 ease-in-out bg-[#F0F8FF] rounded rounded-4xl hover:scale-95 drop-shadow-2xl/25">
+          <div class="flex flex-col justify-between group border border-[#DFF0FF] cursor-pointer transition-all duration-300 ease-in-out bg-[#F0F8FF] rounded rounded-4xl hover:scale-98 drop-shadow-xl/50">
             <div class="card-body p-5 flex-grow">
               <!-- Nombre de la ciudad: Usando un color oscuro (900) -->
               <p class="mb-2 font-extrabold text-3xl text-[#045288] group-hover:text-[#0999EE] transition-all duration-200 ease-in-out ">{{ ciudad.nombre }}</p>
@@ -116,9 +116,9 @@
       
       <!-- Mensaje de No Resultados (solo si no está cargando y no hay error) -->
       @if (!estaCargando() && !error() && terminoBusqueda().length > 0) {
-        <div class="text-center text-[#DFF0FF] mt-4 bg-[#0A4570] p-8 rounded-xl shadow-lg border border-[#045288]">
-          <p class="text-xl font-medium">¡Vaya! No se encontraron ciudades para el término: </p>
-          <p class="text-3xl font-extrabold text-[#0999EE] mt-2">"{{ terminoBusqueda() }}"</p>
+        <div class="text-center text-[#EEEEEE] mt-4 bg-gradient-to-r from-red-500 to-red-400 p-8 rounded-xl shadow-lg border border-[#045288]">
+          <p class="text-xl font-medium">No se encontraron ciudades para el término: </p>
+          <p class="text-3xl font-bold text-[#DDDDDD] mt-2">"{{ terminoBusqueda() }}"</p>
         </div>
       }
     }
