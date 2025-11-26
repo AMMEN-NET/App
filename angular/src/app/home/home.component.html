@@ -1,128 +1,131 @@
-<!-- Contenedor principal para centrar y añadir padding -->
 <div class="container mx-auto p-8">
 
-  <!-- Esta es la sección que proporcionaste, ahora conectada a la lógica de Angular -->
   <section class="flex flex-col items-center justify-center p-6 sm:p-8 rounded-xl bg-l border border-[#045288] text-white bg-gradient-to-r from-[#045288]  to-[#0079CC]">
   
-  <!-- Título y Subtítulo: Título ahora en el color más claro (100) para máxima visibilidad -->
-  <h2 class="text-3xl font-extrabold mb-1">
-    <span class="text-[#DFF0FF]">Buscar ciudad por nombre</span>
-  </h2>
-  <p class="mt-2 text-center text-[#DFF0FF] text-opacity-80">
-    ¡ Anímate a buscar y visitar ciudades de 
-    <span class="font-bold text-yellow-300">todo el mundo</span> !
-  </p>
+    <h2 class="text-3xl font-extrabold mb-1">
+      <span class="text-[#DFF0FF]">Buscar ciudad</span>
+    </h2>
+    <p class="mt-2 text-center text-[#DFF0FF] text-opacity-80">
+      ¡ Anímate a buscar y visitar ciudades de 
+      <span class="font-bold text-yellow-300">todo el mundo</span> !
+    </p>
   
-  <!-- Contenedor para el input y el botón -->
-  <div class="flex space-x-2 mt-6 w-full gap-2">
-    
-    <!-- Input para el término de búsqueda -->
-    <input 
-      type="text" 
-      placeholder="ej: Roma, Tokio, Buenos Aires" 
-      class="flex-grow w-full p-3 border border-[#0060A5] rounded rounded-full focus:outline-none focus:ring-2 focus:ring-[#0999EE] text-gray-900 text-2xl bg-white placeholder-gray-600 shadow-inner" 
-      [ngModel]="terminoBusqueda()"
-      (ngModelChange)="terminoBusqueda.set($event)"
-      (keyup.enter)="buscarCiudades()"
-    />
-    
-    <!-- Botón de Búsqueda: Liso con color primario (500) y efecto hover -->
-    <button
-      (click)="buscarCiudades()"
-      [disabled]="estaCargando()"
-      class="flex items-center justify-center min-w-[120px] px-5 py-2 text-white rounded rounded-xl font-bolder transition-all duration-300 
-            bg-[#0A4570] 
-            disabled:opacity-40 disabled:cursor-not-allowed 
-            hover:scale-105 active:scale-95 
-            shadow-md drop-shadow-[#0999EE]/50 hover:shadow-lg hover:shadow-[#0060A5]/60"
-    >
-      @if (estaCargando()) {
-        <span class="animate-spin mr-2">◷</span>
-        <span>Buscando...</span>
-      } @else {
-        <span class="text-xl">Buscar</span>
-      }
-    </button>
-  </div>
-  <!-- Mensaje de sugerencia para búsqueda -->
-  <p class="mt-3 text-sm text-[#B8E2FF] text-opacity-60">
-    Ingresa al menos 3 caracteres para iniciar la búsqueda.
-  </p>
-
-</section>
-  <!-- Sección de Resultados y Errores -->
-<div class="results-container mt-8">
-  
-  @if (error(); as msg) {
-    <!-- Estilo de error mejorado -->
-    <div class="bg-red-700 border border-red-900 text-white px-6 py-4 rounded-xl shadow-lg mb-8" role="alert">
-      <strong class="font-bold">¡Lo siento! Error de conexión:</strong>
-      <span class="block sm:inline"> {{ msg }}</span>
-    </div>
-  }
-
-  <!-- Contenedor de las tarjetas de resultados -->
-  @if (ciudades(); as resultado) {
-    
-    @if (resultado.ciudades && resultado.ciudades.length > 0) {
-      <h2 class="text-3xl font-bold mb-6 text-[#DFF0FF] border-b border-[#045288] pb-2">
-        Ciudades encontradas para: "{{ terminoBusqueda() }}"
-      </h2>
+    <div class="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-2 mt-6 w-full gap-2">
       
-      <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-2">
+      <input 
+        type="text" 
+        placeholder="Ingrese la ciudad" 
+        class="flex-grow w-full p-3 border border-[#0060A5] rounded rounded-full focus:outline-none focus:ring-2 focus:ring-[#0999EE] text-gray-900 text-xl bg-white placeholder-gray-600 shadow-inner" 
+        [ngModel]="nombre()" 
+        (ngModelChange)="nombre.set($event)"
+        (keyup.enter)="buscarCiudades()"
+      />
+
+      <input 
+        type="text" 
+        placeholder="Ingrese el país" 
+        class="flex-grow w-full p-3 border border-[#0060A5] rounded rounded-full focus:outline-none focus:ring-2 focus:ring-[#0999EE] text-gray-900 text-xl bg-white placeholder-gray-600 shadow-inner" 
+        [ngModel]="pais()"
+        (ngModelChange)="pais.set($event)"
+        (keyup.enter)="buscarCiudades()"
+      />
+
+      <input 
+        type="number" 
+        placeholder="Indique la población mínima" 
+        class="flex-grow w-full p-3 border border-[#0060A5] rounded rounded-full focus:outline-none focus:ring-2 focus:ring-[#0999EE] text-gray-900 text-xl bg-white placeholder-gray-600 shadow-inner" 
+        [ngModel]="poblacion()"
+        (ngModelChange)="poblacion.set($event)"
+        (keyup.enter)="buscarCiudades()"
+      />
+      
+      <button
+        (click)="buscarCiudades()"
+        [disabled]="estaCargando()"
+        class="flex items-center justify-center min-w-[120px] px-5 py-2 text-white rounded rounded-xl font-bolder transition-all duration-300 
+              bg-[#0A4570] 
+              disabled:opacity-40 disabled:cursor-not-allowed 
+              hover:scale-105 active:scale-95 
+              shadow-md drop-shadow-[#0999EE]/50 hover:shadow-lg hover:shadow-[#0060A5]/60"
+      >
+        @if (estaCargando()) {
+          <span class="animate-spin mr-2">◷</span>
+          <span>...</span>
+        } @else {
+          <span class="text-xl">Buscar</span>
+        }
+      </button>
+    </div>
+
+    <p class="mt-3 text-sm text-[#B8E2FF] text-opacity-60">
+      Completa al menos un campo para iniciar la búsqueda.
+    </p>
+
+  </section>
+
+  <div class="results-container mt-8">
+  
+    @if (error(); as msg) {
+      <div class="bg-red-700 border border-red-900 text-white px-6 py-4 rounded-xl shadow-lg mb-8" role="alert">
+        <strong class="font-bold">¡Lo siento! Error de conexión:</strong>
+        <span class="block sm:inline"> {{ msg }}</span>
+      </div>
+    }
+
+    @if (ciudades(); as resultado) {
+      
+      @if (resultado.ciudades && resultado.ciudades.length > 0) {
         
-        @for (ciudad of resultado.ciudades; track ciudad.id) {
-          <!-- Tarjeta individual de la ciudad (MEJORADA) -->
-          <div class="flex flex-col justify-between group border border-[#DFF0FF] cursor-pointer transition-all duration-300 ease-in-out bg-[#F0F8FF] rounded rounded-4xl hover:scale-98 drop-shadow-xl/50">
-            <div class="card-body p-5 flex-grow">
-              <!-- Nombre de la ciudad: Usando un color oscuro (900) -->
-              <p class="mb-2 font-extrabold text-3xl text-[#045288] group-hover:text-[#0999EE] transition-all duration-200 ease-in-out ">{{ ciudad.nombre }}</p>
-              
-              <!-- Datos de la ciudad: Mejor estructura y tipografía -->
-              <div class="text-gray-600 text-base mb-0 mt-3">
-                <span class="block font-bold text-xl text-[#0060A5] mb-2">{{ ciudad.pais }}</span>
-                <div class="border-t border-gray-800 pt-2 mt-2 space-y-1 w-full">
-                  <span class="block text-gray-700 text-sm flex justify-between">
-                    <span class="font-medium">Población:</span>
-                    <span class="font-mono text-base">{{ ciudad.poblacion | number }}</span>
-                  </span>
-                  <span class="block text-gray-700 text-sm flex justify-between">
-                    <span class="font-medium">Latitud:</span>
-                    <span>{{ ciudad.latitud }}</span>
-                  </span>
-                  <span class="block text-gray-700 text-sm flex justify-between">
-                    <span class="font-medium">Longitud:</span>
-                    <span>{{ ciudad.longitud }}</span>
-                  </span>
+        <h2 class="text-3xl font-bold mb-6 text-[#DFF0FF] border-b border-[#045288] pb-2">
+          Resultados encontrados
+        </h2>
+        
+        <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-2">
+          
+          @for (ciudad of resultado.ciudades; track ciudad.id) {
+            <div class="flex flex-col justify-between group border border-[#DFF0FF] cursor-pointer transition-all duration-300 ease-in-out bg-[#F0F8FF] rounded rounded-4xl hover:scale-98 drop-shadow-xl/50">
+              <div class="card-body p-5 flex-grow">
+                <p class="mb-2 font-extrabold text-3xl text-[#045288] group-hover:text-[#0999EE] transition-all duration-200 ease-in-out ">{{ ciudad.nombre }}</p>
+                
+                <div class="text-gray-600 text-base mb-0 mt-3">
+                  <span class="block font-bold text-xl text-[#0060A5] mb-2">{{ ciudad.pais }}</span>
+                  <div class="border-t border-gray-800 pt-2 mt-2 space-y-1 w-full">
+                    <span class="block text-gray-700 text-sm flex justify-between">
+                      <span class="font-medium">Población:</span>
+                      <span class="font-mono text-base">{{ ciudad.poblacion | number }}</span>
+                    </span>
+                    <span class="block text-gray-700 text-sm flex justify-between">
+                      <span class="font-medium">Latitud:</span>
+                      <span>{{ ciudad.latitud }}</span>
+                    </span>
+                    <span class="block text-gray-700 text-sm flex justify-between">
+                      <span class="font-medium">Longitud:</span>
+                      <span>{{ ciudad.longitud }}</span>
+                    </span>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <!-- Acciones con los colores de la paleta -->
-            <div class="card-actions flex justify-between items-center p-4 border-t border-gray-800">
-              <!-- Botón de Calificar: Borde primario -->
-              <button class="text-sm px-4 py-2 rounded rounded-4xl border-2 border-[#0A4570] text-[#0A4570] font-semibold hover:bg-[#0A4570] hover:text-white transition-all duration-350 ease-in-out shadow-2xl hover:scale-105 active:scale-95">
-                CALIFICAR
-              </button> 
-              <!-- Botón de Favoritos: Fondo primario, hover oscuro (800) -->
-              <button class="text-sm px-4 py-2 rounded rounded-4xl bg-[#0999EE] text-[#DFF0FF] hover:text-[#045288] font-semibold hover:bg-white shadow-lg hover:scale-105 active:scale-95 hover:border-2 hover:border-[#045288] transition-all duration-350 ease-in-out">
-                FAVORITOS
-              </button>
+              <div class="card-actions flex justify-between items-center p-4 border-t border-gray-800">
+                <button class="text-sm px-4 py-2 rounded rounded-4xl border-2 border-[#0A4570] text-[#0A4570] font-semibold hover:bg-[#0A4570] hover:text-white transition-all duration-350 ease-in-out shadow-2xl hover:scale-105 active:scale-95">
+                  CALIFICAR
+                </button> 
+                <button class="text-sm px-4 py-2 rounded rounded-4xl bg-[#0999EE] text-[#DFF0FF] hover:text-[#045288] font-semibold hover:bg-white shadow-lg hover:scale-105 active:scale-95 hover:border-2 hover:border-[#045288] transition-all duration-350 ease-in-out">
+                  FAVORITOS
+                </button>
+              </div>
             </div>
+          }
+        </div>
+      } @else {
+        
+        @if (!estaCargando() && !error() && (nombre() || pais() || poblacion())) {
+          <div class="text-center text-[#EEEEEE] mt-4 bg-gradient-to-r from-red-500 to-red-400 p-8 rounded-xl shadow-lg border border-[#045288]">
+            <p class="text-xl font-medium">No se encontraron ciudades con esos criterios.</p>
           </div>
         }
-      </div>
-    } @else {
-      
-      <!-- Mensaje de No Resultados (solo si no está cargando y no hay error) -->
-      @if (!estaCargando() && !error() && terminoBusqueda().length > 0) {
-        <div class="text-center text-[#EEEEEE] mt-4 bg-gradient-to-r from-red-500 to-red-400 p-8 rounded-xl shadow-lg border border-[#045288]">
-          <p class="text-xl font-medium">No se encontraron ciudades para el término: </p>
-          <p class="text-3xl font-bold text-[#DDDDDD] mt-2">"{{ terminoBusqueda() }}"</p>
-        </div>
       }
     }
-  }
-</div>
+  </div>
 
 </div>
