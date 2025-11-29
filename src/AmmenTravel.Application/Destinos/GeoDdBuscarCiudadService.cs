@@ -42,13 +42,6 @@ namespace AmmenTravel.Application.ExternalServices
                 "limit=10"
             };
 
-            // GeoDB soporta el parámetro countryIds (códigos ISO). Lo añadimos si viene proporcionado.
-            // Nota: si el usuario pasa el nombre completo del país, se intentará filtrar posteriormente por nombre.
-            //if (!string.IsNullOrWhiteSpace(request.Pais))
-            //{
-            //    queryParams.Add($"namePrefix={Uri.EscapeDataString(request.Pais)}");
-            //}
-
             // Añadir filtro de población mínima si se indicó
             if (request.PoblacionMinima.HasValue && request.PoblacionMinima.Value > 0)
             {
@@ -70,7 +63,7 @@ namespace AmmenTravel.Application.ExternalServices
                 if (json?.Data == null)
                     return new CiudadResultadoDTO { Ciudades = new List<CiudadDTO>() };
 
-                // Convertir y aplicar filtrado adicional en memoria por si el parámetro Pais no es un código ISO
+            
                 var cities = json.Data.Select(c => new CiudadDTO
                 {
                     Nombre = c.City ?? string.Empty,
@@ -80,7 +73,7 @@ namespace AmmenTravel.Application.ExternalServices
                     Longitud = c.Longitude ?? 0
                 })
                 .Where(c =>
-                    // Filtrar por país si se indicó: aceptar coincidencia por inclusión (case-insensitive)
+                    // Filtrar por país si se indicó: aceptar coincidencia por inclusión
                     (string.IsNullOrWhiteSpace(request.Pais) ||
                         c.Pais.Contains(request.Pais, StringComparison.OrdinalIgnoreCase) ||
                         string.Equals(c.Pais, request.Pais, StringComparison.OrdinalIgnoreCase))
