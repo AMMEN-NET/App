@@ -93,7 +93,10 @@ public class AmmenTravelDbContext :
             b.Property(x => x.Nombre).IsRequired().HasMaxLength(200);
             b.Property(x => x.Pais).IsRequired().HasMaxLength(100);
             b.Property(x => x.Poblacion);
-            b.Property(x => x.FotoURL).HasMaxLength(1000);
+            b.Property(x => x.Latitud).IsRequired();
+            b.Property(x => x.Longitud).IsRequired();
+            b.Property(x => x.IdExterno).HasMaxLength(100);
+
         });
 
         builder.Entity<Opinion>(b =>

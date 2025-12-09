@@ -9,6 +9,8 @@ using Volo.Abp.Domain.Repositories;
 using Volo.Abp.Users;
 using Volo.Abp;
 using Microsoft.AspNetCore.Authorization;
+using AmmenTravel.InterfaceDestinoAppService; 
+using AmmenTravel.ExternalService;          
 
 namespace AmmenTravel.ListaDeFavoritos
 {
@@ -18,18 +20,20 @@ namespace AmmenTravel.ListaDeFavoritos
         private readonly IRepository<ListaFavorito, Guid> _listaRepository;
         private readonly IRepository<LineaListaFavorito, Guid> _lineaRepository;
         private readonly ICurrentUser _currentUser;
+        private readonly IDestinoAppService _destinoAppService;
 
         public ListaDeFavoritosAppService(
             IRepository<ListaFavorito, Guid> listaRepository,
             IRepository<LineaListaFavorito, Guid> lineaRepository,
-            ICurrentUser currentUser)
+            ICurrentUser currentUser,
+            IDestinoAppService destinoAppService) 
         {
             _listaRepository = listaRepository;
             _lineaRepository = lineaRepository;
             _currentUser = currentUser;
+            _destinoAppService = destinoAppService;
         }
 
-        // Crea o devuelve la lista de favoritos del usuario actual (lanza si no está autenticado)
         public async Task<ListaFavorito> GetOrCreateListaAsync()
         {
             if (!_currentUser.IsAuthenticated)
@@ -51,6 +55,7 @@ namespace AmmenTravel.ListaDeFavoritos
             return lista;
         }
 
+        // Este metodo sirve para agregar cuando YA tenemos el ID interno (manual)
         public async Task AgregarAFavoritosAsync(Guid destinoId)
         {
             var lista = await GetOrCreateListaAsync();
@@ -67,6 +72,18 @@ namespace AmmenTravel.ListaDeFavoritos
                 };
                 await _lineaRepository.InsertAsync(linea);
             }
+        }
+
+
+        // Este es el que llamará tu Frontend cuando el usuario de click en "Favorito" sobre un resultado de búsqueda en la API.
+        public async Task AgregarFavoritoDesdeBusquedaAsync(CiudadDTO ciudadExterna)
+        {
+            //   Delegamos al otro servicio la tarea de:
+            //    "Busca si este destino externo ya existe en la BD, si no, créalo. Nos devuelve el GUID interno."
+            var destinoId = await _destinoAppService.BuscarOCrearDestinoDesdeApiAsync(ciudadExterna);
+
+            //  Reutilizamos la lógica existente para crear la línea de favorito.
+            await AgregarAFavoritosAsync(destinoId);
         }
 
         public async Task EliminarDeFavoritosAsync(Guid destinoId)

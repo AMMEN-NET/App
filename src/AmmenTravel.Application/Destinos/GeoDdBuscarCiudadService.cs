@@ -70,7 +70,8 @@ namespace AmmenTravel.Application.ExternalServices
                     Pais = c.Country ?? string.Empty,
                     Poblacion = c.Population ?? 0,
                     Latitud = c.Latitude ?? 0,
-                    Longitud = c.Longitude ?? 0
+                    Longitud = c.Longitude ?? 0,
+                    GeoDBId = c.Id?.ToString() ?? string.Empty
                 })
                 .Where(c =>
                     // Filtrar por país si se indicó: aceptar coincidencia por inclusión
@@ -103,6 +104,7 @@ namespace AmmenTravel.Application.ExternalServices
             public int? Population { get; set; }
             public float? Latitude { get; set; }
             public float? Longitude { get; set; }
+            public int? Id { get; set; }   // Le agregue esto para poder saber si una ciudad estaba o no antes en la BD interna (Es el ID de la ciudad).
         }
     }
 }

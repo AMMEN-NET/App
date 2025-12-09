@@ -16,12 +16,18 @@ namespace AmmenTravel.Destinos
 
         public required int Poblacion { get; set; }
 
-        public required string FotoURL { get; set; }
-
         public required float Latitud { get; set; }
-        
+
         public required float Longitud { get; set; }
 
+        public string? IdExterno { get; set; } // Para guardar el ID de GeoDB
+
         /* NO HACE FALTA DECLARAR ID, CREATION TIME, NI LAST MODIFICATION TIME. AuditedAggregateRoot ya lo hace */
+
+        // --- ES OBLIGATORIO PARA PASAR EL ID ---
+        public DestinoTuristico(Guid id) : base(id) { }
+
+        // --- OBLIGATORIO PARA QUE EF CORE FUNCIONE ---
+        protected DestinoTuristico() { }
     }
 }

@@ -1,6 +1,6 @@
 ﻿using AmmenTravel.ListaDeFavoritos;
-using AmmenTravel.ListaDeFavoritos;
 using AmmenTravel.ListaFavoritos;
+using AmmenTravel.InterfaceDestinoAppService; 
 using NSubstitute;
 using Shouldly;
 using System;
@@ -24,6 +24,7 @@ namespace AmmenTravel.Favorito_Test
         private readonly IRepository<ListaFavorito, Guid> _listaRepo;
         private readonly IRepository<LineaListaFavorito, Guid> _lineaRepo;
         private readonly ICurrentUser _currentUser;
+        private readonly IDestinoAppService _destinoAppService; // <--- NUEVO: Variable para el mock
         private readonly ListaDeFavoritosAppService _service;
         private readonly Guid _userId = Guid.NewGuid();
 
@@ -32,10 +33,15 @@ namespace AmmenTravel.Favorito_Test
             _listaRepo = Substitute.For<IRepository<ListaFavorito, Guid>>();
             _lineaRepo = Substitute.For<IRepository<LineaListaFavorito, Guid>>();
             _currentUser = Substitute.For<ICurrentUser>();
+
+            // <--- NUEVO: Crear el mock del servicio de destinos
+            _destinoAppService = Substitute.For<IDestinoAppService>();
+
             _currentUser.IsAuthenticated.Returns(true);
             _currentUser.Id.Returns(_userId);
 
-            _service = new ListaDeFavoritosAppService(_listaRepo, _lineaRepo, _currentUser);
+            // <--- NUEVO: Pasamos _destinoAppService al constructor (ahora son 4 parámetros)
+            _service = new ListaDeFavoritosAppService(_listaRepo, _lineaRepo, _currentUser, _destinoAppService);
         }
 
         [Fact]
@@ -159,7 +165,7 @@ namespace AmmenTravel.Favorito_Test
         }
 
         [Fact]
-        public async Task ObtenerFavoritosAsync_ShouldReturn_AllDestinoIds()    // A chequear esto, no sé que tan bien estará
+        public async Task ObtenerFavoritosAsync_ShouldReturn_AllDestinoIds()
         {
             var lista = new ListaFavorito { UserId = _userId };
             var destinos = new List<Guid> { Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid() };
@@ -167,10 +173,6 @@ namespace AmmenTravel.Favorito_Test
 
             _listaRepo.FirstOrDefaultAsync(Arg.Any<Expression<Func<ListaFavorito, bool>>>())
                 .Returns(Task.FromResult(lista));
-
-            // CORRECCIÓN QUE SE HIZO:
-            // 1. Se usó Arg.Any<bool> y CancellationToken para coincidir con la firma.
-            // 2. Se sacó el (IList<LineaListaFavorito>) dentro del Task.FromResult.
 
             _lineaRepo.GetListAsync(
                     Arg.Any<Expression<Func<LineaListaFavorito, bool>>>(),
@@ -210,32 +212,6 @@ namespace AmmenTravel.Favorito_Test
             var noEsFav = await _service.EsFavoritoAsync(destinoNoExistente);
             noEsFav.ShouldBeFalse();
         }
-
-        /*                                                                              HAY QUE REVISAR ESTO
-        [Fact]
-        public async Task VaciarFavoritosAsync_ShouldDeleteAllLineas()
-        {
-            var lista = new ListaFavorito { UserId = _userId };
-            var lineas = new List<LineaListaFavorito>
-            {
-                new LineaListaFavorito { ListaFavoritoId = lista.Id, DestinoTuristicoId = Guid.NewGuid() },
-                new LineaListaFavorito { ListaFavoritoId = lista.Id, DestinoTuristicoId = Guid.NewGuid() },
-            };
-
-            _listaRepo.FirstOrDefaultAsync(Arg.Any<Expression<Func<ListaFavorito, bool>>>())
-                .Returns(Task.FromResult(lista));
-
-            _lineaRepo.GetListAsync(Arg.Any<Expression<Func<LineaListaFavorito, bool>>>())
-                .Returns(Task.FromResult((IList<LineaListaFavorito>)lineas));
-
-            await _service.VaciarFavoritosAsync();
-
-            foreach (var linea in lineas)
-            {
-                await _lineaRepo.Received(1).DeleteAsync(Arg.Is<LineaListaFavorito>(l => l == linea));
-            }
-        } 
-        */
 
         [Fact]
         public async Task ContarFavoritosAsync_ShouldReturnCountFromRepository()
