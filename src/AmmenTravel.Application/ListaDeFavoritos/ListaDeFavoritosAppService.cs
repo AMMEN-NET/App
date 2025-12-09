@@ -10,7 +10,9 @@ using Volo.Abp.Users;
 using Volo.Abp;
 using Microsoft.AspNetCore.Authorization;
 using AmmenTravel.InterfaceDestinoAppService; 
-using AmmenTravel.ExternalService;          
+using AmmenTravel.ExternalService;
+using AmmenTravel.Destinos;
+using AmmenTravel.Favoritos.FavoritosDTO;
 
 namespace AmmenTravel.ListaDeFavoritos
 {
@@ -21,17 +23,20 @@ namespace AmmenTravel.ListaDeFavoritos
         private readonly IRepository<LineaListaFavorito, Guid> _lineaRepository;
         private readonly ICurrentUser _currentUser;
         private readonly IDestinoAppService _destinoAppService;
+        private readonly IRepository<DestinoTuristico, Guid> _destinoRepository;
 
         public ListaDeFavoritosAppService(
-            IRepository<ListaFavorito, Guid> listaRepository,
-            IRepository<LineaListaFavorito, Guid> lineaRepository,
-            ICurrentUser currentUser,
-            IDestinoAppService destinoAppService) 
+        IRepository<ListaFavorito, Guid> listaRepository,
+        IRepository<LineaListaFavorito, Guid> lineaRepository,
+        ICurrentUser currentUser,
+        IDestinoAppService destinoAppService,
+        IRepository<DestinoTuristico, Guid> destinoRepository) // <--- Inyectamos aquí
         {
             _listaRepository = listaRepository;
             _lineaRepository = lineaRepository;
             _currentUser = currentUser;
             _destinoAppService = destinoAppService;
+            _destinoRepository = destinoRepository; // <--- Asignamos aquí
         }
 
         public async Task<ListaFavorito> GetOrCreateListaAsync()
@@ -99,13 +104,36 @@ namespace AmmenTravel.ListaDeFavoritos
             }
         }
 
-        public async Task<IList<Guid>> ObtenerFavoritosAsync()
+        // Cambiamos la firma para devolver List<FavoritoDto> en vez de IList<Guid>
+        public async Task<List<FavoritoDto>> ObtenerFavoritosAsync()
         {
             var lista = await GetOrCreateListaAsync();
 
+            // 1. Buscamos las líneas (los enlaces)
             var lineas = await _lineaRepository.GetListAsync(l => l.ListaFavoritoId == lista.Id);
 
-            return lineas.Select(l => l.DestinoTuristicoId).ToList();
+            if (!lineas.Any())
+            {
+                return new List<FavoritoDto>();
+            }
+
+            // 2. Extraemos solo los IDs de los destinos
+            var destinoIds = lineas.Select(l => l.DestinoTuristicoId).ToList();
+
+            // 3. Vamos a la tabla GRANDE de destinos a buscar los detalles (Nombre, Pais, etc)
+            var destinos = await _destinoRepository.GetListAsync(d => destinoIds.Contains(d.Id));
+
+            // 4. Mapeamos manual a nuestro nuevo DTO visual
+            return destinos.Select(d => new FavoritoDto
+            {
+                Id = d.Id,
+                Nombre = d.Nombre,
+                Pais = d.Pais,
+                Poblacion = d.Poblacion,
+                Latitud = d.Latitud,
+                Longitud = d.Longitud,
+                GeoDBId = d.IdExterno ?? ""
+            }).ToList();
         }
 
         public async Task<bool> EsFavoritoAsync(Guid destinoId)

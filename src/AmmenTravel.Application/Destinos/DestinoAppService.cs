@@ -9,6 +9,7 @@ using Volo.Abp.Domain.Repositories;
 using Microsoft.AspNetCore.Authorization;
 using AmmenTravel.Permissions;
 using AmmenTravel.Destinos;
+using Microsoft.AspNetCore.Mvc;
 
 namespace AmmenTravel.Destinos
 {
@@ -31,6 +32,7 @@ namespace AmmenTravel.Destinos
             _buscarCiudadService = buscarCiudadService;
         }
 
+        [HttpGet("buscar-ciudades")]
         public async Task<CiudadResultadoDTO> BuscarCiudadesAsync(CiudadBuscadaDTO request)
         {
             return await _buscarCiudadService.BuscarCiudadesAsync(request);

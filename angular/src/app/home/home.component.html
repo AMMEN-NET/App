@@ -110,8 +110,18 @@
                 <button class="text-sm px-4 py-2 rounded rounded-4xl border-2 border-[#0A4570] text-[#0A4570] font-semibold hover:bg-[#0A4570] hover:text-white transition-all duration-350 ease-in-out shadow-2xl hover:scale-105 active:scale-95">
                   CALIFICAR
                 </button> 
-                <button class="text-sm px-4 py-2 rounded rounded-4xl bg-[#0999EE] text-[#DFF0FF] hover:text-[#045288] font-semibold hover:bg-white shadow-lg hover:scale-105 active:scale-95 hover:border-2 hover:border-[#045288] transition-all duration-350 ease-in-out">
-                  FAVORITOS
+                <button 
+                  (click)="agregarAFavoritos(ciudad)"
+                  [disabled]="estaAgregando(ciudad.geoDBId)"
+                  class="text-sm px-4 py-2 rounded rounded-4xl bg-[#0999EE] text-[#DFF0FF] hover:text-[#045288] font-semibold hover:bg-white shadow-lg hover:scale-105 active:scale-95 hover:border-2 hover:border-[#045288] transition-all duration-350 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center gap-2">
+                  
+                  @if (estaAgregando(ciudad.geoDBId)) {
+                    <span class="animate-spin">◷</span>
+                    <span>Guardando...</span>
+                  } @else {
+                    <span>❤️</span>
+                    <span>FAVORITOS</span>
+                  }
                 </button>
               </div>
             </div>

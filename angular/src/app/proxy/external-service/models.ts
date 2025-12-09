@@ -8,6 +8,10 @@ export interface CiudadBuscadaDTO {
 export interface CiudadDTO {
   nombre: string;
   pais?: string;
+  poblacion: number;
+  latitud: number;
+  longitud: number;
+  geoDBId?: string;
 }
 
 export interface CiudadResultadoDTO {

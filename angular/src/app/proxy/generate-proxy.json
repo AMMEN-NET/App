@@ -903,6 +903,23 @@
                   }
                 },
                 {
+                  "name": "BuscarOCrearDestinoDesdeApiAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "input",
+                      "typeAsString": "AmmenTravel.ExternalService.CiudadDTO, AmmenTravel.Application.Contracts",
+                      "type": "AmmenTravel.ExternalService.CiudadDTO",
+                      "typeSimple": "AmmenTravel.ExternalService.CiudadDTO",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Guid",
+                    "typeSimple": "string"
+                  }
+                },
+                {
                   "name": "GetAsync",
                   "parametersOnMethod": [
                     {
@@ -1002,8 +1019,8 @@
             "BuscarCiudadesAsyncByRequest": {
               "uniqueName": "BuscarCiudadesAsyncByRequest",
               "name": "BuscarCiudadesAsync",
-              "httpMethod": "POST",
-              "url": "api/app/destino/buscar-ciudades",
+              "httpMethod": "GET",
+              "url": "buscar-ciudades",
               "supportedVersions": [],
               "parametersOnMethod": [
                 {
@@ -1018,10 +1035,71 @@
               "parameters": [
                 {
                   "nameOnMethod": "request",
-                  "name": "request",
+                  "name": "Nombre",
                   "jsonName": null,
-                  "type": "AmmenTravel.ExternalService.CiudadBuscadaDTO",
-                  "typeSimple": "AmmenTravel.ExternalService.CiudadBuscadaDTO",
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": "request"
+                },
+                {
+                  "nameOnMethod": "request",
+                  "name": "Pais",
+                  "jsonName": null,
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": "request"
+                },
+                {
+                  "nameOnMethod": "request",
+                  "name": "PoblacionMinima",
+                  "jsonName": null,
+                  "type": "System.Int32?",
+                  "typeSimple": "number?",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": "request"
+                }
+              ],
+              "returnValue": {
+                "type": "AmmenTravel.ExternalService.CiudadResultadoDTO",
+                "typeSimple": "AmmenTravel.ExternalService.CiudadResultadoDTO"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "AmmenTravel.InterfaceDestinoAppService.IDestinoAppService"
+            },
+            "BuscarOCrearDestinoDesdeApiAsyncByInput": {
+              "uniqueName": "BuscarOCrearDestinoDesdeApiAsyncByInput",
+              "name": "BuscarOCrearDestinoDesdeApiAsync",
+              "httpMethod": "POST",
+              "url": "api/app/destino/buscar-oCrear-destino-desde-api",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "input",
+                  "typeAsString": "AmmenTravel.ExternalService.CiudadDTO, AmmenTravel.Application.Contracts",
+                  "type": "AmmenTravel.ExternalService.CiudadDTO",
+                  "typeSimple": "AmmenTravel.ExternalService.CiudadDTO",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "input",
+                  "name": "input",
+                  "jsonName": null,
+                  "type": "AmmenTravel.ExternalService.CiudadDTO",
+                  "typeSimple": "AmmenTravel.ExternalService.CiudadDTO",
                   "isOptional": false,
                   "defaultValue": null,
                   "constraintTypes": null,
@@ -1030,10 +1108,10 @@
                 }
               ],
               "returnValue": {
-                "type": "AmmenTravel.ExternalService.CiudadResultadoDTO",
-                "typeSimple": "AmmenTravel.ExternalService.CiudadResultadoDTO"
+                "type": "System.Guid",
+                "typeSimple": "string"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": false,
               "implementFrom": "AmmenTravel.InterfaceDestinoAppService.IDestinoAppService"
             },
             "CreateAsyncByInput": {
@@ -1070,7 +1148,7 @@
                 "type": "AmmenTravel.DestinosDTO.guardarDestinoDTO",
                 "typeSimple": "AmmenTravel.DestinosDTO.guardarDestinoDTO"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": false,
               "implementFrom": "Volo.Abp.Application.Services.ICreateAppService<AmmenTravel.DestinosDTO.guardarDestinoDTO,AmmenTravel.DestinosDTO.CreateUpdateDestinoDTO>"
             },
             "UpdateAsyncByIdAndInput": {
@@ -1127,7 +1205,7 @@
                 "type": "AmmenTravel.DestinosDTO.guardarDestinoDTO",
                 "typeSimple": "AmmenTravel.DestinosDTO.guardarDestinoDTO"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": false,
               "implementFrom": "Volo.Abp.Application.Services.IUpdateAppService<AmmenTravel.DestinosDTO.guardarDestinoDTO,System.Guid,AmmenTravel.DestinosDTO.CreateUpdateDestinoDTO>"
             },
             "DeleteAsyncById": {
@@ -1164,7 +1242,7 @@
                 "type": "System.Void",
                 "typeSimple": "System.Void"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": false,
               "implementFrom": "Volo.Abp.Application.Services.IDeleteAppService<System.Guid>"
             },
             "GetAsyncById": {
@@ -1201,7 +1279,7 @@
                 "type": "AmmenTravel.DestinosDTO.guardarDestinoDTO",
                 "typeSimple": "AmmenTravel.DestinosDTO.guardarDestinoDTO"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": false,
               "implementFrom": "Volo.Abp.Application.Services.IReadOnlyAppService<AmmenTravel.DestinosDTO.guardarDestinoDTO,AmmenTravel.DestinosDTO.guardarDestinoDTO,System.Guid,Volo.Abp.Application.Dtos.PagedAndSortedResultRequestDto>"
             },
             "GetListAsyncByInput": {
@@ -1262,8 +1340,227 @@
                 "type": "Volo.Abp.Application.Dtos.PagedResultDto<AmmenTravel.DestinosDTO.guardarDestinoDTO>",
                 "typeSimple": "Volo.Abp.Application.Dtos.PagedResultDto<AmmenTravel.DestinosDTO.guardarDestinoDTO>"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": false,
               "implementFrom": "Volo.Abp.Application.Services.IReadOnlyAppService<AmmenTravel.DestinosDTO.guardarDestinoDTO,AmmenTravel.DestinosDTO.guardarDestinoDTO,System.Guid,Volo.Abp.Application.Dtos.PagedAndSortedResultRequestDto>"
+            }
+          }
+        },
+        "AmmenTravel.ListaDeFavoritos.ListaDeFavoritosAppService": {
+          "controllerName": "ListaDeFavoritos",
+          "controllerGroupName": "ListaDeFavoritos",
+          "isRemoteService": true,
+          "isIntegrationService": false,
+          "apiVersion": null,
+          "type": "AmmenTravel.ListaDeFavoritos.ListaDeFavoritosAppService",
+          "interfaces": [],
+          "actions": {
+            "GetOrCreateListaAsync": {
+              "uniqueName": "GetOrCreateListaAsync",
+              "name": "GetOrCreateListaAsync",
+              "httpMethod": "GET",
+              "url": "api/app/lista-de-favoritos/or-create-lista",
+              "supportedVersions": [],
+              "parametersOnMethod": [],
+              "parameters": [],
+              "returnValue": {
+                "type": "AmmenTravel.ListaFavoritos.ListaFavorito",
+                "typeSimple": "AmmenTravel.ListaFavoritos.ListaFavorito"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "AmmenTravel.ListaDeFavoritos.ListaDeFavoritosAppService"
+            },
+            "AgregarAFavoritosAsyncByDestinoId": {
+              "uniqueName": "AgregarAFavoritosAsyncByDestinoId",
+              "name": "AgregarAFavoritosAsync",
+              "httpMethod": "POST",
+              "url": "api/app/lista-de-favoritos/agregar-aFavoritos/{destinoId}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "destinoId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "destinoId",
+                  "name": "destinoId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "AmmenTravel.ListaDeFavoritos.ListaDeFavoritosAppService"
+            },
+            "AgregarFavoritoDesdeBusquedaAsyncByCiudadExterna": {
+              "uniqueName": "AgregarFavoritoDesdeBusquedaAsyncByCiudadExterna",
+              "name": "AgregarFavoritoDesdeBusquedaAsync",
+              "httpMethod": "POST",
+              "url": "api/app/lista-de-favoritos/agregar-favorito-desde-busqueda",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "ciudadExterna",
+                  "typeAsString": "AmmenTravel.ExternalService.CiudadDTO, AmmenTravel.Application.Contracts",
+                  "type": "AmmenTravel.ExternalService.CiudadDTO",
+                  "typeSimple": "AmmenTravel.ExternalService.CiudadDTO",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "ciudadExterna",
+                  "name": "ciudadExterna",
+                  "jsonName": null,
+                  "type": "AmmenTravel.ExternalService.CiudadDTO",
+                  "typeSimple": "AmmenTravel.ExternalService.CiudadDTO",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "AmmenTravel.ListaDeFavoritos.ListaDeFavoritosAppService"
+            },
+            "EliminarDeFavoritosAsyncByDestinoId": {
+              "uniqueName": "EliminarDeFavoritosAsyncByDestinoId",
+              "name": "EliminarDeFavoritosAsync",
+              "httpMethod": "POST",
+              "url": "api/app/lista-de-favoritos/eliminar-de-favoritos/{destinoId}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "destinoId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "destinoId",
+                  "name": "destinoId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "AmmenTravel.ListaDeFavoritos.ListaDeFavoritosAppService"
+            },
+            "ObtenerFavoritosAsync": {
+              "uniqueName": "ObtenerFavoritosAsync",
+              "name": "ObtenerFavoritosAsync",
+              "httpMethod": "POST",
+              "url": "api/app/lista-de-favoritos/obtener-favoritos",
+              "supportedVersions": [],
+              "parametersOnMethod": [],
+              "parameters": [],
+              "returnValue": {
+                "type": "System.Collections.Generic.List<AmmenTravel.Favoritos.FavoritosDTO.FavoritoDto>",
+                "typeSimple": "[AmmenTravel.Favoritos.FavoritosDTO.FavoritoDto]"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "AmmenTravel.ListaDeFavoritos.ListaDeFavoritosAppService"
+            },
+            "EsFavoritoAsyncByDestinoId": {
+              "uniqueName": "EsFavoritoAsyncByDestinoId",
+              "name": "EsFavoritoAsync",
+              "httpMethod": "POST",
+              "url": "api/app/lista-de-favoritos/es-favorito/{destinoId}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "destinoId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "destinoId",
+                  "name": "destinoId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Boolean",
+                "typeSimple": "boolean"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "AmmenTravel.ListaDeFavoritos.ListaDeFavoritosAppService"
+            },
+            "VaciarFavoritosAsync": {
+              "uniqueName": "VaciarFavoritosAsync",
+              "name": "VaciarFavoritosAsync",
+              "httpMethod": "POST",
+              "url": "api/app/lista-de-favoritos/vaciar-favoritos",
+              "supportedVersions": [],
+              "parametersOnMethod": [],
+              "parameters": [],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "AmmenTravel.ListaDeFavoritos.ListaDeFavoritosAppService"
+            },
+            "ContarFavoritosAsync": {
+              "uniqueName": "ContarFavoritosAsync",
+              "name": "ContarFavoritosAsync",
+              "httpMethod": "POST",
+              "url": "api/app/lista-de-favoritos/contar-favoritos",
+              "supportedVersions": [],
+              "parametersOnMethod": [],
+              "parameters": [],
+              "returnValue": {
+                "type": "System.Int32",
+                "typeSimple": "number"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "AmmenTravel.ListaDeFavoritos.ListaDeFavoritosAppService"
             }
           }
         },
@@ -3654,6 +3951,42 @@
           "minimum": null,
           "maximum": null,
           "regex": null
+        },
+        {
+          "name": "Latitud",
+          "jsonName": null,
+          "type": "System.Single",
+          "typeSimple": "number",
+          "isRequired": true,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Longitud",
+          "jsonName": null,
+          "type": "System.Single",
+          "typeSimple": "number",
+          "isRequired": true,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "IdExterno",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": true,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
         }
       ]
     },
@@ -3711,6 +4044,30 @@
           "minimum": null,
           "maximum": null,
           "regex": null
+        },
+        {
+          "name": "Latitud",
+          "jsonName": null,
+          "type": "System.Single",
+          "typeSimple": "number",
+          "isRequired": true,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Longitud",
+          "jsonName": null,
+          "type": "System.Single",
+          "typeSimple": "number",
+          "isRequired": true,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
         }
       ]
     },
@@ -3729,6 +4086,30 @@
           "isRequired": true,
           "minLength": 0,
           "maxLength": 128,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Pais",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "PoblacionMinima",
+          "jsonName": null,
+          "type": "System.Int32?",
+          "typeSimple": "number?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
           "minimum": null,
           "maximum": null,
           "regex": null
@@ -3765,6 +4146,54 @@
           "minimum": null,
           "maximum": null,
           "regex": null
+        },
+        {
+          "name": "Poblacion",
+          "jsonName": null,
+          "type": "System.Int32",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Latitud",
+          "jsonName": null,
+          "type": "System.Single",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Longitud",
+          "jsonName": null,
+          "type": "System.Single",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "GeoDBId",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
         }
       ]
     },
@@ -3780,6 +4209,108 @@
           "jsonName": null,
           "type": "[AmmenTravel.ExternalService.CiudadDTO]",
           "typeSimple": "[AmmenTravel.ExternalService.CiudadDTO]",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "AmmenTravel.Favoritos.FavoritosDTO.FavoritoDto": {
+      "baseType": "Volo.Abp.Application.Dtos.EntityDto<System.Guid>",
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "Nombre",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Pais",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Poblacion",
+          "jsonName": null,
+          "type": "System.Int32",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Latitud",
+          "jsonName": null,
+          "type": "System.Single",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Longitud",
+          "jsonName": null,
+          "type": "System.Single",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "GeoDBId",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "AmmenTravel.ListaFavoritos.ListaFavorito": {
+      "baseType": "Volo.Abp.Domain.Entities.Auditing.FullAuditedEntity<System.Guid>",
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "UserId",
+          "jsonName": null,
+          "type": "System.Guid",
+          "typeSimple": "string",
           "isRequired": false,
           "minLength": null,
           "maxLength": null,
@@ -6737,6 +7268,154 @@
           "jsonName": null,
           "type": "System.Boolean",
           "typeSimple": "boolean",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "Volo.Abp.Domain.Entities.Auditing.AuditedEntity<T0>": {
+      "baseType": "Volo.Abp.Domain.Entities.Auditing.CreationAuditedEntity<TKey>",
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": [
+        "TKey"
+      ],
+      "properties": [
+        {
+          "name": "LastModificationTime",
+          "jsonName": null,
+          "type": "System.DateTime?",
+          "typeSimple": "string?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "LastModifierId",
+          "jsonName": null,
+          "type": "System.Guid?",
+          "typeSimple": "string?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "Volo.Abp.Domain.Entities.Auditing.CreationAuditedEntity<T0>": {
+      "baseType": "Volo.Abp.Domain.Entities.Entity<TKey>",
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": [
+        "TKey"
+      ],
+      "properties": [
+        {
+          "name": "CreationTime",
+          "jsonName": null,
+          "type": "System.DateTime",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "CreatorId",
+          "jsonName": null,
+          "type": "System.Guid?",
+          "typeSimple": "string?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "Volo.Abp.Domain.Entities.Auditing.FullAuditedEntity<T0>": {
+      "baseType": "Volo.Abp.Domain.Entities.Auditing.AuditedEntity<TKey>",
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": [
+        "TKey"
+      ],
+      "properties": [
+        {
+          "name": "IsDeleted",
+          "jsonName": null,
+          "type": "System.Boolean",
+          "typeSimple": "boolean",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "DeleterId",
+          "jsonName": null,
+          "type": "System.Guid?",
+          "typeSimple": "string?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "DeletionTime",
+          "jsonName": null,
+          "type": "System.DateTime?",
+          "typeSimple": "string?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "Volo.Abp.Domain.Entities.Entity": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": []
+    },
+    "Volo.Abp.Domain.Entities.Entity<T0>": {
+      "baseType": "Volo.Abp.Domain.Entities.Entity",
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": [
+        "TKey"
+      ],
+      "properties": [
+        {
+          "name": "Id",
+          "jsonName": null,
+          "type": "TKey",
+          "typeSimple": "TKey",
           "isRequired": false,
           "minLength": null,
           "maxLength": null,
