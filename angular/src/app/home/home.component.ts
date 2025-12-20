@@ -5,10 +5,9 @@ import { ToasterService } from '@abp/ng.theme.shared';
 
 // PROXIES
 import { DestinoService } from '../proxy/destinos';
-// Asegúrate de que el nombre de la clase del servicio sea correcto. 
-// Por defecto ABP suele ponerle 'AppService' al final (ej: ListaDeFavoritosAppService)
 import { ListaDeFavoritosService } from '../proxy/lista-de-favoritos'; 
 import { CiudadBuscadaDTO, CiudadResultadoDTO, CiudadDTO } from '../proxy/external-service/models';
+import { ConfigStateService } from '@abp/ng.core'; 
 
 @Component({
   selector: 'app-home',
@@ -23,6 +22,7 @@ export class HomeComponent {
   private readonly destinoService = inject(DestinoService);
   private readonly toaster = inject(ToasterService);
   private readonly listaFavoritosService = inject(ListaDeFavoritosService);
+  private configState = inject(ConfigStateService);
 
   // --- SEÑALES DE INPUTS (Búsqueda) ---
   public nombre = signal<string>('');
@@ -34,9 +34,16 @@ export class HomeComponent {
   public estaCargando = signal<boolean>(false);
   public error = signal<string | null>(null);
 
-  // --- ¡FALTABA ESTO! SEÑAL PARA CONTROLAR QUÉ BOTONES ESTÁN CARGANDO ---
-  // Usamos un Set para guardar los IDs de las ciudades que se están guardando en este momento
+  // --- SEÑAL PARA CONTROLAR QUÉ BOTONES ESTÁN CARGANDO ---
   public favoritosEnProceso = signal<Set<string>>(new Set());
+
+  get userName(): string {
+    // Busca el usuario actual en el estado de ABP
+    const currentUser = this.configState.getOne('currentUser');
+    
+    // Si existe y tiene nombre, lo devuelve. Si no, devuelve 'Viajero'
+    return currentUser?.name || currentUser?.userName || 'Viajero';
+  }
 
   /**
    * Llama al servicio para buscar ciudades
