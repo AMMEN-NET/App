@@ -18,6 +18,10 @@ namespace AmmenTravel.Destinos
 
         public required string FotoURL { get; set; }
 
+        public required float Latitud { get; set; }
+        
+        public required float Longitud { get; set; }
+
         /* NO HACE FALTA DECLARAR ID, CREATION TIME, NI LAST MODIFICATION TIME. AuditedAggregateRoot ya lo hace */
     }
 }

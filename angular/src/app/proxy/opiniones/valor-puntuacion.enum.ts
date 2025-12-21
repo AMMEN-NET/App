@@ -1,0 +1,11 @@
+import { mapEnumToOptions } from '@abp/ng.core';
+
+export enum ValorPuntuacion {
+  Uno = 1,
+  Dos = 2,
+  Tres = 3,
+  Cuatro = 4,
+  Cinco = 5,
+}
+
+export const valorPuntuacionOptions = mapEnumToOptions(ValorPuntuacion);
