@@ -19,6 +19,7 @@ using System;
 using System.Linq;
 using System.Reflection;
 using AmmenTravel.Common;
+using AmmenTravel.ListaFavoritos;
 
 namespace AmmenTravel.EntityFrameworkCore;
 
@@ -42,6 +43,8 @@ public class AmmenTravelDbContext :
     public DbSet<IdentityLinkUser> LinkUsers { get; set; }
     public DbSet<IdentityUserDelegation> UserDelegations { get; set; }
     public DbSet<IdentitySession> Sessions { get; set; }
+    public DbSet<ListaFavorito> ListasFavoritos { get; set; }
+    public DbSet<LineaListaFavorito> LineasListasFavoritos { get; set; }
 
     #endregion
 
@@ -90,7 +93,10 @@ public class AmmenTravelDbContext :
             b.Property(x => x.Nombre).IsRequired().HasMaxLength(200);
             b.Property(x => x.Pais).IsRequired().HasMaxLength(100);
             b.Property(x => x.Poblacion);
-            b.Property(x => x.FotoURL).HasMaxLength(1000);
+            b.Property(x => x.Latitud).IsRequired();
+            b.Property(x => x.Longitud).IsRequired();
+            b.Property(x => x.IdExterno).HasMaxLength(100);
+
         });
 
         builder.Entity<Opinion>(b =>
@@ -101,6 +107,33 @@ public class AmmenTravelDbContext :
             b.Property(x => x.Comentario).IsRequired().HasMaxLength(2000);
             b.Property(x => x.DestinoTuristicoId).IsRequired();
             b.Property(x => x.UserId).IsRequired();
+        });
+
+        /* Configuración de LISTA DE FAVORITOS (Contenedor) */
+        builder.Entity<ListaFavorito>(b =>
+        {
+            b.ToTable(AmmenTravelConsts.DbTablePrefix + "ListasFavoritos", AmmenTravelConsts.DbSchema);
+            b.ConfigureByConvention();
+            // Como es única por usuario, EF ya usa el UserId por la interfaz IUserOwned
+        });
+
+        /* Configuración de LINEAS DE FAVORITOS */
+        builder.Entity<LineaListaFavorito>(b =>
+        {
+            b.ToTable(AmmenTravelConsts.DbTablePrefix + "LineasListasFavoritos", AmmenTravelConsts.DbSchema);
+            b.ConfigureByConvention();
+
+            // RELACIÓN 1: Una línea pertenece a UNA Lista
+            b.HasOne(x => x.ListaFavorito)
+                .WithMany() // Una lista tiene muchas líneas (aunque no lo definamos en la clase Lista, EF lo entiende)
+                .HasForeignKey(x => x.ListaFavoritoId)
+                .OnDelete(DeleteBehavior.Cascade); // IMPORTANTE: Si un día borras la lista, se borran las líneas.
+
+            // RELACIÓN 2: Una línea apunta a UN Destino
+            b.HasOne(x => x.DestinoTuristico)
+                .WithMany()
+                .HasForeignKey(x => x.DestinoTuristicoId)
+                .OnDelete(DeleteBehavior.Cascade); // Si borras el destino (ej. París), desaparece de los favoritos de todos.
         });
 
         /* Filtro global para entidades que implementen IUserOwned */

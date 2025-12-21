@@ -2,7 +2,7 @@ import { RestService, Rest } from '@abp/ng.core';
 import type { PagedAndSortedResultRequestDto, PagedResultDto } from '@abp/ng.core';
 import { Injectable } from '@angular/core';
 import type { CreateUpdateDestinoDTO, guardarDestinoDTO } from '../destinos-dto/models';
-import type { CiudadBuscadaDTO, CiudadResultadoDTO } from '../external-service/models';
+import type { CiudadBuscadaDTO, CiudadDTO, CiudadResultadoDTO } from '../external-service/models';
 
 @Injectable({
   providedIn: 'root',
@@ -13,9 +13,19 @@ export class DestinoService {
 
   buscarCiudades = (request: CiudadBuscadaDTO, config?: Partial<Rest.Config>) =>
     this.restService.request<any, CiudadResultadoDTO>({
+      method: 'GET',
+      url: '/buscar-ciudades',
+      params: { nombre: request.nombre, pais: request.pais, poblacionMinima: request.poblacionMinima },
+    },
+    { apiName: this.apiName,...config });
+  
+
+  buscarOCrearDestinoDesdeApi = (input: CiudadDTO, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, string>({
       method: 'POST',
-      url: '/api/app/destino/buscar-ciudades',
-      body: request,
+      responseType: 'text',
+      url: '/api/app/destino/buscar-oCrear-destino-desde-api',
+      body: input,
     },
     { apiName: this.apiName,...config });
   

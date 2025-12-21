@@ -10,6 +10,8 @@ namespace AmmenTravel.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            // COMENTADO PARA EVITAR ERROR: Las columnas ya existen en la BD.
+            /*
             migrationBuilder.AddColumn<float>(
                 name: "Latitud",
                 table: "AppDestinos",
@@ -23,6 +25,7 @@ namespace AmmenTravel.Migrations
                 type: "real",
                 nullable: false,
                 defaultValue: 0f);
+            */
         }
 
         /// <inheritdoc />

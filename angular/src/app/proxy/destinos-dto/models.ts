@@ -5,6 +5,9 @@ export interface CreateUpdateDestinoDTO {
   pais: string;
   poblacion: number;
   fotoURL: string;
+  latitud: number;
+  longitud: number;
+  idExterno: string;
 }
 
 export interface guardarDestinoDTO extends AuditedEntityDto<string> {
@@ -12,4 +15,6 @@ export interface guardarDestinoDTO extends AuditedEntityDto<string> {
   pais: string;
   poblacion: number;
   fotoURL: string;
+  latitud: number;
+  longitud: number;
 }

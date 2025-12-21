@@ -29,6 +29,9 @@ namespace AmmenTravel.DestinosDTO
         [Required]
         public float Longitud { get; set; }
 
+        [Required]
+        public string? IdExterno { get; set; } // Para guardar el ID de GeoDB
+
     }
 
 

@@ -42,13 +42,6 @@ namespace AmmenTravel.Application.ExternalServices
                 "limit=10"
             };
 
-            // GeoDB soporta el parámetro countryIds (códigos ISO). Lo añadimos si viene proporcionado.
-            // Nota: si el usuario pasa el nombre completo del país, se intentará filtrar posteriormente por nombre.
-            //if (!string.IsNullOrWhiteSpace(request.Pais))
-            //{
-            //    queryParams.Add($"namePrefix={Uri.EscapeDataString(request.Pais)}");
-            //}
-
             // Añadir filtro de población mínima si se indicó
             if (request.PoblacionMinima.HasValue && request.PoblacionMinima.Value > 0)
             {
@@ -70,17 +63,18 @@ namespace AmmenTravel.Application.ExternalServices
                 if (json?.Data == null)
                     return new CiudadResultadoDTO { Ciudades = new List<CiudadDTO>() };
 
-                // Convertir y aplicar filtrado adicional en memoria por si el parámetro Pais no es un código ISO
+            
                 var cities = json.Data.Select(c => new CiudadDTO
                 {
                     Nombre = c.City ?? string.Empty,
                     Pais = c.Country ?? string.Empty,
                     Poblacion = c.Population ?? 0,
                     Latitud = c.Latitude ?? 0,
-                    Longitud = c.Longitude ?? 0
+                    Longitud = c.Longitude ?? 0,
+                    GeoDBId = c.Id?.ToString() ?? string.Empty
                 })
                 .Where(c =>
-                    // Filtrar por país si se indicó: aceptar coincidencia por inclusión (case-insensitive)
+                    // Filtrar por país si se indicó: aceptar coincidencia por inclusión
                     (string.IsNullOrWhiteSpace(request.Pais) ||
                         c.Pais.Contains(request.Pais, StringComparison.OrdinalIgnoreCase) ||
                         string.Equals(c.Pais, request.Pais, StringComparison.OrdinalIgnoreCase))
@@ -110,6 +104,7 @@ namespace AmmenTravel.Application.ExternalServices
             public int? Population { get; set; }
             public float? Latitude { get; set; }
             public float? Longitude { get; set; }
+            public int? Id { get; set; }   // Le agregue esto para poder saber si una ciudad estaba o no antes en la BD interna (Es el ID de la ciudad).
         }
     }
 }

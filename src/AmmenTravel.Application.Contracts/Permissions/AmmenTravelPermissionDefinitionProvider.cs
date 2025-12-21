@@ -1,22 +1,24 @@
 using AmmenTravel.Localization;
 using Volo.Abp.Authorization.Permissions;
 using Volo.Abp.Localization;
-using Volo.Abp.MultiTenancy;
 
-namespace AmmenTravel.Permissions;
-
-public class AmmenTravelPermissionDefinitionProvider : PermissionDefinitionProvider
+namespace AmmenTravel.Permissions
 {
-    public override void Define(IPermissionDefinitionContext context)
+    public class AmmenTravelPermissionDefinitionProvider : PermissionDefinitionProvider
     {
-        var myGroup = context.AddGroup(AmmenTravelPermissions.GroupName);
+        public override void Define(IPermissionDefinitionContext context)
+        {
+            var myGroup = context.AddGroup(AmmenTravelPermissions.GroupName, L("Permission:AmmenTravel"));
 
-        //Define your own permissions here. Example:
-        //myGroup.AddPermission(AmmenTravelPermissions.MyPermission1, L("Permission:MyPermission1"));
-    }
+            var destinosPermission = myGroup.AddPermission(AmmenTravelPermissions.Destinos.Default, L("Permission:Destinos"));
+            destinosPermission.AddChild(AmmenTravelPermissions.Destinos.Create, L("Permission:Destinos.Create"));
+            destinosPermission.AddChild(AmmenTravelPermissions.Destinos.Edit, L("Permission:Destinos.Edit"));
+            destinosPermission.AddChild(AmmenTravelPermissions.Destinos.Delete, L("Permission:Destinos.Delete"));
+        }
 
-    private static LocalizableString L(string name)
-    {
-        return LocalizableString.Create<AmmenTravelResource>(name);
+        private static LocalizableString L(string name)
+        {
+            return LocalizableString.Create<AmmenTravelResource>(name);
+        }
     }
 }
