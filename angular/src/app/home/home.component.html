@@ -1,321 +1,131 @@
-<div class="row mb-3">
-  <div class="col-xl-6 col-12 d-flex">
-    <div class="card h-lg-100 w-100 overflow-hidden">
-      <div class="card-body">
-        <div class="starting-content pe-5">
-          @if(!hasLoggedIn){
-          <h3>Welcome</h3>
-          <p class="lead text-muted mb-2">
-            {{ '::LongWelcomeMessage' | abpLocalization }}
-          </p>
-          <a (click)="login()" class="px-4 btn btn-primary mb-4" role="button">
-            <i class="fa fa-sign-in"></i>
-            {{ 'AbpAccount::Login' | abpLocalization }}
-          </a>
-          }
+<div class="container mx-auto p-8">
 
-          <h4>Getting Started</h4>
-          <p class="lead text-muted mb-2">
-            Learn how to create and run a new web application using the application startup
-            template.
-          </p>
-          <a
-            href="https://abp.io/docs/latest/getting-started"
-            class="btn btn-brand mb-4"
-            target="_blank"
-          >
-            Getting Started
-          </a>
+  <section class="flex flex-col items-center justify-center p-6 sm:p-8 rounded-xl bg-l border border-[#045288] text-white bg-gradient-to-r from-[#045288]  to-[#0079CC]">
+  
+    <h2 class="text-3xl font-extrabold mb-1">
+      <span class="text-[#DFF0FF]">Buscar ciudad</span>
+    </h2>
+    <p class="mt-2 text-center text-[#DFF0FF] text-opacity-80">
+      ¡ Anímate a buscar y visitar ciudades de 
+      <span class="font-bold text-yellow-300">todo el mundo</span> !
+    </p>
+  
+    <div class="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-2 mt-6 w-full gap-2">
+      
+      <input 
+        type="text" 
+        placeholder="Ingrese la ciudad" 
+        class="flex-grow w-full p-3 border border-[#0060A5] rounded rounded-full focus:outline-none focus:ring-2 focus:ring-[#0999EE] text-gray-900 text-xl bg-white placeholder-gray-600 shadow-inner" 
+        [ngModel]="nombre()" 
+        (ngModelChange)="nombre.set($event)"
+        (keyup.enter)="buscarCiudades()"
+      />
 
-          <h4>Web Application Development Tutorial</h4>
-          <p class="lead text-muted mb-2">
-            Learn how to build an ABP based web application named Acme.BookStore.
-          </p>
-          <a
-            href="https://abp.io/docs/latest/tutorials/book-store/part-01?UI=NG&DB=EF"
-            class="btn btn-brand mb-4"
-            target="_blank"
-          >
-            Explore Tutorial
-          </a>
-        </div>
-        <img class="card-bg-image" src="assets/images/getting-started/bg-01.png" />
-      </div>
-    </div>
-  </div>
-  <div class="col-xl-3 col-md-6 d-flex">
-    <div class="row">
-      <div class="col-12 d-flex">
-        <div class="card overflow-hidden mb-3">
-          <div class="card-body d-flex flex-column">
-            <div class="abp-support abp-logo mb-2"></div>
-            <p class="text-muted mb-2">
-              You can check for similar problems and solutions, or open a new topic to discuss your
-              specific issue.
-            </p>
-            <a
-              class="btn btn-brand soft w-50"
-              href="https://abp.io/support/questions"
-              target="_blank"
-            >
-              Visit Support
-            </a>
-            <img
-              style="margin-bottom: -24px"
-              class="w-100 mt-auto"
-              src="assets/images/getting-started/img-support.png"
-            />
-          </div>
-        </div>
-      </div>
-      <div class="col-12 d-flex">
-        <div class="card h-md-100 overflow-hidden">
-          <div class="card-body d-flex flex-column">
-            <div class="abp-blog abp-logo mb-2"></div>
-            <p class="text-muted mb-2">
-              You can find content on .NET development, cross-platform, ASP.NET application
-              templates, ABP-related news, and more.
-            </p>
-            <a
-              class="btn btn-brand soft w-50"
-              href="https://abp.io/blog"
-              target="_blank"
-            >
-              Visit Blog
-            </a>
-            <img
-              style="margin-bottom: -24px"
-              class="w-100 mt-auto"
-              src="assets/images/getting-started/img-blog.png"
-            />
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-  <div class="col-xl-3 col-md-6 d-flex">
-    <div class="card h-100 overflow-hidden">
-      <div class="card-body">
-        <div class="abp-community abp-logo mb-2"></div>
-        <p class="lead text-muted">
-          A unique community platform for <span class="fw-bold">ABP Lovers!</span>
-        </p>
-        <p class="text-muted mb-2">
-          Explore all ABP users' experiences with the ABP Framework, discover articles and videos on
-          how to use ABP, and join raffles for a chance to win surprise gifts!
-        </p>
-        <a
-          class="btn btn-brand soft mb-3"
-          href="https://abp.io/community/"
-          target="_blank"
-        >
-          Join ABP Community
-        </a>
-      </div>
-      <img class="mt-3 w-100" src="assets/images/getting-started/img-community.png" />
-    </div>
-  </div>
-</div>
+      <input 
+        type="text" 
+        placeholder="Ingrese el país" 
+        class="flex-grow w-full p-3 border border-[#0060A5] rounded rounded-full focus:outline-none focus:ring-2 focus:ring-[#0999EE] text-gray-900 text-xl bg-white placeholder-gray-600 shadow-inner" 
+        [ngModel]="pais()"
+        (ngModelChange)="pais.set($event)"
+        (keyup.enter)="buscarCiudades()"
+      />
 
-<div class="row">
-  <div class="col-xl-3 col-lg-4">
-    <div class="card">
-      <div class="card-header">
-        <div class="card-title text-body">More from ABP.IO</div>
-      </div>
-      <div class="card-body pt-0">
-        <div>
-          <table class="table mb-0">
-            <tbody>
-              <tr>
-                <td class="ps-0 d-flex">
-                  <div
-                    class="rounded-circle me-2 flex-center bg-brand soft"
-                    style="width: 20px; height: 20px"
-                  >
-                    <i class="bi bi-check fs-4"></i>
-                  </div>
-                  <div>Latest Release Logs</div>
-                </td>
-                <td class="text-end pe-0 opacity-25">
-                  <a href="https://github.com/abpframework/abp/releases" target="_blank">
-                    <i class="fa fa-external-link text-dark"></i>
-                  </a>
-                </td>
-              </tr>
-              <tr>
-                <td class="ps-0 d-flex">
-                  <div
-                    class="rounded-circle me-2 flex-center bg-brand soft"
-                    style="width: 20px; height: 20px"
-                  >
-                    <i class="bi bi-check fs-4"></i>
-                  </div>
-                  <div>Video Courses</div>
-                </td>
-                <td class="text-end pe-0 opacity-25">
-                  <a href="https://abp.io/video-courses/essentials" target="_blank">
-                    <i class="fa fa-external-link text-dark"></i>
-                  </a>
-                </td>
-              </tr>
-              <tr>
-                <td class="ps-0 d-flex">
-                  <div
-                    class="rounded-circle me-2 flex-center bg-brand soft"
-                    style="width: 20px; height: 20px"
-                  >
-                    <i class="bi bi-check fs-4"></i>
-                  </div>
-                  <div>Samples</div>
-                </td>
-                <td class="text-end pe-0 opacity-25">
-                  <a href="https://abp.io/docs/latest/Samples/Index" target="_blank">
-                    <i class="fa fa-external-link text-dark"></i>
-                  </a>
-                </td>
-              </tr>
-              <tr>
-                <td class="ps-0 d-flex">
-                  <div
-                    class="rounded-circle me-2 flex-center bg-brand soft"
-                    style="width: 20px; height: 20px"
-                  >
-                    <i class="bi bi-check fs-4"></i>
-                  </div>
-                  <div>Books</div>
-                </td>
-                <td class="text-end pe-0 opacity-25">
-                  <a href="https://abp.io/books" target="_blank">
-                    <i class="fa fa-external-link text-dark"></i>
-                  </a>
-                </td>
-              </tr>
-              <tr>
-                <td class="ps-0 d-flex border-bottom-0">
-                  <div
-                    class="rounded-circle me-2 flex-center bg-brand soft"
-                    style="width: 20px; height: 20px"
-                  >
-                    <i class="bi bi-check fs-4"></i>
-                  </div>
-                  <div>FAQ</div>
-                </td>
-                <td class="text-end pe-0 opacity-25 border-bottom-0">
-                  <a href="https://abp.io/faq" target="_blank">
-                    <i class="fa fa-external-link text-dark"></i>
-                  </a>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
+      <input 
+        type="number" 
+        placeholder="Indique la población mínima" 
+        class="flex-grow w-full p-3 border border-[#0060A5] rounded rounded-full focus:outline-none focus:ring-2 focus:ring-[#0999EE] text-gray-900 text-xl bg-white placeholder-gray-600 shadow-inner" 
+        [ngModel]="poblacion()"
+        (ngModelChange)="poblacion.set($event)"
+        (keyup.enter)="buscarCiudades()"
+      />
+      
+      <button
+        (click)="buscarCiudades()"
+        [disabled]="estaCargando()"
+        class="flex items-center justify-center min-w-[120px] px-5 py-2 text-white rounded rounded-xl font-bolder transition-all duration-300 
+              bg-[#0A4570] 
+              disabled:opacity-40 disabled:cursor-not-allowed 
+              hover:scale-105 active:scale-95 
+              shadow-md drop-shadow-[#0999EE]/50 hover:shadow-lg hover:shadow-[#0060A5]/60"
+      >
+        @if (estaCargando()) {
+          <span class="animate-spin mr-2">◷</span>
+          <span>...</span>
+        } @else {
+          <span class="text-xl">Buscar</span>
+        }
+      </button>
     </div>
-  </div>
-  <div class="col-xl-6 col-lg-8 d-flex">
-    <div class="card">
-      <div class="card-body d-flex">
-        <div class="row align-items-center">
-          <div class="col-md-8">
-            <p class="text-muted mb-0">THE OFFICIAL GUIDE</p>
-            <h3>Mastering ABP Framework</h3>
-            <p class="text-muted">
-              Written by the creator of the ABP Framework, this book will help you gain a complete
-              understanding of the framework and modern web application development techniques.
-            </p>
-            <div class="d-md-flex mb-2 mb-md-0">
-              <a
-                href="https://www.amazon.com/gp/product/B097Z2DM8Q"
-                target="_blank"
-                class="btn btn-primary soft me-md-2 mb-2 mb-md-0"
-              >
-                Buy on Amazon US
-              </a>
-              <a
-                href="https://www.packtpub.com/product/mastering-abp-framework/9781801079242"
-                target="_blank"
-                class="btn btn-primary soft mb-2 mb-md-0"
-              >
-                Buy on PACKT
-              </a>
+
+    <p class="mt-3 text-sm text-[#B8E2FF] text-opacity-60">
+      Completa al menos un campo para iniciar la búsqueda.
+    </p>
+
+  </section>
+
+  <div class="results-container mt-8">
+  
+    @if (error(); as msg) {
+      <div class="bg-red-700 border border-red-900 text-white px-6 py-4 rounded-xl shadow-lg mb-8" role="alert">
+        <strong class="font-bold">¡Lo siento! Error de conexión:</strong>
+        <span class="block sm:inline"> {{ msg }}</span>
+      </div>
+    }
+
+    @if (ciudades(); as resultado) {
+      
+      @if (resultado.ciudades && resultado.ciudades.length > 0) {
+        
+        <h2 class="text-3xl font-bold mb-6 text-[#DFF0FF] border-b border-[#045288] pb-2">
+          Resultados encontrados
+        </h2>
+        
+        <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-2">
+          
+          @for (ciudad of resultado.ciudades; track ciudad.id) {
+            <div class="flex flex-col justify-between group border border-[#DFF0FF] cursor-pointer transition-all duration-300 ease-in-out bg-[#F0F8FF] rounded rounded-4xl hover:scale-98 drop-shadow-xl/50">
+              <div class="card-body p-5 flex-grow">
+                <p class="mb-2 font-extrabold text-3xl text-[#045288] group-hover:text-[#0999EE] transition-all duration-200 ease-in-out ">{{ ciudad.nombre }}</p>
+                
+                <div class="text-gray-600 text-base mb-0 mt-3">
+                  <span class="block font-bold text-xl text-[#0060A5] mb-2">{{ ciudad.pais }}</span>
+                  <div class="border-t border-gray-800 pt-2 mt-2 space-y-1 w-full">
+                    <span class="block text-gray-700 text-sm flex justify-between">
+                      <span class="font-medium">Población:</span>
+                      <span class="font-mono text-base">{{ ciudad.poblacion | number }}</span>
+                    </span>
+                    <span class="block text-gray-700 text-sm flex justify-between">
+                      <span class="font-medium">Latitud:</span>
+                      <span>{{ ciudad.latitud }}</span>
+                    </span>
+                    <span class="block text-gray-700 text-sm flex justify-between">
+                      <span class="font-medium">Longitud:</span>
+                      <span>{{ ciudad.longitud }}</span>
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card-actions flex justify-between items-center p-4 border-t border-gray-800">
+                <button class="text-sm px-4 py-2 rounded rounded-4xl border-2 border-[#0A4570] text-[#0A4570] font-semibold hover:bg-[#0A4570] hover:text-white transition-all duration-350 ease-in-out shadow-2xl hover:scale-105 active:scale-95">
+                  CALIFICAR
+                </button> 
+                <button class="text-sm px-4 py-2 rounded rounded-4xl bg-[#0999EE] text-[#DFF0FF] hover:text-[#045288] font-semibold hover:bg-white shadow-lg hover:scale-105 active:scale-95 hover:border-2 hover:border-[#045288] transition-all duration-350 ease-in-out">
+                  FAVORITOS
+                </button>
+              </div>
             </div>
-          </div>
-          <div class="col">
-            <img class="w-100" src="assets/images/getting-started/book.png" />
-          </div>
+          }
         </div>
-      </div>
-    </div>
+      } @else {
+        
+        @if (!estaCargando() && !error() && (nombre() || pais() || poblacion())) {
+          <div class="text-center text-[#EEEEEE] mt-4 bg-gradient-to-r from-red-500 to-red-400 p-8 rounded-xl shadow-lg border border-[#045288]">
+            <p class="text-xl font-medium">No se encontraron ciudades con esos criterios.</p>
+          </div>
+        }
+      }
+    }
   </div>
-  <div class="col-xl-3 col-lg-4">
-    <div class="card">
-      <div class="card-header">
-        <div class="card-title text-body">Follow us on Social Media</div>
-      </div>
-      <div class="card-body pt-0">
-        <div>
-          <table class="table mb-0">
-            <tbody>
-              <tr>
-                <td class="ps-0 d-flex">
-                  <div class="logo-x me-2"></div>
-                  <div>X.com</div>
-                </td>
-                <td class="text-end pe-0 opacity-25">
-                  <a href="https://twitter.com/abpframework" target="_blank">
-                    <i class="fa fa-external-link text-dark"></i>
-                  </a>
-                </td>
-              </tr>
-              <tr>
-                <td class="ps-0 d-flex">
-                  <img src="assets/images/getting-started/discord.svg" class="me-2" />
-                  <div>Discord</div>
-                </td>
-                <td class="text-end pe-0 opacity-25">
-                  <a href="https://abp.io/community/discord" target="_blank">
-                    <i class="fa fa-external-link text-dark"></i>
-                  </a>
-                </td>
-              </tr>
-              <tr>
-                <td class="ps-0 d-flex">
-                  <img src="assets/images/getting-started/stack-overflow.svg" class="me-2" />
-                  <div>Stack Overflow</div>
-                </td>
-                <td class="text-end pe-0 opacity-25">
-                  <a href="https://stackoverflow.com/questions/tagged/abp" target="_blank">
-                    <i class="fa fa-external-link text-dark"></i>
-                  </a>
-                </td>
-              </tr>
-              <tr>
-                <td class="ps-0 d-flex">
-                  <img src="assets/images/getting-started/youtube.svg" class="me-2" />
-                  <div>YouTube</div>
-                </td>
-                <td class="text-end pe-0 opacity-25">
-                  <a href="https://www.youtube.com/@Volosoft" target="_blank">
-                    <i class="fa fa-external-link text-dark"></i>
-                  </a>
-                </td>
-              </tr>
-              <tr>
-                <td class="ps-0 d-flex border-bottom-0">
-                  <img src="assets/images/getting-started/instagram.svg" class="me-2" />
-                  <div>Instagram</div>
-                </td>
-                <td class="text-end pe-0 opacity-25 border-bottom-0">
-                  <a href="https://www.instagram.com/abpframework/" target="_blank">
-                    <i class="fa fa-external-link text-dark"></i>
-                  </a>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-  </div>
+
 </div>

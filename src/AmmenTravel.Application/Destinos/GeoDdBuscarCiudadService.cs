@@ -26,6 +26,8 @@ namespace AmmenTravel.Application.ExternalServices
             _httpClient = httpClient;
         }
 
+        // Adaptado: ahora soporta filtros por Pais y PoblacionMinima desde CiudadBuscadaDTO
+
         public async Task<CiudadResultadoDTO> BuscarCiudadesAsync(CiudadBuscadaDTO request)
         {
             var result = new CiudadResultadoDTO();
@@ -33,7 +35,27 @@ namespace AmmenTravel.Application.ExternalServices
             if (string.IsNullOrWhiteSpace(request?.Nombre))
                 return result;
 
-            var url = $"{BaseUrl}/cities?namePrefix={Uri.EscapeDataString(request.Nombre)}&limit=5";
+            // Construir parámetros de consulta de forma segura
+            var queryParams = new List<string>
+            {
+                $"namePrefix={Uri.EscapeDataString(request.Nombre)}",
+                "limit=10"
+            };
+
+            // GeoDB soporta el parámetro countryIds (códigos ISO). Lo añadimos si viene proporcionado.
+            // Nota: si el usuario pasa el nombre completo del país, se intentará filtrar posteriormente por nombre.
+            //if (!string.IsNullOrWhiteSpace(request.Pais))
+            //{
+            //    queryParams.Add($"namePrefix={Uri.EscapeDataString(request.Pais)}");
+            //}
+
+            // Añadir filtro de población mínima si se indicó
+            if (request.PoblacionMinima.HasValue && request.PoblacionMinima.Value > 0)
+            {
+                queryParams.Add($"minPopulation={request.PoblacionMinima.Value}");
+            }
+
+            var url = $"{BaseUrl}/cities?{string.Join("&", queryParams)}";
             var httpRequest = new HttpRequestMessage(HttpMethod.Get, url);
             httpRequest.Headers.Add("X-RapidAPI-Key", rapidApiKey);
             httpRequest.Headers.Add("X-RapidAPI-Host", rapidApiHost);
@@ -48,11 +70,25 @@ namespace AmmenTravel.Application.ExternalServices
                 if (json?.Data == null)
                     return new CiudadResultadoDTO { Ciudades = new List<CiudadDTO>() };
 
+                // Convertir y aplicar filtrado adicional en memoria por si el parámetro Pais no es un código ISO
                 var cities = json.Data.Select(c => new CiudadDTO
                 {
                     Nombre = c.City ?? string.Empty,
                     Pais = c.Country ?? string.Empty,
-                }).ToList();
+                    Poblacion = c.Population ?? 0,
+                    Latitud = c.Latitude ?? 0,
+                    Longitud = c.Longitude ?? 0
+                })
+                .Where(c =>
+                    // Filtrar por país si se indicó: aceptar coincidencia por inclusión (case-insensitive)
+                    (string.IsNullOrWhiteSpace(request.Pais) ||
+                        c.Pais.Contains(request.Pais, StringComparison.OrdinalIgnoreCase) ||
+                        string.Equals(c.Pais, request.Pais, StringComparison.OrdinalIgnoreCase))
+                    &&
+                    // Filtrar por población mínima si se indicó
+                    (!request.PoblacionMinima.HasValue || c.Poblacion >= request.PoblacionMinima.Value)
+                )
+                .ToList();
 
                 return new CiudadResultadoDTO { Ciudades = cities };
             }
@@ -71,6 +107,9 @@ namespace AmmenTravel.Application.ExternalServices
         {
             public string? City { get; set; }
             public string? Country { get; set; }
+            public int? Population { get; set; }
+            public float? Latitude { get; set; }
+            public float? Longitude { get; set; }
         }
     }
 }

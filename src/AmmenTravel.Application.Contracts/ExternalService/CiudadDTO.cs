@@ -8,5 +8,9 @@ namespace AmmenTravel.ExternalService
         [StringLength(128)]
         public string Nombre { get; set; }
         public string Pais { get; set; }
+        public int Poblacion { get; set; }
+        public float Latitud { get; set; }
+        public float Longitud { get; set; }
+
     }
 }

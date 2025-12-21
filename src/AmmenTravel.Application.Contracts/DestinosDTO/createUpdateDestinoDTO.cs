@@ -24,6 +24,11 @@ namespace AmmenTravel.DestinosDTO
         [Required]
         public string FotoURL { get; set; } = string.Empty;
 
+        [Required]
+        public float Latitud { get; set; }
+        [Required]
+        public float Longitud { get; set; }
+
     }
 
 
