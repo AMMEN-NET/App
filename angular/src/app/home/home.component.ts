@@ -14,6 +14,7 @@ import { CiudadBuscadaDTO, CiudadResultadoDTO, CiudadDTO } from '../proxy/extern
 import { OpinionService } from '../proxy/opiniones/opinion.service'; 
 import { ValorPuntuacion } from '../proxy/opiniones/valor-puntuacion.enum';
 import { createUpdateOpinionDto } from '../proxy/opiniones/opiniones-dto/models';
+import { OpinionPublicaDto } from '../proxy/opiniones/opiniones-dto/models'; // Ajusta la ruta según tu generación
 
 @Component({
   selector: 'app-home',
@@ -49,6 +50,8 @@ export class HomeComponent {
   public ratingSeleccionado = signal<number>(0);               // Almacena las estrellas (1-5)
   public comentarioCalificacion = signal<string>('');          // Almacena el texto
   public enviandoCalificacion = signal<boolean>(false);        // Loading del botón Enviar
+  public opinionesDelDestino = signal<OpinionPublicaDto[]>([]); // Opiniones cargadas
+  public cargandoOpiniones = signal<boolean>(false);            // Loading de opiniones
 
   get userName(): string {
     // Busca el usuario actual en el estado de ABP
@@ -150,14 +153,34 @@ export class HomeComponent {
     this.ratingSeleccionado.set(0);
     this.comentarioCalificacion.set('');
     this.ciudadParaCalificar.set(ciudad);
+    
+    // --- NUEVO: Cargar opiniones al abrir ---
+    if (ciudad.geoDBId) {
+        this.cargarOpiniones(ciudad.geoDBId);
+    }
   }
 
-  /**
-   * Cierra la modal y limpia el estado
-   */
   public cerrarModalCalificar(): void {
     this.ciudadParaCalificar.set(null);
     this.enviandoCalificacion.set(false);
+    this.opinionesDelDestino.set([]); // Limpiamos al cerrar
+  }
+
+  // --- NUEVO MÉTODO PRIVADO ---
+  private cargarOpiniones(idExterno: string): void {
+      this.cargandoOpiniones.set(true);
+      
+      // Llamamos al nuevo endpoint (asegúrate de haber regenerado proxies o agrégalo a tu servicio manual)
+      this.opinionService.obtenerListaPublicaPorDestino(idExterno).subscribe({
+          next: (lista) => {
+              this.opinionesDelDestino.set(lista);
+              this.cargandoOpiniones.set(false);
+          },
+          error: (err) => {
+              console.error('Error cargando opiniones', err);
+              this.cargandoOpiniones.set(false);
+          }
+      });
   }
 
   /**
@@ -233,4 +256,6 @@ export class HomeComponent {
       }
     });
   }
+
+  
   }

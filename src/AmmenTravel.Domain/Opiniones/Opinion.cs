@@ -1,6 +1,7 @@
-﻿using System;
+﻿using AmmenTravel.Common;
+using AmmenTravel.Destinos;
+using System;
 using Volo.Abp.Domain.Entities.Auditing;
-using AmmenTravel.Common;
 
 namespace AmmenTravel.Opiniones
 {
@@ -24,6 +25,8 @@ namespace AmmenTravel.Opiniones
         public  string? Comentario { get; set; }
         public  Guid DestinoTuristicoId { get; set; } // foreign key
         public  Guid UserId { get; set; } // foreign key
+
+        public virtual DestinoTuristico DestinoTuristico { get; set; }
     }
 
     public enum ValorPuntuacion

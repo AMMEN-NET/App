@@ -279,17 +279,17 @@
     
     <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" (click)="cerrarModalCalificar()"></div>
 
-    <div class="relative w-full max-w-5xl h-auto max-h-[90vh] bg-white rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 fade-in duration-200 ring-1 ring-white/20 flex flex-col md:flex-row">
+    <div class="relative w-full max-w-5xl bg-white rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 fade-in duration-200 ring-1 ring-white/20 flex flex-col md:flex-row h-full md:h-auto md:max-h-[90vh]">
       
-      <button (click)="cerrarModalCalificar()" class="absolute top-4 right-4 z-10 text-slate-400 hover:text-slate-600 bg-white hover:bg-slate-100 rounded-full w-8 h-8 flex items-center justify-center transition-colors shadow-sm border border-slate-100">
+      <button (click)="cerrarModalCalificar()" class="absolute top-4 right-4 z-20 text-slate-400 hover:text-slate-600 bg-white hover:bg-slate-100 rounded-full w-8 h-8 flex items-center justify-center transition-colors shadow-sm border border-slate-100">
         <i class="fas fa-times"></i>
       </button>
 
-      <div class="w-full md:w-2/5 p-8 flex flex-col justify-center bg-white relative z-0">
+      <div class="w-full md:w-2/5 p-6 md:p-8 flex flex-col justify-center bg-white relative z-10 shrink-0 overflow-y-auto md:overflow-visible">
         
         <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-[#0079CC] to-[#045288]"></div>
 
-        <div class="text-center mb-6">
+        <div class="text-center mb-6 mt-2">
           <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-amber-50 text-amber-500 mb-3 shadow-sm ring-4 ring-amber-50/50">
              <i class="fas fa-edit text-xl"></i>
           </div>
@@ -356,59 +356,76 @@
         </div>
       </div>
 
-      <div class="w-full md:w-3/5 bg-slate-50 border-l border-slate-200 flex flex-col h-[500px] md:h-auto">
+      <div class="w-full md:w-3/5 bg-slate-50 border-t md:border-t-0 md:border-l border-slate-200 flex flex-col h-[320px] md:h-auto shrink-0">
         
-        <div class="p-6 border-b border-slate-200 bg-white/50 backdrop-blur-sm sticky top-0 z-10 flex justify-between items-center">
+        <div class="p-6 border-b border-slate-200 bg-white/50 backdrop-blur-sm sticky top-0 z-10 flex justify-between items-center shrink-0">
           <div>
              <h4 class="font-bold text-slate-800 flex items-center gap-2">
-               <i class="fas fa-comments text-[#0079CC]"></i> Opiniones de la Comunidad
+               <i class="fas fa-comments text-[#0079CC]"></i> Opiniones
              </h4>
-             <p class="text-xs text-slate-500 mt-1">Lo que dicen otros viajeros</p>
+             <p class="text-xs text-slate-500 mt-1">
+               @if(opinionesDelDestino().length > 0) {
+                  Lo que dicen otros viajeros
+               } @else {
+                  Sé el primero en opinar
+               }
+             </p>
           </div>
-          <div class="px-3 py-1 bg-amber-100 text-amber-700 rounded-lg text-xs font-bold border border-amber-200">
-             4.8 <i class="fas fa-star text-[10px] ml-1"></i> Promedio
-          </div>
+          
+          @if(opinionesDelDestino().length > 0) {
+              <div class="px-3 py-1 bg-amber-100 text-amber-700 rounded-lg text-xs font-bold border border-amber-200 whitespace-nowrap">
+                 {{ opinionesDelDestino().length }} opiniones
+              </div>
+          }
         </div>
 
-        <div class="flex-grow overflow-y-auto p-6 space-y-4 custom-scrollbar">
+        <div class="flex-grow overflow-y-auto p-6 relative">
           
-          <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-            <div class="flex justify-between items-start mb-2">
-              <div class="flex items-center gap-2">
-                <div class="w-8 h-8 rounded-full bg-blue-100 text-[#0079CC] flex items-center justify-center text-xs font-bold">
-                  JP
-                </div>
-                <span class="text-sm font-bold text-slate-700">Juan Pérez</span>
+          @if (cargandoOpiniones()) {
+              <div class="flex justify-center items-center h-full text-slate-400">
+                  <i class="fas fa-spinner fa-spin text-2xl mr-2"></i> Cargando...
               </div>
-              <div class="flex text-amber-400 text-xs">
-                <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+          } 
+          @else if (opinionesDelDestino().length === 0) {
+              <div class="flex flex-col items-center justify-center h-full text-slate-400 text-center opacity-60">
+                  <i class="far fa-comment-dots text-4xl mb-2"></i>
+                  <p class="text-sm">Aún no hay opiniones.</p>
+                  <p class="text-xs">¡Tu opinión será la primera!</p>
               </div>
-            </div>
-            <p class="text-sm text-slate-600 leading-relaxed">
-              La Torre Eiffel es impresionante de noche, pero cuidado con los vendedores ambulantes. ¡Recomiendo ir temprano!
-            </p>
-            <span class="text-[10px] text-slate-400 mt-2 block">Hace 2 días</span>
-          </div>
-
-          <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-            <div class="flex justify-between items-start mb-2">
-              <div class="flex items-center gap-2">
-                <div class="w-8 h-8 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center text-xs font-bold">
-                  MG
-                </div>
-                <span class="text-sm font-bold text-slate-700">Maria Gonzalez</span>
+          } 
+          @else {
+              <div class="flex flex-col space-y-4">
+                  @for (opinion of opinionesDelDestino(); track opinion.id) {
+                      <div class="w-full bg-white p-4 rounded-xl border border-slate-200 shadow-sm animate-in fade-in slide-in-from-bottom-2 duration-300">
+                        <div class="flex justify-between items-start mb-2">
+                          <div class="flex items-center gap-2">
+                            <div class="w-8 h-8 rounded-full bg-blue-100 text-[#0079CC] flex items-center justify-center text-xs font-bold uppercase shrink-0">
+                              {{ opinion.nombreUsuario?.slice(0, 2) || 'AN' }}
+                            </div>
+                            <span class="text-sm font-bold text-slate-700 truncate">{{ opinion.nombreUsuario || 'Anónimo' }}</span>
+                          </div>
+                          <div class="flex text-amber-400 text-xs shrink-0">
+                            @for (star of [1,2,3,4,5]; track star) {
+                                @if (star <= (opinion.puntuacion || 0)) {
+                                    <i class="fas fa-star"></i>
+                                } @else {
+                                    <i class="far fa-star text-slate-200"></i>
+                                }
+                            }
+                          </div>
+                        </div>
+                        <p class="text-sm text-slate-600 leading-relaxed break-words">
+                          {{ opinion.comentario }}
+                        </p>
+                        <span class="text-[10px] text-slate-400 mt-2 block">
+                          {{ opinion.creationTime | date:'mediumDate' }}
+                        </span>
+                      </div>
+                  }
               </div>
-              <div class="flex text-amber-400 text-xs">
-                <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="far fa-star"></i><i class="far fa-star"></i>
-              </div>
-            </div>
-            <p class="text-sm text-slate-600 leading-relaxed">
-              Lindo lugar pero un poco caro para lo que es.
-            </p>
-            <span class="text-[10px] text-slate-400 mt-2 block">Hace 1 semana</span>
-          </div>
+          }
           
-          </div>
+        </div>
       </div>
 
     </div>

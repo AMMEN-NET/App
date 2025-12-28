@@ -10,5 +10,7 @@ namespace AmmenTravel.Opiniones
     public interface ICreateUpdateOpinion
     {
         Task<OpinionDto> CrearOpinionAsync(createUpdateOpinionDto input);
+        Task<OpinionDto> ActualizarOpinionAsync(Guid opinionId, createUpdateOpinionDto input);
+        Task EliminarOpinionAsync(Guid opinionId);
     }
 }

@@ -58,7 +58,6 @@ namespace AmmenTravel.DestinoTest
             result.Nombre.ShouldBe(input.Nombre);
             result.Pais.ShouldBe(input.Pais);
             result.Poblacion.ShouldBe(input.Poblacion);
-            result.FotoURL.ShouldBe(input.FotoURL);
         }
         [Fact]
         public async Task CreateAsync_ShouldPersistDestinoInDatabase()

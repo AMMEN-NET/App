@@ -1,0 +1,172 @@
+<div class="min-h-screen bg-slate-50 p-4 md:p-8">
+  <div class="max-w-6xl mx-auto"> 
+    <div class="relative bg-gradient-to-br from-[#0f172a] via-[#045288] to-[#0079CC] p-8 rounded-3xl shadow-lg mb-5 overflow-hidden border border-white/10">
+      <div class="absolute -right-6 -bottom-10 pointer-events-none select-none">
+        <i class="fas fa-comments text-[10rem] text-white opacity-[0.06] -rotate-12"></i>
+      </div>
+      <div class="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+        <div>
+          <span class="block text-xs font-bold text-sky-300 uppercase tracking-[0.2em] mb-2 text-shadow-sm">
+            Tu historial de viajero
+          </span>
+          <h1 class="text-4xl md:text-5xl font-serif font-bold text-white leading-tight drop-shadow-md">
+            Mis Reseñas
+          </h1>
+          <p class="text-blue-100/80 text-sm mt-2 max-w-md font-light">
+            Tus experiencias, consejos y valoraciones sobre los lugares que visitaste.
+          </p>
+        </div>
+        <div class="bg-white/10 backdrop-blur-md border border-white/20 px-4 py-2 rounded-full shadow-lg flex items-center gap-2 transition-transform hover:scale-105">
+          <i class="fas fa-star text-amber-400"></i>
+          <span class="text-white font-semibold text-sm">
+            {{ misOpiniones().length }}
+            <span class="font-normal text-blue-200">opiniones publicadas</span>
+          </span>
+        </div>
+      </div>
+    </div>
+
+    @if (estaCargando()) {
+      <div class="flex flex-col justify-center items-center h-48 space-y-3">
+        <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#0079CC]"></div>
+        <p class="text-blue-500/80 text-sm font-medium animate-pulse">Cargando tus experiencias...</p>
+      </div>
+    } @else {
+      @if (misOpiniones().length > 0) {
+        <div class="flex flex-col gap-5"> @for (opinion of misOpiniones(); track opinion.id) {
+            <div class="group relative bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-xl hover:border-blue-200 transition-all duration-300 overflow-hidden">
+              
+              <div class="absolute left-0 top-0 bottom-0 w-1.5 bg-amber-400 scale-y-0 group-hover:scale-y-100 transition-transform duration-300 origin-bottom z-10"></div>
+
+              <div class="flex flex-col md:flex-row md:items-center p-6 gap-6">
+
+                <div class="flex md:flex-col items-center md:justify-center gap-3 md:w-24 shrink-0 border-b md:border-b-0 md:border-r border-slate-100 pb-4 md:pb-0 md:pr-4">
+                   <div class="h-14 w-14 rounded-full bg-blue-50 text-[#0079CC] flex items-center justify-center shrink-0 shadow-sm group-hover:scale-110 transition-transform">
+                      <i class="fas fa-map-marked-alt text-2xl"></i>
+                   </div>
+                   <div class="text-center">
+                     <span class="text-xs text-slate-400 font-bold uppercase tracking-wide">
+                        {{ opinion.creationTime | date:'MMM yyyy' }}
+                     </span>
+                   </div>
+                </div>
+
+                <div class="flex-grow flex flex-col gap-3">
+                  <div class="flex flex-wrap items-center gap-3">
+                    <h3 class="text-xl md:text-2xl font-bold text-slate-800 group-hover:text-[#0079CC] transition-colors">
+                      {{ opinion.nombreDestino || 'Destino Desconocido' }}
+                    </h3>
+                    
+                    @if (opinion.esFavorito) {
+                      <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-pink-50 text-pink-600 text-xs font-bold border border-pink-100">
+                        <i class="fas fa-heart"></i> Favorito
+                      </span>
+                    } @else {
+                       <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 text-slate-500 text-xs font-bold border border-slate-200">
+                        <i class="far fa-heart"></i> No Favorito
+                      </span>
+                    }
+                  </div>
+
+                  <div class="flex items-center gap-2">
+                    <div class="flex text-amber-400 text-lg"> @for (star of [1,2,3,4,5]; track star) {
+                        @if (star <= opinion.puntuacion) {
+                          <i class="fas fa-star drop-shadow-sm"></i>
+                        } @else {
+                          <i class="far fa-star text-slate-200"></i>
+                        }
+                      }
+                    </div>
+                    <span class="text-sm text-slate-400 font-semibold">
+                      ({{ opinion.puntuacion }}/5)
+                    </span>
+                  </div>
+
+                  <div class="relative">
+                    <i class="fas fa-quote-left absolute -left-2 -top-2 text-slate-100 text-2xl -z-10"></i>
+                    <p class="text-base text-slate-600 italic leading-relaxed pl-2"> "{{ opinion.comentario }}"
+                    </p>
+                  </div>
+                </div>
+
+                <div class="flex flex-row md:flex-col lg:flex-row items-center justify-end gap-3 mt-2 md:mt-0 pt-4 md:pt-0 border-t md:border-t-0 md:border-l border-slate-100 md:pl-6 shrink-0">
+                  <button
+                    (click)="abrirModalEdicion(opinion)"
+                    class="flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-slate-500 bg-slate-50 hover:bg-blue-50 hover:text-[#0079CC] transition-all font-medium text-sm w-full md:w-auto"
+                  >
+                    <i class="fas fa-pencil-alt"></i> 
+                    <span class="md:hidden lg:inline">Editar</span>
+                  </button>
+
+                  <button
+                    (click)="eliminar(opinion)"
+                    [disabled]="eliminandoId() === opinion.id"
+                    class="flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-slate-500 bg-slate-50 hover:bg-red-50 hover:text-red-500 transition-all font-medium text-sm w-full md:w-auto border border-transparent hover:border-red-100"
+                  >
+                    @if (eliminandoId() === opinion.id) {
+                      <span class="animate-spin">◷</span>
+                    } @else {
+                      <i class="fas fa-trash-alt"></i>
+                    }
+                     <span class="md:hidden lg:inline">Borrar</span>
+                  </button>
+                </div>
+
+              </div>
+            </div>
+          }
+        </div>
+      } @else {
+        <div class="flex flex-col items-center justify-center py-16 px-4 rounded-3xl border border-dashed border-slate-300 bg-white/60">
+          <div class="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mb-4 text-slate-400">
+            <i class="far fa-comment-dots text-3xl"></i>
+          </div>
+          <p class="text-slate-700 font-serif text-xl font-medium mb-2">Aún no has opinado</p>
+          <p class="text-sm text-slate-500 mb-6 max-w-xs text-center">
+            Tus opiniones ayudan a otros viajeros. ¡Busca un destino y cuenta tu experiencia!
+          </p>
+          <a routerLink="/" class="text-sm font-bold text-white bg-[#0079CC] px-6 py-2.5 rounded-full hover:bg-[#045288] shadow-lg shadow-blue-500/30 transition-all hover:-translate-y-0.5">
+            Buscar Destinos
+          </a>
+        </div>
+      }
+    }
+  </div>
+</div>
+
+@if (opinionEditando(); as op) {
+  <div class="fixed inset-0 z-[70] flex items-center justify-center p-4">
+  <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" (click)="cerrarModalEdicion()"></div>
+  <div class="relative w-full max-w-lg bg-white rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 fade-in duration-200 ring-1 ring-white/20 flex flex-col">
+    <div class="p-6 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
+      <div>
+        <h3 class="text-lg font-bold text-slate-800">Editar Reseña</h3>
+        <p class="text-xs text-slate-500">Destino: <span class="text-[#0079CC] font-bold">{{ op.nombreDestino || 'Desconocido' }}</span></p>
+      </div>
+      <button (click)="cerrarModalEdicion()" class="text-slate-400 hover:text-slate-600 transition-colors"><i class="fas fa-times text-xl"></i></button>
+    </div>
+    <div class="p-6 space-y-6">
+      <div class="flex flex-col items-center gap-2">
+        <span class="text-xs font-bold uppercase text-slate-400 tracking-widest">Tu Puntuación</span>
+        <div class="flex gap-2">
+          @for (star of [1, 2, 3, 4, 5]; track star) {
+          <button type="button" (click)="ratingEditando.set(star)" class="focus:outline-none transition-transform hover:scale-110 active:scale-95 p-1">
+            @if (ratingEditando() >= star) { <i class="fas fa-star text-3xl text-amber-400 drop-shadow-sm"></i> } @else { <i class="far fa-star text-3xl text-slate-200 hover:text-amber-200 transition-colors"></i> }
+          </button>
+          }
+        </div>
+      </div>
+      <div>
+        <label class="block text-xs font-bold uppercase text-slate-400 tracking-widest mb-2">Tu Comentario</label>
+        <textarea rows="4" class="w-full bg-slate-50 border-0 ring-1 ring-slate-200 rounded-xl p-4 text-slate-700 placeholder-slate-400 focus:ring-2 focus:ring-[#0079CC] focus:bg-white transition-all resize-none text-sm shadow-inner" [ngModel]="comentarioEditando()" (ngModelChange)="comentarioEditando.set($event)"></textarea>
+      </div>
+    </div>
+    <div class="p-4 border-t border-slate-100 bg-slate-50 flex justify-end gap-3">
+      <button (click)="cerrarModalEdicion()" class="px-4 py-2 text-sm font-bold text-slate-500 hover:text-slate-700 hover:bg-slate-200 rounded-lg transition-colors">Cancelar</button>
+      <button (click)="guardarEdicion()" [disabled]="guardandoEdicion() || ratingEditando() === 0" class="px-6 py-2 text-sm font-bold text-white bg-[#0079CC] hover:bg-[#045288] rounded-lg shadow-lg shadow-blue-500/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
+        @if (guardandoEdicion()) { <span class="animate-spin">◷</span> Guardando... } @else { Guardar Cambios }
+      </button>
+    </div>
+  </div>
+</div>
+}

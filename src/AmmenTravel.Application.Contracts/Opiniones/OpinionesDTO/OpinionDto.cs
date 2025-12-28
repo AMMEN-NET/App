@@ -7,6 +7,7 @@ namespace AmmenTravel.Opiniones.OpinionesDTO
     {
         public Guid Id { get; set; }
         public Guid DestinoTuristicoId { get; set; }
+        public string NombreDestino { get; set; }
         public Guid UserId { get; set; }
         public ValorPuntuacion Puntuacion { get; set; }
         public string? Comentario { get; set; }

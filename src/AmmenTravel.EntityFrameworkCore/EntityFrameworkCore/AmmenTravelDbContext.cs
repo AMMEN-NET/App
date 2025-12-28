@@ -107,6 +107,13 @@ public class AmmenTravelDbContext :
             b.Property(x => x.Comentario).IsRequired().HasMaxLength(2000);
             b.Property(x => x.DestinoTuristicoId).IsRequired();
             b.Property(x => x.UserId).IsRequired();
+
+            // --- AGREGAR ESTO ---
+            // Define la relación explícita: Una Opinión tiene UN Destino
+            b.HasOne(x => x.DestinoTuristico)
+             .WithMany() // Un destino puede tener muchas opiniones (aunque no esté en la clase Destino)
+             .HasForeignKey(x => x.DestinoTuristicoId)
+             .OnDelete(DeleteBehavior.Cascade); // O Restrict, según prefieras
         });
 
         /* Configuración de LISTA DE FAVORITOS (Contenedor) */
