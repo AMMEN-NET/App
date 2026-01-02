@@ -1,6 +1,7 @@
 ﻿using AmmenTravel.Destinos;
 using AmmenTravel.Opiniones.OpinionesDTO;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc; 
 using Microsoft.EntityFrameworkCore;
 using OpenIddict.Validation.AspNetCore;
 using System;
@@ -38,21 +39,33 @@ namespace AmmenTravel.Opiniones
             _currentUser = currentUser;
         }
 
+        // Angular llama a: /api/app/opinion/crear-opinion (POST)
+        // Por defecto es POST, pero es buena práctica hacerlo explícito si cambias nombres
+        [HttpPost("api/app/opinion/crear-opinion")]
         public async Task<OpinionDto> CrearOpinionAsync(createUpdateOpinionDto input)
         {
             return await _crearOpinionService.CrearOpinionAsync(input);
         }
 
+        // Angular llama a: /api/app/opinion/actualizar-opinion/{opinionId} (PUT)
+        // Corrección: Forzar PUT y definir la ruta con el parámetro
+        [HttpPut("api/app/opinion/actualizar-opinion/{opinionId}")]
         public async Task<OpinionDto> ActualizarOpinionAsync(Guid opinionId, createUpdateOpinionDto input)
         {
             return await _crearOpinionService.ActualizarOpinionAsync(opinionId, input);
         }
 
+        // Angular llama a: /api/app/opinion/eliminar-opinion/{opinionId} (DELETE)
+        // Corrección: Forzar DELETE y definir la ruta
+        [HttpDelete("api/app/opinion/eliminar-opinion/{opinionId}")]
         public async Task EliminarOpinionAsync(Guid opinionId)
         {
             await _crearOpinionService.EliminarOpinionAsync(opinionId);
         }
 
+        // Angular llama a: /api/app/opinion/obtener-por-usuario/{usuarioId} (POST)
+        // "Obtener" no es "Get" para ABP, así que por defecto es POST. Esto ya coincidía con Angular.
+        [HttpPost("api/app/opinion/obtener-por-usuario/{usuarioId}")]
         public async Task<List<OpinionDto>> ObtenerPorUsuarioAsync(Guid usuarioId)
         {
             if (!_currentUser.IsAuthenticated) throw new AbpAuthorizationException("Debe estar autenticado.");
@@ -60,7 +73,6 @@ namespace AmmenTravel.Opiniones
 
             var opiniones = await _opinionRepository.GetListAsync(o => o.UserId == usuarioId);
 
-            // Obtenemos todos los IDs de destinos para hacer una sola consulta
             var destinoIds = opiniones.Select(o => o.DestinoTuristicoId).Distinct().ToList();
             var destinos = await _destinoRepository.GetListAsync(d => destinoIds.Contains(d.Id));
 
@@ -80,9 +92,10 @@ namespace AmmenTravel.Opiniones
             }).ToList();
         }
 
+        // Angular llama a: /api/app/opinion/obtener-lista-publica-por-destino (POST)
+        [HttpPost("api/app/opinion/obtener-lista-publica-por-destino")]
         public async Task<List<OpinionPublicaDto>> ObtenerListaPublicaPorDestinoAsync(string idExternoGeoDB)
         {
-            // 1. Buscamos si el destino existe en nuestra BD interna usando el ID de GeoDB
             var destino = await _destinoRepository.FirstOrDefaultAsync(d => d.IdExterno == idExternoGeoDB);
 
             if (destino == null)
@@ -90,10 +103,8 @@ namespace AmmenTravel.Opiniones
                 return new List<OpinionPublicaDto>();
             }
 
-            // 2. Obtenemos el Queryable de opiniones
             var queryable = await _opinionRepository.GetQueryableAsync();
 
-            // 3. Usamos IgnoreQueryFilters para ver las opiniones de OTROS usuarios
             var opiniones = await queryable
                 .IgnoreQueryFilters()
                 .Where(o => o.DestinoTuristicoId == destino.Id)
@@ -105,11 +116,9 @@ namespace AmmenTravel.Opiniones
                 return new List<OpinionPublicaDto>();
             }
 
-            // 4. Obtenemos los IDs de los usuarios que opinaron
             var userIds = opiniones.Select(o => o.UserId).Distinct().ToList();
             var usuarios = await _userRepository.GetListAsync(u => userIds.Contains(u.Id));
 
-            // 5. Mapeamos a DTO combinando la info
             var resultado = opiniones.Select(op =>
             {
                 var usuario = usuarios.FirstOrDefault(u => u.Id == op.UserId);
@@ -126,6 +135,8 @@ namespace AmmenTravel.Opiniones
             return resultado;
         }
 
+        // Angular llama a: /api/app/opinion/es-opinionado/{destinoId} (POST)
+        [HttpPost("api/app/opinion/es-opinionado/{destinoId}")]
         public async Task<bool> EsOpinionadoAsync(Guid destinoId)
         {
             if (!_currentUser.IsAuthenticated)

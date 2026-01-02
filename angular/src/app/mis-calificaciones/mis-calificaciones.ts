@@ -53,11 +53,11 @@ export class MisCalificacionesComponent implements OnInit {
       return;
     }
 
-    // Usamos el método 'obtenerPorUsuario' definido en tu Service
+    // Usamos el método 'obtenerPorUsuario' definido en el Service
     this.opinionService.obtenerPorUsuario(this.currentUserId).subscribe({
       next: (lista) => {
         // Asignamos la lista. 
-        // NOTA: Asegúrate de que tu OpinionDto en el backend incluya 'nombreDestino'
+        // NOTA: OpinionDto en el backend incluya 'nombreDestino'
         // y 'esFavorito' si quieres que se muestren en el HTML sin hacer cruces extra.
         this.misOpiniones.set(lista); 
         this.estaCargando.set(false);
