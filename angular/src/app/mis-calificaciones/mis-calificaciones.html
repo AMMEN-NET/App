@@ -52,21 +52,21 @@
                 </div>
 
                 <div class="flex-grow flex flex-col gap-3">
-                  <div class="flex flex-wrap items-center gap-3">
-                    <h3 class="text-xl md:text-2xl font-bold text-slate-800 group-hover:text-[#0079CC] transition-colors">
-                      {{ opinion.nombreDestino || 'Destino Desconocido' }}
-                    </h3>
-                    
-                    @if (opinion.esFavorito) {
-                      <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-pink-50 text-pink-600 text-xs font-bold border border-pink-100">
-                        <i class="fas fa-heart"></i> Favorito
-                      </span>
-                    } @else {
-                       <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 text-slate-500 text-xs font-bold border border-slate-200">
-                        <i class="far fa-heart"></i> No Favorito
-                      </span>
-                    }
-                  </div>
+  <div class="flex flex-wrap items-center gap-3">
+    <h3 class="text-xl md:text-2xl font-bold text-slate-800 group-hover:text-[#0079CC] transition-colors">
+      {{ opinion.nombreDestino || 'Destino Desconocido' }}
+    </h3>
+    
+    @if (opinion.esFavorito) {
+      <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-100 text-red-700 text-xs font-bold border border-red-200 select-none cursor-default">
+        <i class="fas fa-heart"></i> Está en Favoritos
+      </div>
+    } @else {
+       <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 text-slate-500 text-xs font-bold border border-slate-200 select-none cursor-default">
+        <i class="far fa-heart"></i> No está en Favoritos
+      </div>
+    }
+    </div>
 
                   <div class="flex items-center gap-2">
                     <div class="flex text-amber-400 text-lg"> @for (star of [1,2,3,4,5]; track star) {

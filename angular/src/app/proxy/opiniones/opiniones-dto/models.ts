@@ -8,6 +8,7 @@ export interface OpinionDto {
   puntuacion?: ValorPuntuacion;
   comentario?: string;
   creationTime?: string;
+  isDeleted?: boolean;
 }
 
 export interface OpinionPublicaDto extends EntityDto<string> {

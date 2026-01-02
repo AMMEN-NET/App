@@ -12,5 +12,8 @@ namespace AmmenTravel.Opiniones.OpinionesDTO
         public ValorPuntuacion Puntuacion { get; set; }
         public string? Comentario { get; set; }
         public DateTime CreationTime { get; set; }
+        public bool IsDeleted { get; set; }
+
+        public bool EsFavorito {get; set;}
     }
 }

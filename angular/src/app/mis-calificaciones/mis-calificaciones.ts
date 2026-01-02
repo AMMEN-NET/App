@@ -56,10 +56,8 @@ export class MisCalificacionesComponent implements OnInit {
     // Usamos el método 'obtenerPorUsuario' definido en el Service
     this.opinionService.obtenerPorUsuario(this.currentUserId).subscribe({
       next: (lista) => {
-        // Asignamos la lista. 
-        // NOTA: OpinionDto en el backend incluya 'nombreDestino'
-        // y 'esFavorito' si quieres que se muestren en el HTML sin hacer cruces extra.
-        this.misOpiniones.set(lista); 
+        const listaDeOpinionesActivas = lista.filter(opinion => !opinion.isDeleted);
+        this.misOpiniones.set(listaDeOpinionesActivas); 
         this.estaCargando.set(false);
       },
       error: (err) => {
