@@ -230,14 +230,33 @@ export class HomeComponent {
 
         // 3. Guardamos la opinión vinculada a ese GUID
         this.opinionService.crearOpinion(input).subscribe({
-          next: () => {
-            this.toaster.success('¡Gracias por tu opinión!', 'Enviado');
+        next: (opinionCreada) => { 
+            const fechaCreacion = new Date(opinionCreada.creationTime || new Date());
+            const ahora = new Date();
+            const diferenciaMilisegundos = ahora.getTime() - fechaCreacion.getTime();
+            
+            if (diferenciaMilisegundos > 60000) { // Mayor a 1 minuto
+                 this.toaster.info(
+                    'Hemos detectado una calificación previa. Se ha restaurado y actualizado correctamente.', 
+                    'Calificación Restaurada'
+                 );
+            } else {
+                 this.toaster.success('¡Gracias por tu opinión!', 'Enviado');
+            }
+
             this.cerrarModalCalificar();
             this.enviandoCalificacion.set(false);
           },
           error: (errOpinion) => {
             console.error('Error al guardar opinión:', errOpinion);
-            this.toaster.error('Error al guardar la opinión.', 'Error');
+            
+            // Si el backend lanza la excepción "Ya has calificado...", el error suele venir aquí
+            if (errOpinion.error?.error?.message) {
+                 this.toaster.warn(errOpinion.error.error.message, 'Atención');
+            } else {
+                 this.toaster.error('Error al guardar la opinión.', 'Error');
+            }
+            
             this.enviandoCalificacion.set(false);
           }
         });

@@ -118,18 +118,31 @@ namespace AmmenTravel.Opiniones
         [HttpPost("api/app/opinion/obtener-lista-publica-por-destino")]
         public async Task<List<OpinionPublicaDto>> ObtenerListaPublicaPorDestinoAsync(string idExternoGeoDB)
         {
-            // (Código original sin cambios)
             var destino = await _destinoRepository.FirstOrDefaultAsync(d => d.IdExterno == idExternoGeoDB);
-            if (destino == null) return new List<OpinionPublicaDto>();
+
+            if (destino == null)
+            {
+                return new List<OpinionPublicaDto>();
+            }
 
             var queryable = await _opinionRepository.GetQueryableAsync();
-            var opiniones = await queryable.IgnoreQueryFilters().Where(o => o.DestinoTuristicoId == destino.Id).OrderByDescending(o => o.CreationTime).ToListAsync();
-            if (!opiniones.Any()) return new List<OpinionPublicaDto>();
+
+            var opiniones = await queryable
+                .IgnoreQueryFilters()            
+                .Where(o => o.DestinoTuristicoId == destino.Id && !o.IsDeleted)
+                .OrderByDescending(o => o.CreationTime)
+                .ToListAsync();
+
+            if (!opiniones.Any())
+            {
+                return new List<OpinionPublicaDto>();
+            }
 
             var userIds = opiniones.Select(o => o.UserId).Distinct().ToList();
             var usuarios = await _userRepository.GetListAsync(u => userIds.Contains(u.Id));
 
-            return opiniones.Select(op => {
+            var resultado = opiniones.Select(op =>
+            {
                 var usuario = usuarios.FirstOrDefault(u => u.Id == op.UserId);
                 return new OpinionPublicaDto
                 {
@@ -140,6 +153,8 @@ namespace AmmenTravel.Opiniones
                     CreationTime = op.CreationTime
                 };
             }).ToList();
+
+            return resultado;
         }
 
         // Angular llama a: /api/app/opinion/obtener-lista-publica-por-destino (POST)

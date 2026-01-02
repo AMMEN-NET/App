@@ -3,10 +3,10 @@ using System;
 using System.Threading.Tasks;
 using Volo.Abp;
 using Volo.Abp.Authorization;
+using Volo.Abp.Data; // <--- AGREGAR ESTO
 using Volo.Abp.Domain.Repositories;
 using Volo.Abp.Users;
 using AmmenTravel.Destinos;
-
 
 namespace AmmenTravel.Opiniones
 {
@@ -15,15 +15,18 @@ namespace AmmenTravel.Opiniones
         private readonly IRepository<Opinion, Guid> _opinionRepository;
         private readonly IRepository<DestinoTuristico, Guid> _destinoRepository;
         private readonly ICurrentUser _currentUser;
+        private readonly IDataFilter _dataFilter; // <--- AGREGAR ESTO
 
         public CrearOpinionService(
             IRepository<Opinion, Guid> opinionRepository,
             IRepository<DestinoTuristico, Guid> destinoRepository,
-            ICurrentUser currentUser)
+            ICurrentUser currentUser,
+            IDataFilter dataFilter) // <--- INYECTARLO AQUÍ
         {
             _opinionRepository = opinionRepository;
             _destinoRepository = destinoRepository;
             _currentUser = currentUser;
+            _dataFilter = dataFilter;
         }
 
         public async Task<OpinionDto> CrearOpinionAsync(createUpdateOpinionDto input)
@@ -32,17 +35,47 @@ namespace AmmenTravel.Opiniones
                 throw new AbpAuthorizationException("Debes iniciar sesión para crear una opinión.");
 
             var userId = _currentUser.Id ?? throw new AbpAuthorizationException("No se pudo obtener el usuario.");
-
-            // Validar que el destino existe
             var destino = await _destinoRepository.GetAsync(input.DestinoTuristicoId);
 
-            // Verificar si el usuario ya opinó sobre este destino
-            var opinionExistente = await _opinionRepository.FirstOrDefaultAsync(
-                o => o.DestinoTuristicoId == input.DestinoTuristicoId && o.UserId == userId);
+            // --- LÓGICA MODIFICADA ---
+
+            // Usamos el DataFilter para buscar incluso opiniones borradas (Soft Delete)
+            Opinion opinionExistente;
+            using (_dataFilter.Disable<ISoftDelete>())
+            {
+                opinionExistente = await _opinionRepository.FirstOrDefaultAsync(
+                    o => o.DestinoTuristicoId == input.DestinoTuristicoId && o.UserId == userId);
+            }
 
             if (opinionExistente != null)
-                throw new UserFriendlyException($"Ya has calificado {destino.Nombre}. Puedes actualizar tu opinión si lo deseas.");
+            {
+                // CASO 1: La opinión existe y está activa (No borrada)
+                if (!opinionExistente.IsDeleted)
+                {
+                    throw new UserFriendlyException($"Ya has calificado {destino.Nombre}. Puedes actualizar tu opinión si lo deseas.");
+                }
 
+                // CASO 2: La opinión existía pero estaba BORRADA -> LA RESTAURAMOS
+                // "Damos de alta" nuevamente la opinión antigua con los nuevos valores
+                opinionExistente.IsDeleted = false; // Restaurar
+                opinionExistente.Puntuacion = input.Puntuacion;
+                opinionExistente.Comentario = input.Comentario;
+
+                await _opinionRepository.UpdateAsync(opinionExistente, autoSave: true);
+
+                return new OpinionDto
+                {
+                    Id = opinionExistente.Id,
+                    DestinoTuristicoId = opinionExistente.DestinoTuristicoId,
+                    NombreDestino = destino.Nombre,
+                    UserId = opinionExistente.UserId,
+                    Puntuacion = opinionExistente.Puntuacion,
+                    Comentario = opinionExistente.Comentario,
+                    CreationTime = opinionExistente.CreationTime // Conserva la fecha original
+                };
+            }
+
+            // CASO 3: No existe ninguna (ni activa ni borrada) -> CREAR NUEVA
             var opinion = new Opinion(input.DestinoTuristicoId, userId, input.Puntuacion, input.Comentario);
             await _opinionRepository.InsertAsync(opinion, autoSave: true);
 
