@@ -52,7 +52,7 @@ namespace AmmenTravel.Opiniones
                 // CASO 1: La opinión existe y está activa (No borrada)
                 if (!opinionExistente.IsDeleted)
                 {
-                    throw new UserFriendlyException($"Ya has calificado {destino.Nombre}. Puedes actualizar tu opinión si lo deseas.");
+                    throw new UserFriendlyException($"Ya calificaste {destino.Nombre}. Podes actualizar tu opinión en la sección 'Mis calificaciones' si lo deseas.");
                 }
 
                 // CASO 2: La opinión existía pero estaba BORRADA -> LA RESTAURAMOS

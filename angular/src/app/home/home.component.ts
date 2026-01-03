@@ -25,6 +25,9 @@ import { OpinionPublicaDto } from '../proxy/opiniones/opiniones-dto/models'; // 
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class HomeComponent {
+
+  protected Math = Math;
+
   // --- INYECCIÓN DE SERVICIOS ---
   private readonly destinoService = inject(DestinoService);
   private readonly toaster = inject(ToasterService);

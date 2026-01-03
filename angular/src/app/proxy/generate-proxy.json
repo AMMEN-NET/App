@@ -1668,6 +1668,23 @@
                     "type": "System.Collections.Generic.List<AmmenTravel.Opiniones.OpinionesDTO.OpinionPublicaDto>",
                     "typeSimple": "[AmmenTravel.Opiniones.OpinionesDTO.OpinionPublicaDto]"
                   }
+                },
+                {
+                  "name": "EsOpinionadoAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "destinoId",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Boolean",
+                    "typeSimple": "boolean"
+                  }
                 }
               ]
             }
@@ -1713,7 +1730,7 @@
             "ActualizarOpinionAsyncByOpinionIdAndInput": {
               "uniqueName": "ActualizarOpinionAsyncByOpinionIdAndInput",
               "name": "ActualizarOpinionAsync",
-              "httpMethod": "POST",
+              "httpMethod": "PUT",
               "url": "api/app/opinion/actualizar-opinion/{opinionId}",
               "supportedVersions": [],
               "parametersOnMethod": [
@@ -1770,7 +1787,7 @@
             "EliminarOpinionAsyncByOpinionId": {
               "uniqueName": "EliminarOpinionAsyncByOpinionId",
               "name": "EliminarOpinionAsync",
-              "httpMethod": "POST",
+              "httpMethod": "DELETE",
               "url": "api/app/opinion/eliminar-opinion/{opinionId}",
               "supportedVersions": [],
               "parametersOnMethod": [
@@ -1874,6 +1891,43 @@
               "returnValue": {
                 "type": "System.Collections.Generic.List<AmmenTravel.Opiniones.OpinionesDTO.OpinionPublicaDto>",
                 "typeSimple": "[AmmenTravel.Opiniones.OpinionesDTO.OpinionPublicaDto]"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "AmmenTravel.Opiniones.IOpinionAppService"
+            },
+            "EsOpinionadoAsyncByDestinoId": {
+              "uniqueName": "EsOpinionadoAsyncByDestinoId",
+              "name": "EsOpinionadoAsync",
+              "httpMethod": "POST",
+              "url": "api/app/opinion/es-opinionado/{destinoId}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "destinoId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "destinoId",
+                  "name": "destinoId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Boolean",
+                "typeSimple": "boolean"
               },
               "allowAnonymous": false,
               "implementFrom": "AmmenTravel.Opiniones.IOpinionAppService"
@@ -4360,6 +4414,30 @@
           "minimum": null,
           "maximum": null,
           "regex": null
+        },
+        {
+          "name": "PromedioPuntuacion",
+          "jsonName": null,
+          "type": "System.Double?",
+          "typeSimple": "number?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "CantidadOpiniones",
+          "jsonName": null,
+          "type": "System.Double?",
+          "typeSimple": "number?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
         }
       ]
     },
@@ -4456,6 +4534,30 @@
           "jsonName": null,
           "type": "System.String",
           "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "PromedioPuntuacion",
+          "jsonName": null,
+          "type": "System.Double?",
+          "typeSimple": "number?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "CantidadOpiniones",
+          "jsonName": null,
+          "type": "System.Int32",
+          "typeSimple": "number",
           "isRequired": false,
           "minLength": null,
           "maxLength": null,
@@ -4563,6 +4665,18 @@
           "regex": null
         },
         {
+          "name": "NombreDestino",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
           "name": "UserId",
           "jsonName": null,
           "type": "System.Guid",
@@ -4603,6 +4717,30 @@
           "jsonName": null,
           "type": "System.DateTime",
           "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "IsDeleted",
+          "jsonName": null,
+          "type": "System.Boolean",
+          "typeSimple": "boolean",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "EsFavorito",
+          "jsonName": null,
+          "type": "System.Boolean",
+          "typeSimple": "boolean",
           "isRequired": false,
           "minLength": null,
           "maxLength": null,

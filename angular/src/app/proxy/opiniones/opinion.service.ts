@@ -1,4 +1,4 @@
-import type { OpinionDto, createUpdateOpinionDto, OpinionPublicaDto } from './opiniones-dto/models';
+import type { OpinionDto, OpinionPublicaDto, createUpdateOpinionDto } from './opiniones-dto/models';
 import { RestService, Rest } from '@abp/ng.core';
 import { Injectable } from '@angular/core';
 
@@ -8,6 +8,16 @@ import { Injectable } from '@angular/core';
 export class OpinionService {
   apiName = 'Default';
   
+
+  actualizarOpinion = (opinionId: string, input: createUpdateOpinionDto, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, OpinionDto>({
+      method: 'PUT',
+      url: `/api/app/opinion/actualizar-opinion/${opinionId}`,
+      body: input,
+    },
+    { apiName: this.apiName,...config });
+  
+
   crearOpinion = (input: createUpdateOpinionDto, config?: Partial<Rest.Config>) =>
     this.restService.request<any, OpinionDto>({
       method: 'POST',
@@ -16,13 +26,6 @@ export class OpinionService {
     },
     { apiName: this.apiName,...config });
   
-  actualizarOpinion = (opinionId: string, input: createUpdateOpinionDto, config?: Partial<Rest.Config>) =>
-    this.restService.request<any, OpinionDto>({
-      method: 'PUT',
-      url: `/api/app/opinion/actualizar-opinion/${opinionId}`,
-      body: input,
-    },
-    { apiName: this.apiName,...config });
 
   eliminarOpinion = (opinionId: string, config?: Partial<Rest.Config>) =>
     this.restService.request<any, void>({
@@ -31,27 +34,30 @@ export class OpinionService {
     },
     { apiName: this.apiName,...config });
   
-  obtenerPorUsuario = (usuarioId: string, config?: Partial<Rest.Config>) =>
-    this.restService.request<any, OpinionDto[]>({
-      method: 'POST',
-      url: `/api/app/opinion/obtener-por-usuario/${usuarioId}`,
-    },
-    { apiName: this.apiName,...config });
-
-  obtenerListaPublicaPorDestino = (idExternoGeoDB: string, config?: Partial<Rest.Config>) =>
-    this.restService.request<any, OpinionPublicaDto[]>({
-      method: 'POST',
-      url: `/api/app/opinion/obtener-lista-publica-por-destino`,
-      params: { idExternoGeoDB },
-    },
-    { apiName: this.apiName, ...config });
 
   esOpinionado = (destinoId: string, config?: Partial<Rest.Config>) =>
     this.restService.request<any, boolean>({
       method: 'POST',
       url: `/api/app/opinion/es-opinionado/${destinoId}`,
     },
-    { apiName: this.apiName, ...config });
+    { apiName: this.apiName,...config });
+  
+
+  obtenerListaPublicaPorDestino = (idExternoGeoDB: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, OpinionPublicaDto[]>({
+      method: 'POST',
+      url: '/api/app/opinion/obtener-lista-publica-por-destino',
+      params: { idExternoGeoDB },
+    },
+    { apiName: this.apiName,...config });
+  
+
+  obtenerPorUsuario = (usuarioId: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, OpinionDto[]>({
+      method: 'POST',
+      url: `/api/app/opinion/obtener-por-usuario/${usuarioId}`,
+    },
+    { apiName: this.apiName,...config });
 
   constructor(private restService: RestService) {}
 }

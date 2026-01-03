@@ -12,6 +12,8 @@ export interface CiudadDTO {
   latitud: number;
   longitud: number;
   geoDBId?: string;
+  promedioPuntuacion?: number;
+  cantidadOpiniones?: number;
 }
 
 export interface CiudadResultadoDTO {

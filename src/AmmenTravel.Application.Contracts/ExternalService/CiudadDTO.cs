@@ -12,5 +12,7 @@ namespace AmmenTravel.ExternalService
         public float Latitud { get; set; }
         public float Longitud { get; set; }
         public string GeoDBId { get; set; }
+        public double? PromedioPuntuacion { get; set; }
+        public double ? CantidadOpiniones { get; set; }
     }
 }

@@ -7,4 +7,6 @@ export interface FavoritoDto extends EntityDto<string> {
   latitud: number;
   longitud: number;
   geoDBId?: string;
+  promedioPuntuacion?: number;
+  cantidadOpiniones: number;
 }

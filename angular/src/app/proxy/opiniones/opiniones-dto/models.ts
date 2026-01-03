@@ -4,11 +4,13 @@ import type { EntityDto } from '@abp/ng.core';
 export interface OpinionDto {
   id?: string;
   destinoTuristicoId?: string;
+  nombreDestino?: string;
   userId?: string;
   puntuacion?: ValorPuntuacion;
   comentario?: string;
   creationTime?: string;
-  isDeleted?: boolean;
+  isDeleted: boolean;
+  esFavorito: boolean;
 }
 
 export interface OpinionPublicaDto extends EntityDto<string> {

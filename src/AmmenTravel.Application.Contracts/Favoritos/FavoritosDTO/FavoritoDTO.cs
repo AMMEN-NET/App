@@ -12,5 +12,7 @@ namespace AmmenTravel.Favoritos.FavoritosDTO
         public float Latitud { get; set; }
         public float Longitud { get; set; }
         public string GeoDBId { get; set; }
+        public double? PromedioPuntuacion { get; set; }
+        public int CantidadOpiniones { get; set; }
     }
 }
