@@ -9,11 +9,12 @@ using Volo.Abp.Domain.Repositories;
 using Volo.Abp.Users;
 using Volo.Abp;
 using Microsoft.AspNetCore.Authorization;
-using AmmenTravel.InterfaceDestinoAppService; 
+using AmmenTravel.InterfaceDestinoAppService;
 using AmmenTravel.ExternalService;
 using AmmenTravel.Destinos;
 using AmmenTravel.Favoritos.FavoritosDTO;
 using AmmenTravel.Opiniones;
+using Microsoft.EntityFrameworkCore;
 
 namespace AmmenTravel.ListaDeFavoritos
 {
@@ -28,12 +29,12 @@ namespace AmmenTravel.ListaDeFavoritos
         private readonly IRepository<Opinion, Guid> _opinionRepository;
 
         public ListaDeFavoritosAppService(
-        IRepository<ListaFavorito, Guid> listaRepository,
-        IRepository<LineaListaFavorito, Guid> lineaRepository,
-        ICurrentUser currentUser,
-        IDestinoAppService destinoAppService,
-        IRepository<DestinoTuristico, Guid> destinoRepository,
-        IRepository<Opinion, Guid> opinionRepository)
+            IRepository<ListaFavorito, Guid> listaRepository,
+            IRepository<LineaListaFavorito, Guid> lineaRepository,
+            ICurrentUser currentUser,
+            IDestinoAppService destinoAppService,
+            IRepository<DestinoTuristico, Guid> destinoRepository,
+            IRepository<Opinion, Guid> opinionRepository)
         {
             _listaRepository = listaRepository;
             _lineaRepository = lineaRepository;
@@ -64,7 +65,6 @@ namespace AmmenTravel.ListaDeFavoritos
             return lista;
         }
 
-        // Este metodo sirve para agregar cuando YA tenemos el ID interno (manual)
         public async Task AgregarAFavoritosAsync(Guid destinoId)
         {
             var lista = await GetOrCreateListaAsync();
@@ -83,22 +83,15 @@ namespace AmmenTravel.ListaDeFavoritos
             }
         }
 
-
-        // Este es el que llamará tu Frontend cuando el usuario de click en "Favorito" sobre un resultado de búsqueda en la API.
         public async Task AgregarFavoritoDesdeBusquedaAsync(CiudadDTO ciudadExterna)
         {
-            //   Delegamos al otro servicio la tarea de:
-            //    "Busca si este destino externo ya existe en la BD, si no, créalo. Nos devuelve el GUID interno."
             var destinoId = await _destinoAppService.BuscarOCrearDestinoDesdeApiAsync(ciudadExterna);
-
-            //  Reutilizamos la lógica existente para crear la línea de favorito.
             await AgregarAFavoritosAsync(destinoId);
         }
 
         public async Task EliminarDeFavoritosAsync(Guid destinoId)
         {
             var lista = await GetOrCreateListaAsync();
-
             var linea = await _lineaRepository.FirstOrDefaultAsync(l =>
                 l.ListaFavoritoId == lista.Id && l.DestinoTuristicoId == destinoId);
 
@@ -118,7 +111,16 @@ namespace AmmenTravel.ListaDeFavoritos
             var destinoIds = lineas.Select(l => l.DestinoTuristicoId).ToList();
             var destinos = await _destinoRepository.GetListAsync(d => destinoIds.Contains(d.Id));
 
-            var opiniones = await _opinionRepository.GetListAsync(o => destinoIds.Contains(o.DestinoTuristicoId) && !o.IsDeleted);
+           
+            // 1. Obtenemos el Queryable para ignorar filtros automáticos de usuario (IUserOwned)
+            var queryable = await _opinionRepository.GetQueryableAsync();
+
+            // 2. Traemos las opiniones de esos destinos, ignorando filtros de seguridad (para ver las de TODOS)
+            //    y filtrando manualmente las borradas (!IsDeleted)
+            var opiniones = await queryable
+                .IgnoreQueryFilters()
+                .Where(o => destinoIds.Contains(o.DestinoTuristicoId) && !o.IsDeleted)
+                .ToListAsync();
 
             return destinos.Select(d =>
             {
@@ -139,6 +141,7 @@ namespace AmmenTravel.ListaDeFavoritos
                     Longitud = d.Longitud,
                     GeoDBId = d.IdExterno ?? "",
 
+                    // Ahora estos datos son globales
                     CantidadOpiniones = opinionesDestino.Count,
                     PromedioPuntuacion = promedio
                 };
@@ -148,7 +151,6 @@ namespace AmmenTravel.ListaDeFavoritos
         public async Task<bool> EsFavoritoAsync(Guid destinoId)
         {
             var lista = await GetOrCreateListaAsync();
-
             var existe = await _lineaRepository.FirstOrDefaultAsync(l =>
                 l.ListaFavoritoId == lista.Id && l.DestinoTuristicoId == destinoId);
 
@@ -158,7 +160,6 @@ namespace AmmenTravel.ListaDeFavoritos
         public async Task VaciarFavoritosAsync()
         {
             var lista = await GetOrCreateListaAsync();
-
             var lineas = await _lineaRepository.GetListAsync(l => l.ListaFavoritoId == lista.Id);
 
             foreach (var linea in lineas)
