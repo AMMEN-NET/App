@@ -6,7 +6,7 @@ export interface AuditedEntity<TKey> extends CreationAuditedEntity<TKey> {
 }
 
 export interface CreationAuditedEntity<TKey> extends Entity {
-  id: TKey; 
+  id?: TKey;
   creationTime?: string;
   creatorId?: string;
 }
