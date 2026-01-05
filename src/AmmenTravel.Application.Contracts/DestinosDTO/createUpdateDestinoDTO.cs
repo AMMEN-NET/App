@@ -22,12 +22,12 @@ namespace AmmenTravel.DestinosDTO
         public int Poblacion { get; set; }
 
         [Required]
-        public string FotoURL { get; set; } = string.Empty;
-
-        [Required]
         public float Latitud { get; set; }
         [Required]
         public float Longitud { get; set; }
+
+        [Required]
+        public string? IdExterno { get; set; } // Para guardar el ID de GeoDB
 
     }
 

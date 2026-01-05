@@ -1,11 +1,16 @@
-namespace AmmenTravel.Permissions;
-
-public static class AmmenTravelPermissions
+namespace AmmenTravel.Permissions
 {
-    public const string GroupName = "AmmenTravel";
+    public static class AmmenTravelPermissions
+    {
+        public const string GroupName = "AmmenTravel";
+        public static class Destinos
+        {
+            public const string Default = GroupName + ".Destinos";
+            public const string Create = Default + ".Create";
+            public const string Edit = Default + ".Edit";
+            public const string Delete = Default + ".Delete";
+        }
 
-
-    
-    //Add your own permission names. Example:
-    //public const string MyPermission1 = GroupName + ".MyPermission1";
+        // Aquí pueden estar tus otros permisos (ej: Favoritos, etc.)
+    }
 }

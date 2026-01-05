@@ -17,5 +17,19 @@ function configureRoutes() {
         order: 1,
         layout: eLayoutType.application,
       },
+      {
+        path: '/favoritos',       // La URL a la que llevará
+        name: 'Mis Favoritos',    // Lo que se lee en la sidebar
+        iconClass: 'fas fa-heart', // El icono (FontAwesome)
+        order: 2,                 // El orden (para que salga debajo del Home)
+        layout: eLayoutType.application,
+      },
+      {
+        path: '/calificaciones',       // La URL a la que llevará
+        name: 'Mis Calificaciones',    // Lo que se lee en la sidebar
+        iconClass: 'fas fa-star', // El icono (FontAwesome)
+        order: 3,                 // El orden (para que salga debajo del Home)
+        layout: eLayoutType.application,
+      },
   ]);
 }

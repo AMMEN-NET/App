@@ -1,11 +1,24 @@
 import { authGuard, permissionGuard } from '@abp/ng.core';
 import { Routes } from '@angular/router';
 
+
 export const APP_ROUTES: Routes = [
   {
     path: '',
     pathMatch: 'full',
     loadComponent: () => import('./home/home.component').then(c => c.HomeComponent),
+  },
+  {
+    path: 'favoritos', 
+    loadComponent: () => 
+      import('./mis-favoritos/mis-favoritos').then(c => c.MisFavoritosComponent),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'calificaciones', 
+    loadComponent: () => 
+      import('./mis-calificaciones/mis-calificaciones').then(c => c.MisCalificacionesComponent),
+    canActivate: [authGuard]
   },
   {
     path: 'account',

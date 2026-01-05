@@ -9,24 +9,33 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Volo.Abp.DependencyInjection;
-
+using Volo.Abp.Domain.Repositories;
+using AmmenTravel.Destinos; 
+using AmmenTravel.Opiniones;
+using Microsoft.EntityFrameworkCore;
 
 namespace AmmenTravel.Application.ExternalServices
 {
     public class GeoDdBuscarCiudadService : IBuscarCiudadService
     {
-
         private const string rapidApiKey = "28b89efbaemsh750f2ed4984863ap14d14djsnd3061a788080";
         private const string rapidApiHost = "wft-geo-db.p.rapidapi.com";
         private const string BaseUrl = "https://wft-geo-db.p.rapidapi.com/v1/geo";
         private readonly HttpClient _httpClient;
 
-        public GeoDdBuscarCiudadService(HttpClient httpClient)
+        // --- INYECCIÓN DE REPOSITORIOS ---
+        private readonly IRepository<DestinoTuristico, Guid> _destinoRepository;
+        private readonly IRepository<Opinion, Guid> _opinionRepository;
+
+        public GeoDdBuscarCiudadService(
+            HttpClient httpClient,
+            IRepository<DestinoTuristico, Guid> destinoRepository,
+            IRepository<Opinion, Guid> opinionRepository)
         {
             _httpClient = httpClient;
+            _destinoRepository = destinoRepository;
+            _opinionRepository = opinionRepository;
         }
-
-        // Adaptado: ahora soporta filtros por Pais y PoblacionMinima desde CiudadBuscadaDTO
 
         public async Task<CiudadResultadoDTO> BuscarCiudadesAsync(CiudadBuscadaDTO request)
         {
@@ -35,21 +44,12 @@ namespace AmmenTravel.Application.ExternalServices
             if (string.IsNullOrWhiteSpace(request?.Nombre))
                 return result;
 
-            // Construir parámetros de consulta de forma segura
             var queryParams = new List<string>
             {
                 $"namePrefix={Uri.EscapeDataString(request.Nombre)}",
                 "limit=10"
             };
 
-            // GeoDB soporta el parámetro countryIds (códigos ISO). Lo añadimos si viene proporcionado.
-            // Nota: si el usuario pasa el nombre completo del país, se intentará filtrar posteriormente por nombre.
-            //if (!string.IsNullOrWhiteSpace(request.Pais))
-            //{
-            //    queryParams.Add($"namePrefix={Uri.EscapeDataString(request.Pais)}");
-            //}
-
-            // Añadir filtro de población mínima si se indicó
             if (request.PoblacionMinima.HasValue && request.PoblacionMinima.Value > 0)
             {
                 queryParams.Add($"minPopulation={request.PoblacionMinima.Value}");
@@ -63,32 +63,58 @@ namespace AmmenTravel.Application.ExternalServices
             try
             {
                 var response = await _httpClient.SendAsync(httpRequest);
-                if (!response.IsSuccessStatusCode)
-                    return result;
-
+                if (!response.IsSuccessStatusCode) return result;
                 var json = await response.Content.ReadFromJsonAsync<GeoDbResponse>();
-                if (json?.Data == null)
-                    return new CiudadResultadoDTO { Ciudades = new List<CiudadDTO>() };
+                if (json?.Data == null) return new CiudadResultadoDTO { Ciudades = new List<CiudadDTO>() };
 
-                // Convertir y aplicar filtrado adicional en memoria por si el parámetro Pais no es un código ISO
                 var cities = json.Data.Select(c => new CiudadDTO
                 {
                     Nombre = c.City ?? string.Empty,
                     Pais = c.Country ?? string.Empty,
                     Poblacion = c.Population ?? 0,
                     Latitud = c.Latitude ?? 0,
-                    Longitud = c.Longitude ?? 0
+                    Longitud = c.Longitude ?? 0,
+                    GeoDBId = c.Id?.ToString() ?? string.Empty
                 })
-                .Where(c =>
-                    // Filtrar por país si se indicó: aceptar coincidencia por inclusión (case-insensitive)
-                    (string.IsNullOrWhiteSpace(request.Pais) ||
-                        c.Pais.Contains(request.Pais, StringComparison.OrdinalIgnoreCase) ||
-                        string.Equals(c.Pais, request.Pais, StringComparison.OrdinalIgnoreCase))
-                    &&
-                    // Filtrar por población mínima si se indicó
-                    (!request.PoblacionMinima.HasValue || c.Poblacion >= request.PoblacionMinima.Value)
-                )
+                .Where(c => (!request.PoblacionMinima.HasValue || c.Poblacion >= request.PoblacionMinima.Value) &&
+                            (string.IsNullOrWhiteSpace(request.Pais) || (c.Pais != null && c.Pais.Contains(request.Pais, StringComparison.OrdinalIgnoreCase))))
                 .ToList();
+
+                // --- CORRECCIÓN AQUÍ: HACER EL PROMEDIO GLOBAL ---
+                if (cities.Any())
+                {
+                    var externalIds = cities.Where(c => !string.IsNullOrEmpty(c.GeoDBId)).Select(c => c.GeoDBId).ToList();
+                    var destinosLocales = await _destinoRepository.GetListAsync(d => externalIds.Contains(d.IdExterno));
+
+                    if (destinosLocales.Any())
+                    {
+                        var idsLocales = destinosLocales.Select(d => d.Id).ToList();
+
+                        // 1. Obtenemos el Queryable para poder manipular los filtros
+                        var queryable = await _opinionRepository.GetQueryableAsync();
+
+                        // 2. Usamos IgnoreQueryFilters() para ver las opiniones de TODOS los usuarios.
+                        //    IMPORTANTE: Al ignorar filtros, debemos filtrar IsDeleted manualmente.
+                        var opiniones = await queryable
+                            .IgnoreQueryFilters()
+                            .Where(o => idsLocales.Contains(o.DestinoTuristicoId) && !o.IsDeleted)
+                            .ToListAsync();
+
+                        foreach (var city in cities)
+                        {
+                            var destinoLocal = destinosLocales.FirstOrDefault(d => d.IdExterno == city.GeoDBId);
+                            if (destinoLocal != null)
+                            {
+                                var opinionesDelDestino = opiniones.Where(o => o.DestinoTuristicoId == destinoLocal.Id).ToList();
+                                if (opinionesDelDestino.Any())
+                                {
+                                    city.CantidadOpiniones = opinionesDelDestino.Count;
+                                    city.PromedioPuntuacion = opinionesDelDestino.Average(o => (int)o.Puntuacion);
+                                }
+                            }
+                        }
+                    }
+                }
 
                 return new CiudadResultadoDTO { Ciudades = cities };
             }
@@ -110,6 +136,7 @@ namespace AmmenTravel.Application.ExternalServices
             public int? Population { get; set; }
             public float? Latitude { get; set; }
             public float? Longitude { get; set; }
+            public int? Id { get; set; }
         }
     }
 }

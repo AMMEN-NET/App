@@ -47,8 +47,7 @@ namespace AmmenTravel.DestinoTest
             {
                 Nombre = "Paris",
                 Pais = "Francia",
-                Poblacion = 2048000,
-                FotoURL = "https://example.com/paris.jpg"
+                Poblacion = 2048000
             };
 
             //Act
@@ -59,7 +58,6 @@ namespace AmmenTravel.DestinoTest
             result.Nombre.ShouldBe(input.Nombre);
             result.Pais.ShouldBe(input.Pais);
             result.Poblacion.ShouldBe(input.Poblacion);
-            result.FotoURL.ShouldBe(input.FotoURL);
         }
         [Fact]
         public async Task CreateAsync_ShouldPersistDestinoInDatabase()
@@ -71,8 +69,7 @@ namespace AmmenTravel.DestinoTest
                 {
                     Nombre = "Tokio",
                     Pais = "Japon",
-                    Poblacion = 13960000,
-                    FotoURL = "https://ejemplo.com/tokyo.jpg"
+                    Poblacion = 13960000
                 };
                 //Act
                 var result = await _service.CreateAsync(input);
@@ -83,7 +80,6 @@ namespace AmmenTravel.DestinoTest
                 savedDestino.Nombre.ShouldBe(input.Nombre);
                 savedDestino.Pais.ShouldBe(input.Pais);
                 savedDestino.Poblacion.ShouldBe(input.Poblacion);
-                savedDestino.FotoURL.ShouldBe(input.FotoURL);
             }
         }
         [Fact]
@@ -95,7 +91,6 @@ namespace AmmenTravel.DestinoTest
                 Nombre = null, // Falta Nombre
                 Pais = "Belgica",
                 Poblacion = 195500,
-                FotoURL = "https://example.com/rome.jpg"
             };
             //Act & Assert
             await Should.ThrowAsync<AbpValidationException>(async () =>
