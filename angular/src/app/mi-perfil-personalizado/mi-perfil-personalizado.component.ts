@@ -30,7 +30,12 @@ export class MiPerfilPersonalizadoComponent implements OnInit {
       email: ['', [Validators.required, Validators.email]],
       name: ['', Validators.required],
       surname: ['', Validators.required],
-      phoneNumber: ['']
+      phoneNumber: [''],
+      
+      // --- NUEVOS CAMPOS DE PREFERENCIAS (Simulados por ahora) ---
+      notifyScreen: [true],        // Por defecto activado
+      notifyEmail: [false],        // Por defecto desactivado
+      notifyFrequency: ['immediate'] // Valores: 'immediate' o 'weekly'
     });
   }
 
@@ -83,7 +88,6 @@ export class MiPerfilPersonalizadoComponent implements OnInit {
 
   guardar() {
     // Validamos: Si el formulario es inválido y se intentó cambiar texto, paramos.
-    // (Si solo se cambió la foto, form.pristine será true, así que saltamos esta validación de texto)
     if (this.form.invalid && !this.form.pristine) return;
 
     this.estaCargando.set(true);
@@ -95,10 +99,32 @@ export class MiPerfilPersonalizadoComponent implements OnInit {
     }
 
     // ESCENARIO 2: Se cambió texto (y quizás también foto)
+    
+    // --- CAMBIO IMPORTANTE AQUÍ ---
+    // Obtenemos todos los valores del formulario
+    const formValues = this.form.getRawValue();
+
+    // Filtramos SOLO los datos que el Backend actual entiende (ProfileUpdateDto)
+    // Dejamos fuera 'notifyScreen', 'notifyEmail', etc. para que no rompa la API.
+    const datosParaApi = {
+        userName: formValues.userName,
+        email: formValues.email,
+        name: formValues.name,
+        surname: formValues.surname,
+        phoneNumber: formValues.phoneNumber
+    };
+    
+    // Aquí podrías guardar las preferencias en LocalStorage temporalmente si quisieras
+    // console.log('Preferencias seleccionadas:', { 
+    //    screen: formValues.notifyScreen, 
+    //    email: formValues.notifyEmail,
+    //    freq: formValues.notifyFrequency 
+    // });
+
     this.rest.request<any, any>({
       method: 'PUT',
       url: '/api/account/my-profile',
-      body: this.form.getRawValue()
+      body: datosParaApi // <--- Enviamos el objeto filtrado, no el form completo
     }).subscribe({
       next: () => {
         // Si además había foto seleccionada, la subimos ahora
@@ -127,10 +153,9 @@ export class MiPerfilPersonalizadoComponent implements OnInit {
             this.toaster.success('Foto de perfil actualizada.', 'Éxito');
             this.estaCargando.set(false);
             
-            // Limpieza
             this.archivoSeleccionado = null; 
-            this.form.markAsPristine(); // Importante para volver a deshabilitar el botón
-            this.actualizarUrlImagen(); // Aseguramos que se vea la URL real del server
+            this.form.markAsPristine(); 
+            this.actualizarUrlImagen(); 
         },
         error: () => {
             this.toaster.warn('Datos guardados pero hubo error con la imagen.', 'Atención');
