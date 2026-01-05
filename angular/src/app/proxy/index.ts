@@ -7,5 +7,6 @@ import * as ListaDeFavoritos from './lista-de-favoritos';
 import * as ListaFavoritos from './lista-favoritos';
 import * as Microsoft from './microsoft';
 import * as Opiniones from './opiniones';
+import * as Viajeros from './viajeros';
 import * as Volo from './volo';
-export { Controllers, Destinos, DestinosDto, ExternalService, Favoritos, ListaDeFavoritos, ListaFavoritos, Microsoft, Opiniones, Volo };
+export { Controllers, Destinos, DestinosDto, ExternalService, Favoritos, ListaDeFavoritos, ListaFavoritos, Microsoft, Opiniones, Viajeros, Volo };

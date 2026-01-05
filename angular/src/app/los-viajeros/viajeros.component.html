@@ -1,0 +1,56 @@
+ <div class="max-w-6xl mx-auto mt-8 px-4">
+  
+  <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+    <div>
+      <h2 class="text-3xl font-extrabold text-gray-800 tracking-tight">Comunidad de Viajeros</h2>
+      <p class="text-gray-500 mt-1">Conecta con otras personas apasionadas por viajar.</p>
+    </div>
+
+    <div class="relative w-full md:w-96">
+        <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
+            <i class="fa fa-search"></i>
+        </span>
+        <input 
+          [formControl]="buscador"
+          type="text" 
+          placeholder="Buscar por nombre de usuario..." 
+          class="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none shadow-sm transition-all"
+        >
+    </div>
+  </div>
+  @if (cargando()) {
+      <div class="flex justify-center py-20">
+          <i class="fa fa-circle-notch fa-spin text-4xl text-blue-500"></i>
+      </div>
+  }
+
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+    
+    @for (viajero of viajeros(); track viajero.id) {
+      <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col items-center hover:shadow-md transition-shadow group">
+        
+        <div class="w-24 h-24 rounded-full border-4 border-gray-50 overflow-hidden mb-4 shadow-sm group-hover:scale-105 transition-transform">
+          <img [src]="obtenerFoto(viajero.id)" 
+               class="w-full h-full object-cover" 
+               (error)="manejarErrorFoto($event)">
+        </div>
+
+        <h3 class="text-lg font-bold text-gray-800">{{ viajero.name }} {{ viajero.surname }}</h3>
+        <p class="text-sm text-blue-600 font-medium mb-4">{{ viajero.userName }}</p>
+
+        <button class="text-sm bg-gray-50 text-gray-600 hover:bg-blue-50 hover:text-blue-600 font-semibold py-2 px-6 rounded-full border border-gray-200 transition-colors">
+          Ver Perfil
+        </button>
+      </div>
+    } @empty {
+      @if (!cargando()) {
+        <div class="col-span-full text-center py-20 text-gray-400">
+            <i class="fa fa-users-slash text-5xl mb-4"></i>
+            <p>No encontramos viajeros con ese nombre.</p>
+        </div>
+      }
+    }
+
+
+  </div>
+</div>
