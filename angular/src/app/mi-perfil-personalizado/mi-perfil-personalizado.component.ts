@@ -4,6 +4,9 @@ import { RestService, ConfigStateService } from '@abp/ng.core';
 import { ToasterService } from '@abp/ng.theme.shared';
 import { FotoPerfilService } from '../services/foto-perfil.service';
 import { CommonModule } from '@angular/common';
+import { ConfirmationService, Confirmation } from '@abp/ng.theme.shared';
+import { AuthService } from '@abp/ng.core';
+import { CuentaService } from '../proxy/cuentas/cuenta.service';
 
 @Component({
   selector: 'app-mi-perfil-personalizado',
@@ -17,6 +20,9 @@ export class MiPerfilPersonalizadoComponent implements OnInit {
   private fotoService = inject(FotoPerfilService);
   private toaster = inject(ToasterService);
   private configState = inject(ConfigStateService);
+  private confirmation = inject(ConfirmationService); 
+  private authService = inject(AuthService);          
+  private cuentaService = inject(CuentaService);      
 
   form: FormGroup;
   estaCargando = signal(false);
@@ -166,5 +172,38 @@ export class MiPerfilPersonalizadoComponent implements OnInit {
   
   cargarImagenPorDefecto() {
     this.urlImagen = null;
+  }
+
+  eliminarCuenta() {
+    this.confirmation
+      .warn(
+        'Se eliminarán tus datos y comentarios. Podrás recuperarla contactando a soporte.',
+        '¿Estás seguro de eliminar tu cuenta?',
+        {
+          yesText: 'Sí, eliminar cuenta',
+          cancelText: 'Cancelar',
+          
+        }
+      )
+      .subscribe((status) => {
+        if (status === Confirmation.Status.confirm) {
+          this.procesarBaja();
+        }
+      });
+  }
+
+  procesarBaja() {
+    this.estaCargando.set(true);
+    this.cuentaService.eliminarMiCuenta().subscribe({
+      next: () => {
+        this.estaCargando.set(false);
+        // Deslogueamos forzosamente al usuario y lo mandamos al home
+        this.authService.logout().subscribe();
+      },
+      error: (err) => {
+        this.toaster.error('Ocurrió un error al intentar eliminar la cuenta.', 'Error');
+        this.estaCargando.set(false);
+      }
+    });
   }
 }

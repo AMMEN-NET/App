@@ -84,6 +84,7 @@
             </div>
         </div>
     </div>
+
     <div class="pt-4">
       <button type="submit" 
         [disabled]="(form.pristine && !archivoSeleccionado) || form.invalid || estaCargando()"
@@ -97,4 +98,23 @@
     </div>
 
   </form>
+
+  <div class="mt-12 pt-8 border-t-2 border-red-100">
+      <h3 class="text-lg font-bold text-red-600 mb-2">Zona de Peligro</h3>
+      <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 bg-red-50 p-4 rounded-xl border border-red-200">
+          <div>
+              <p class="text-gray-700 font-medium">Eliminar cuenta permanentemente</p>
+              <p class="text-sm text-gray-500 mt-1">
+                  Una vez que elimines tu cuenta, tus opiniones dejarán de ser visibles para la comunidad.
+              </p>
+          </div>
+          
+          <button type="button" 
+                  (click)="eliminarCuenta()"
+                  class="whitespace-nowrap px-5 py-2.5 bg-white border border-red-300 text-red-600 font-semibold rounded-lg hover:bg-red-600 hover:text-white transition-all shadow-sm flex items-center gap-2">
+              <i class="fa fa-trash-alt"></i> Eliminar mi cuenta
+          </button>
+      </div>
+  </div>
+
 </div>

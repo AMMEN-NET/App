@@ -9,7 +9,7 @@ export class ViajerosService {
   apiName = 'Default';
   
 
-  getList = (filtro: string, config?: Partial<Rest.Config>) =>
+  getList = (filtro?: string, config?: Partial<Rest.Config>) =>
     this.restService.request<any, ViajeroDto[]>({
       method: 'GET',
       url: '/api/app/viajeros',
