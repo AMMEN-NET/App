@@ -31,5 +31,12 @@ function configureRoutes() {
         order: 3,                 // El orden (para que salga debajo del Home)
         layout: eLayoutType.application,
       },
+      {
+        path: '/viajeros',       // La URL a la que llevará
+        name: 'Comunidad de Viajeros',    // Lo que se lee en la sidebar
+        iconClass: 'fas fa-users', // El icono (FontAwesome)
+        order: 4,                 // El orden (para que salga debajo del Home)
+        layout: eLayoutType.application,
+      }
   ]);
 }

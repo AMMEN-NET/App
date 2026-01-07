@@ -1,6 +1,7 @@
 using AmmenTravel.EntityFrameworkCore;
 using AmmenTravel.HealthChecks;
 using AmmenTravel.MultiTenancy;
+using AmmenTravel.Usuarios;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Cors;
@@ -30,6 +31,8 @@ using Volo.Abp.AspNetCore.Mvc.UI.Theme.LeptonXLite.Bundling;
 using Volo.Abp.AspNetCore.Mvc.UI.Theme.Shared;
 using Volo.Abp.AspNetCore.Serilog;
 using Volo.Abp.Autofac;
+using Volo.Abp.BlobStoring;
+using Volo.Abp.BlobStoring.Database;
 using Volo.Abp.Identity;
 using Volo.Abp.Localization;
 using Volo.Abp.Modularity;
@@ -91,6 +94,14 @@ public class AmmenTravelHttpApiHostModule : AbpModule
     {
         var configuration = context.Services.GetConfiguration();
         var hostingEnvironment = context.Services.GetHostingEnvironment();
+
+        Configure<AbpBlobStoringOptions>(options =>
+        {
+            options.Containers.Configure<ContenedorFotoPerfil>(container =>
+            {
+                container.UseDatabase(); // Le dice que guarde los blobs en la tabla de la BD
+            });
+        });
 
         Configure<AbpMvcLibsOptions>(options =>
         {

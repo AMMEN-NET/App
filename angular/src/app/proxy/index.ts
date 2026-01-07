@@ -1,9 +1,13 @@
+import * as Controllers from './controllers';
+import * as Cuentas from './cuentas';
 import * as Destinos from './destinos';
 import * as DestinosDto from './destinos-dto';
 import * as ExternalService from './external-service';
 import * as Favoritos from './favoritos';
 import * as ListaDeFavoritos from './lista-de-favoritos';
 import * as ListaFavoritos from './lista-favoritos';
+import * as Microsoft from './microsoft';
 import * as Opiniones from './opiniones';
+import * as Viajeros from './viajeros';
 import * as Volo from './volo';
-export { Destinos, DestinosDto, ExternalService, Favoritos, ListaDeFavoritos, ListaFavoritos, Opiniones, Volo };
+export { Controllers, Cuentas, Destinos, DestinosDto, ExternalService, Favoritos, ListaDeFavoritos, ListaFavoritos, Microsoft, Opiniones, Viajeros, Volo };

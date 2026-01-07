@@ -21,6 +21,12 @@ export const APP_ROUTES: Routes = [
     canActivate: [authGuard]
   },
   {
+    path: 'viajeros', 
+    loadComponent: () => 
+      import('./los-viajeros/viajeros.component').then(c => c.ViajerosComponent),
+    canActivate: [authGuard]
+  },
+  {
     path: 'account',
     loadChildren: () => import('@abp/ng.account').then(c => c.createRoutes()),
   },
