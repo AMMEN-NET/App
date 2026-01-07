@@ -1,4 +1,4 @@
-import type { ViajeroDto } from './models';
+import type { PerfilPublicoDto, ViajeroDto } from './models';
 import { RestService, Rest } from '@abp/ng.core';
 import { Injectable } from '@angular/core';
 
@@ -14,6 +14,14 @@ export class ViajerosService {
       method: 'GET',
       url: '/api/app/viajeros',
       params: { filtro },
+    },
+    { apiName: this.apiName,...config });
+  
+
+  getPerfilPublico = (id: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, PerfilPublicoDto>({
+      method: 'GET',
+      url: `/api/app/viajeros/${id}/perfil-publico`,
     },
     { apiName: this.apiName,...config });
 

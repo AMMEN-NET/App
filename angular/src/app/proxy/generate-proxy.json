@@ -2103,6 +2103,23 @@
                     "type": "System.Collections.Generic.List<AmmenTravel.Viajeros.ViajeroDto>",
                     "typeSimple": "[AmmenTravel.Viajeros.ViajeroDto]"
                   }
+                },
+                {
+                  "name": "GetPerfilPublicoAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "id",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "AmmenTravel.Viajeros.PerfilPublicoDto",
+                    "typeSimple": "AmmenTravel.Viajeros.PerfilPublicoDto"
+                  }
                 }
               ]
             }
@@ -2141,6 +2158,43 @@
               "returnValue": {
                 "type": "System.Collections.Generic.List<AmmenTravel.Viajeros.ViajeroDto>",
                 "typeSimple": "[AmmenTravel.Viajeros.ViajeroDto]"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "AmmenTravel.Viajeros.IViajerosAppService"
+            },
+            "GetPerfilPublicoAsyncById": {
+              "uniqueName": "GetPerfilPublicoAsyncById",
+              "name": "GetPerfilPublicoAsync",
+              "httpMethod": "GET",
+              "url": "api/app/viajeros/{id}/perfil-publico",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "id",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "id",
+                  "name": "id",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "AmmenTravel.Viajeros.PerfilPublicoDto",
+                "typeSimple": "AmmenTravel.Viajeros.PerfilPublicoDto"
               },
               "allowAnonymous": null,
               "implementFrom": "AmmenTravel.Viajeros.IViajerosAppService"
@@ -5039,6 +5093,99 @@
       ],
       "genericArguments": null,
       "properties": null
+    },
+    "AmmenTravel.Viajeros.PerfilPublicoDto": {
+      "baseType": "Volo.Abp.Application.Dtos.EntityDto<System.Guid>",
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "UserName",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Name",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Surname",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "FechaRegistro",
+          "jsonName": null,
+          "type": "System.DateTime",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "CantidadOpiniones",
+          "jsonName": null,
+          "type": "System.Int32",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "CantidadFavoritos",
+          "jsonName": null,
+          "type": "System.Int32",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "PromedioPuntuacion",
+          "jsonName": null,
+          "type": "System.Double",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
     },
     "AmmenTravel.Viajeros.ViajeroDto": {
       "baseType": "Volo.Abp.Application.Dtos.EntityDto<System.Guid>",

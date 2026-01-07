@@ -1,17 +1,19 @@
-import { Injectable, inject } from '@angular/core';
-import { RestService } from '@abp/ng.core';
-import { Observable } from 'rxjs';
+import { RestService, Rest } from '@abp/ng.core';
+import { Injectable } from '@angular/core';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class CuentaService {
-  private rest = inject(RestService);
+  apiName = 'Default';
+  
 
-  eliminarMiCuenta(): Observable<void> {
-    return this.rest.request<any, void>({
+  eliminarMiCuenta = (config?: Partial<Rest.Config>) =>
+    this.restService.request<any, void>({
       method: 'POST',
-      url: '/api/app/cuenta/eliminar-mi-cuenta', 
-    });
-  }
+      url: '/api/app/cuenta/eliminar-mi-cuenta',
+    },
+    { apiName: this.apiName,...config });
+
+  constructor(private restService: RestService) {}
 }
