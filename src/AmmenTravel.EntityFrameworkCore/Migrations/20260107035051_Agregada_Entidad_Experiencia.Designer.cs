@@ -4,6 +4,7 @@ using AmmenTravel.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Volo.Abp.EntityFrameworkCore;
 
@@ -12,9 +13,11 @@ using Volo.Abp.EntityFrameworkCore;
 namespace AmmenTravel.Migrations
 {
     [DbContext(typeof(AmmenTravelDbContext))]
-    partial class AmmenTravelDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260107035051_Agregada_Entidad_Experiencia")]
+    partial class Agregada_Entidad_Experiencia
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { ToasterService } from '@abp/ng.theme.shared';
@@ -9,12 +9,11 @@ import { DestinoService } from '../proxy/destinos';
 import { ListaDeFavoritosService } from '../proxy/lista-de-favoritos'; 
 import { CiudadBuscadaDTO, CiudadResultadoDTO, CiudadDTO } from '../proxy/external-service/models';
 
-// --- NUEVOS IMPORTS PARA LA CALIFICACIÓN ---
-// Ajusta las rutas si tus archivos están en carpetas diferentes
+// OPINIONES
 import { OpinionService } from '../proxy/opiniones/opinion.service'; 
 import { ValorPuntuacion } from '../proxy/opiniones/valor-puntuacion.enum';
 import { createUpdateOpinionDto } from '../proxy/opiniones/opiniones-dto/models';
-import { OpinionPublicaDto } from '../proxy/opiniones/opiniones-dto/models'; // Ajusta la ruta según tu generación
+import { OpinionPublicaDto } from '../proxy/opiniones/opiniones-dto/models'; 
 
 @Component({
   selector: 'app-home',
@@ -24,7 +23,7 @@ import { OpinionPublicaDto } from '../proxy/opiniones/opiniones-dto/models'; // 
   styleUrls: ['./home.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class HomeComponent {
+export class HomeComponent implements OnInit {
 
   protected Math = Math;
 
@@ -32,7 +31,7 @@ export class HomeComponent {
   private readonly destinoService = inject(DestinoService);
   private readonly toaster = inject(ToasterService);
   private readonly listaFavoritosService = inject(ListaDeFavoritosService);
-  private readonly opinionService = inject(OpinionService); // <--- Inyectamos el servicio de opiniones
+  private readonly opinionService = inject(OpinionService); 
   private configState = inject(ConfigStateService);
 
   // --- SEÑALES DE INPUTS (Búsqueda) ---
@@ -45,23 +44,63 @@ export class HomeComponent {
   public estaCargando = signal<boolean>(false);
   public error = signal<string | null>(null);
 
-  // --- SEÑAL PARA CONTROLAR QUÉ BOTONES ESTÁN CARGANDO (Favoritos) ---
+  // --- SEÑAL FAVORITOS ---
   public favoritosEnProceso = signal<Set<string>>(new Set());
+  // Almacena los IDs de las ciudades que YA son favoritas para pintar el corazón
+  public favoritosIds = signal<Set<string>>(new Set());
 
-  // --- NUEVAS SEÑALES PARA LA MODAL DE CALIFICACIÓN ---
-  public ciudadParaCalificar = signal<CiudadDTO | null>(null); // Controla si la modal se ve
-  public ratingSeleccionado = signal<number>(0);               // Almacena las estrellas (1-5)
-  public comentarioCalificacion = signal<string>('');          // Almacena el texto
-  public enviandoCalificacion = signal<boolean>(false);        // Loading del botón Enviar
-  public opinionesDelDestino = signal<OpinionPublicaDto[]>([]); // Opiniones cargadas
-  public cargandoOpiniones = signal<boolean>(false);            // Loading de opiniones
+  // --- SEÑALES MODAL OPINIÓN ---
+  public ciudadParaCalificar = signal<CiudadDTO | null>(null); 
+  public ratingSeleccionado = signal<number>(0);               
+  public comentarioCalificacion = signal<string>('');          
+  public enviandoCalificacion = signal<boolean>(false);        
+  public opinionesDelDestino = signal<OpinionPublicaDto[]>([]); 
+  public cargandoOpiniones = signal<boolean>(false);            
 
   get userName(): string {
-    // Busca el usuario actual en el estado de ABP
     const currentUser = this.configState.getOne('currentUser');
-    
-    // Si existe y tiene nombre, lo devuelve. Si no, devuelve 'Viajero'
     return currentUser?.name || currentUser?.userName || 'Viajero';
+  }
+
+  ngOnInit() {
+    // Al iniciar, cargamos los favoritos que el usuario ya tiene
+    this.cargarFavoritosExistentes();
+  }
+
+  // --- LÓGICA DE CARGA INICIAL DE FAVORITOS (CORREGIDA) ---
+  private cargarFavoritosExistentes() {
+    this.listaFavoritosService.obtenerFavoritos().subscribe({
+      next: (resultado: any[]) => {
+        // Aseguramos que sea un array
+        const lista = Array.isArray(resultado) ? resultado : (resultado['items'] || []);
+        
+        const ids = new Set<string>();
+        
+        lista.forEach((item: any) => {
+             // BUSCAMOS EL ID EXTERNO (GeoDB) EN TODAS PARTES
+             // El backend puede devolverlo directo, o dentro de 'destino' o 'destinoTuristico'
+             const idExterno = item.idExterno 
+                            || item.destino?.idExterno 
+                            || item.destinoTuristico?.idExterno;
+
+             if (idExterno) {
+                ids.add(idExterno);
+             }
+        });
+
+        this.favoritosIds.set(ids);
+        console.log(`💙 Favoritos cargados al inicio: ${ids.size}`, ids);
+      },
+      error: (err) => {
+        console.log('No se pudieron cargar favoritos iniciales (Usuario anónimo o error API).');
+      }
+    });
+  }
+
+  // Helper para el HTML: ¿Esta ciudad ya es favorita?
+  public esFavorito(geoDBId: string | undefined): boolean {
+    if (!geoDBId) return false;
+    return this.favoritosIds().has(geoDBId);
   }
 
   /**
@@ -111,6 +150,12 @@ export class HomeComponent {
         return;
     }
 
+    // Si ya es favorito, avisamos y no hacemos nada
+    if (this.esFavorito(ciudadId)) {
+        this.toaster.info('Esta ciudad ya está en tu lista de deseos.', 'Información');
+        return;
+    }
+
     // 1. Añadimos el ID al Set para mostrar el spinner en el botón
     this.favoritosEnProceso.update(set => {
         const newSet = new Set(set);
@@ -121,12 +166,19 @@ export class HomeComponent {
     this.listaFavoritosService.agregarFavoritoDesdeBusqueda(ciudad).subscribe({
       next: () => {
         this.toaster.success(`¡"${ciudad.nombre}" agregado a favoritos!`, 'Éxito');
+        
+        // Actualizamos localmente para que se pinte rojo al instante
+        this.favoritosIds.update(ids => {
+            const nuevosIds = new Set(ids);
+            nuevosIds.add(ciudadId);
+            return nuevosIds;
+        });
       },
       error: (error) => {
         this.toaster.error('No se pudo guardar. ¿Estás logueado?', 'Error');
         console.error(error);
       },
-      // 2. Al finalizar (sea éxito o error), quitamos el ID del Set
+      // 2. Al finalizar (sea éxito o error), quitamos el ID del Set de carga
       complete: () => {
         this.favoritosEnProceso.update(set => {
             const newSet = new Set(set);
@@ -157,7 +209,7 @@ export class HomeComponent {
     this.comentarioCalificacion.set('');
     this.ciudadParaCalificar.set(ciudad);
     
-    // --- NUEVO: Cargar opiniones al abrir ---
+    // Cargar opiniones al abrir
     if (ciudad.geoDBId) {
         this.cargarOpiniones(ciudad.geoDBId);
     }
@@ -169,11 +221,10 @@ export class HomeComponent {
     this.opinionesDelDestino.set([]); // Limpiamos al cerrar
   }
 
-  // --- NUEVO MÉTODO PRIVADO ---
+  // Método privado para cargar opiniones
   private cargarOpiniones(idExterno: string): void {
       this.cargandoOpiniones.set(true);
       
-      // Llamamos al nuevo endpoint (asegúrate de haber regenerado proxies o agrégalo a tu servicio manual)
       this.opinionService.obtenerListaPublicaPorDestino(idExterno).subscribe({
           next: (lista) => {
               this.opinionesDelDestino.set(lista);
@@ -208,11 +259,10 @@ export class HomeComponent {
     this.enviandoCalificacion.set(true);
 
     // --- OBJETO PARA EL BACKEND ---
-    // Mapeamos los datos de GeoDB a lo que espera tu API de Destinos
     const destinoParaGuardar = {
       nombre: ciudad.nombre,
       pais: ciudad.pais,
-      idExterno: ciudad.geoDBId, // Importante: Mapeamos geoDBId a idExterno
+      idExterno: ciudad.geoDBId, 
       poblacion: ciudad.poblacion,
       latitud: ciudad.latitud,
       longitud: ciudad.longitud
@@ -238,11 +288,11 @@ export class HomeComponent {
             const ahora = new Date();
             const diferenciaMilisegundos = ahora.getTime() - fechaCreacion.getTime();
             
-            if (diferenciaMilisegundos > 60000) { // Mayor a 1 minuto
+            if (diferenciaMilisegundos > 60000) { 
                  this.toaster.info(
                     'Hemos detectado una calificación previa. Se ha restaurado y actualizado correctamente.', 
                     'Calificación Restaurada'
-                 );
+                  );
             } else {
                  this.toaster.success('¡Gracias por tu opinión!', 'Enviado');
             }
@@ -253,7 +303,6 @@ export class HomeComponent {
           error: (errOpinion) => {
             console.error('Error al guardar opinión:', errOpinion);
             
-            // Si el backend lanza la excepción "Ya has calificado...", el error suele venir aquí
             if (errOpinion.error?.error?.message) {
                  this.toaster.warn(errOpinion.error.error.message, 'Atención');
             } else {
@@ -267,9 +316,6 @@ export class HomeComponent {
       error: (errDestino) => {
         console.error('Error al crear destino:', errDestino);
         
-        // Si el error es 409 (Conflict), significa que la ciudad ya existe.
-        // En ese caso, la lógica ideal sería "Si falla, busca el destino por IdExterno y usa ese ID".
-        // Pero si tu backend devuelve el objeto incluso en error, o si necesitas esa lógica extra, avísame.
         this.toaster.error(
             'No se pudo procesar el destino en la base de datos.', 
             'Error'
@@ -279,5 +325,13 @@ export class HomeComponent {
     });
   }
 
-  
+  public crearExperiencia(ciudad: CiudadDTO): void {
+      // 1. Guardar el destino en base de datos si no existe
+      // 2. Abrir la modal de app-experiencias
+      console.log('Abriendo modal para crear experiencia en:', ciudad.nombre);
+      this.toaster.info('¡Próximamente! Aquí podrás crear tu experiencia detallada.', 'En construcción');
+      
+      // TODO: Conectar con el componente ExperienciasComponent
   }
+
+}

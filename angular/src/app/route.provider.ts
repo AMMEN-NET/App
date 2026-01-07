@@ -37,6 +37,13 @@ function configureRoutes() {
         iconClass: 'fas fa-users', // El icono (FontAwesome)
         order: 4,                 // El orden (para que salga debajo del Home)
         layout: eLayoutType.application,
+      },
+            {
+        path: '/experiencias',       // La URL a la que llevará
+        name: 'Experiencias',    // Lo que se lee en la sidebar
+        iconClass: 'fas fa-compass', // El icono (FontAwesome)
+        order: 5,                 // El orden (para que salga debajo del Home)
+        layout: eLayoutType.application,
       }
   ]);
 }
