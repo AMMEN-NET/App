@@ -1,3 +1,3 @@
-export interface Entity<T> {
-    id?: T;
+
+export interface Entity {
 }

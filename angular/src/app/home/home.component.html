@@ -209,6 +209,26 @@
                     <h3 class="text-2xl font-bold text-slate-800 group-hover:text-[#045288] transition-colors leading-none">
                       {{ ciudad.nombre }}
                     </h3>
+                    <div class="mt-2 flex items-center gap-2">
+                      @if (ciudad.promedioPuntuacion) {
+                        <div class="flex text-amber-400 text-xs">
+                          @for (star of [1, 2, 3, 4, 5]; track star) {
+                            @if (star <= Math.round(ciudad.promedioPuntuacion)) {
+                              <i class="fas fa-star"></i>
+                            } @else {
+                              <i class="far fa-star text-slate-300"></i>
+                            }
+                          }
+                        </div>
+                        <span class="text-xs text-slate-500 font-semibold">
+                          {{ ciudad.promedioPuntuacion | number:'1.1-1' }} ({{ ciudad.cantidadOpiniones }})
+                        </span>
+                      } @else {
+                        <span class="text-[10px] text-slate-400 font-medium bg-slate-100 px-2 py-0.5 rounded-full">
+                          Sin calificaciones
+                        </span>
+                      }
+                    </div>
                   </div>
                   <div class="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-300 group-hover:bg-[#0079CC] group-hover:text-red-500 transition-colors">
                     <i class="fas fa-map-pin"></i>
@@ -234,7 +254,9 @@
               </div>
 
               <div class="bg-slate-50 p-4 flex gap-3 border-t border-slate-100">
-                <button class="flex-1 px-4 py-2 rounded-lg border border-slate-200 text-slate-600 text-sm font-semibold hover:bg-white hover:border-slate-300 hover:text-slate-800 hover:shadow-sm transition-all">
+                <button 
+                (click)="abrirModalCalificar(ciudad)"
+                class="flex-1 px-4 py-2 rounded-lg border border-slate-200 text-slate-600 text-sm font-semibold hover:bg-white hover:border-slate-300 hover:text-slate-800 hover:shadow-sm transition-all">
                   Calificar
                 </button> 
                 
@@ -272,3 +294,160 @@
     }
   </div>
 </div>
+@if (ciudadParaCalificar(); as ciudadModal) {
+  <div class="fixed inset-0 z-[60] flex items-center justify-center p-4">
+    
+    <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" (click)="cerrarModalCalificar()"></div>
+
+    <div class="relative w-full max-w-5xl bg-white rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 fade-in duration-200 ring-1 ring-white/20 flex flex-col md:flex-row h-full md:h-auto md:max-h-[90vh]">
+      
+      <button (click)="cerrarModalCalificar()" class="absolute top-4 right-4 z-20 text-slate-400 hover:text-slate-600 bg-white hover:bg-slate-100 rounded-full w-8 h-8 flex items-center justify-center transition-colors shadow-sm border border-slate-100">
+        <i class="fas fa-times"></i>
+      </button>
+
+      <div class="w-full md:w-2/5 p-6 md:p-8 flex flex-col justify-center bg-white relative z-10 shrink-0 overflow-y-auto md:overflow-visible">
+        
+        <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-[#0079CC] to-[#045288]"></div>
+
+        <div class="text-center mb-6 mt-2">
+          <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-amber-50 text-amber-500 mb-3 shadow-sm ring-4 ring-amber-50/50">
+             <i class="fas fa-edit text-xl"></i>
+          </div>
+          <h3 class="text-2xl font-serif font-bold text-slate-800 mb-1">
+            Tu Experiencia
+          </h3>
+          <p class="text-sm text-slate-500">
+            Estás calificando a <span class="font-bold text-[#0079CC]">{{ ciudadModal.nombre }}</span>
+          </p>
+        </div>
+
+        <div class="space-y-6">
+          <div class="flex justify-center gap-2">
+            @for (star of [1, 2, 3, 4, 5]; track star) {
+              <button 
+                type="button"
+                (click)="ratingSeleccionado.set(star)"
+                class="group relative focus:outline-none transition-transform hover:scale-110 active:scale-95 p-1"
+              >
+                @if (ratingSeleccionado() >= star) {
+                  <i class="fas fa-star text-3xl text-amber-400 drop-shadow-sm"></i>
+                } @else {
+                  <i class="far fa-star text-3xl text-slate-300 group-hover:text-amber-300 transition-colors"></i>
+                }
+              </button>
+            }
+          </div>
+          
+          <div class="text-center h-4">
+            <span class="text-xs font-bold uppercase tracking-widest text-[#0079CC]">
+              @switch (ratingSeleccionado()) {
+                @case (1) { Mala experiencia }
+                @case (2) { Puede mejorar }
+                @case (3) { Estuvo bien }
+                @case (4) { Muy buena }
+                @case (5) { ¡Excelente destino! }
+                @default { Selecciona una puntuación }
+              }
+            </span>
+          </div>
+
+          <div class="relative">
+            <textarea
+              rows="4"
+              class="w-full bg-slate-50 border-0 ring-1 ring-slate-200 rounded-xl p-4 text-slate-700 placeholder-slate-400 focus:ring-2 focus:ring-[#0079CC] focus:bg-white transition-all resize-none text-sm shadow-inner"
+              placeholder="¿Qué consejo le darías a otro viajero?"
+              [ngModel]="comentarioCalificacion()"
+              (ngModelChange)="comentarioCalificacion.set($event)"
+            ></textarea>
+          </div>
+
+          <button
+            type="button"
+            (click)="enviarCalificacion()"
+            [disabled]="ratingSeleccionado() === 0 || enviandoCalificacion()"
+            class="w-full rounded-xl bg-[#0079CC] py-3.5 text-sm font-bold text-white shadow-lg shadow-blue-500/30 hover:bg-[#045288] hover:shadow-blue-600/40 hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          >
+            @if (enviandoCalificacion()) {
+               <span class="animate-spin">◷</span> Publicando...
+            } @else {
+               Publicar Opinión
+            }
+          </button>
+        </div>
+      </div>
+
+      <div class="w-full md:w-3/5 bg-slate-50 border-t md:border-t-0 md:border-l border-slate-200 flex flex-col h-[320px] md:h-auto shrink-0">
+        
+        <div class="p-6 border-b border-slate-200 bg-white/50 backdrop-blur-sm sticky top-0 z-10 flex justify-between items-center shrink-0">
+          <div>
+             <h4 class="font-bold text-slate-800 flex items-center gap-2">
+               <i class="fas fa-comments text-[#0079CC]"></i> Opiniones
+             </h4>
+             <p class="text-xs text-slate-500 mt-1">
+               @if(opinionesDelDestino().length > 0) {
+                  Lo que dicen otros viajeros
+               } @else {
+                  Sé el primero en opinar
+               }
+             </p>
+          </div>
+          
+          @if(opinionesDelDestino().length > 0) {
+              <div class="px-3 py-1 bg-amber-100 text-amber-700 rounded-lg text-xs font-bold border border-amber-200 whitespace-nowrap">
+                 {{ opinionesDelDestino().length }} opiniones
+              </div>
+          }
+        </div>
+
+        <div class="flex-grow overflow-y-auto p-6 relative">
+          
+          @if (cargandoOpiniones()) {
+              <div class="flex justify-center items-center h-full text-slate-400">
+                  <i class="fas fa-spinner fa-spin text-2xl mr-2"></i> Cargando...
+              </div>
+          } 
+          @else if (opinionesDelDestino().length === 0) {
+              <div class="flex flex-col items-center justify-center h-full text-slate-400 text-center opacity-60">
+                  <i class="far fa-comment-dots text-4xl mb-2"></i>
+                  <p class="text-sm">Aún no hay opiniones.</p>
+                  <p class="text-xs">¡Tu opinión será la primera!</p>
+              </div>
+          } 
+          @else {
+              <div class="flex flex-col space-y-4">
+                  @for (opinion of opinionesDelDestino(); track opinion.id) {
+                      <div class="w-full bg-white p-4 rounded-xl border border-slate-200 shadow-sm animate-in fade-in slide-in-from-bottom-2 duration-300">
+                        <div class="flex justify-between items-start mb-2">
+                          <div class="flex items-center gap-2">
+                            <div class="w-8 h-8 rounded-full bg-blue-100 text-[#0079CC] flex items-center justify-center text-xs font-bold uppercase shrink-0">
+                              {{ opinion.nombreUsuario?.slice(0, 2) || 'AN' }}
+                            </div>
+                            <span class="text-sm font-bold text-slate-700 truncate">{{ opinion.nombreUsuario || 'Anónimo' }}</span>
+                          </div>
+                          <div class="flex text-amber-400 text-xs shrink-0">
+                            @for (star of [1,2,3,4,5]; track star) {
+                                @if (star <= (opinion.puntuacion || 0)) {
+                                    <i class="fas fa-star"></i>
+                                } @else {
+                                    <i class="far fa-star text-slate-200"></i>
+                                }
+                            }
+                          </div>
+                        </div>
+                        <p class="text-sm text-slate-600 leading-relaxed break-words">
+                          {{ opinion.comentario }}
+                        </p>
+                        <span class="text-[10px] text-slate-400 mt-2 block">
+                          {{ opinion.creationTime | date:'mediumDate' }}
+                        </span>
+                      </div>
+                  }
+              </div>
+          }
+          
+        </div>
+      </div>
+
+    </div>
+  </div>
+}

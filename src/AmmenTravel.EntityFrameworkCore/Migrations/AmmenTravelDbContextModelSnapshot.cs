@@ -229,6 +229,8 @@ namespace AmmenTravel.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("DestinoTuristicoId");
+
                     b.ToTable("AppOpiniones", (string)null);
                 });
 
@@ -2018,6 +2020,17 @@ namespace AmmenTravel.Migrations
                     b.Navigation("DestinoTuristico");
 
                     b.Navigation("ListaFavorito");
+                });
+
+            modelBuilder.Entity("AmmenTravel.Opiniones.Opinion", b =>
+                {
+                    b.HasOne("AmmenTravel.Destinos.DestinoTuristico", "DestinoTuristico")
+                        .WithMany()
+                        .HasForeignKey("DestinoTuristicoId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("DestinoTuristico");
                 });
 
             modelBuilder.Entity("Volo.Abp.AuditLogging.AuditLogAction", b =>

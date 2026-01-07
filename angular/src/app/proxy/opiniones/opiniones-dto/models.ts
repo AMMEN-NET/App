@@ -1,10 +1,21 @@
 import type { ValorPuntuacion } from '../valor-puntuacion.enum';
+import type { EntityDto } from '@abp/ng.core';
 
 export interface OpinionDto {
   id?: string;
   destinoTuristicoId?: string;
+  nombreDestino?: string;
   userId?: string;
   puntuacion?: ValorPuntuacion;
+  comentario?: string;
+  creationTime?: string;
+  isDeleted: boolean;
+  esFavorito: boolean;
+}
+
+export interface OpinionPublicaDto extends EntityDto<string> {
+  nombreUsuario?: string;
+  puntuacion: number;
   comentario?: string;
   creationTime?: string;
 }

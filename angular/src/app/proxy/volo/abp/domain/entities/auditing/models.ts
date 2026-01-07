@@ -5,7 +5,8 @@ export interface AuditedEntity<TKey> extends CreationAuditedEntity<TKey> {
   lastModifierId?: string;
 }
 
-export interface CreationAuditedEntity<TKey> extends Entity<TKey> {
+export interface CreationAuditedEntity<TKey> extends Entity {
+  id:TKey;
   creationTime?: string;
   creatorId?: string;
 }
