@@ -77,14 +77,12 @@ export class HomeComponent implements OnInit {
         const ids = new Set<string>();
         
         lista.forEach((item: any) => {
-             // BUSCAMOS EL ID EXTERNO (GeoDB) EN TODAS PARTES
-             // El backend puede devolverlo directo, o dentro de 'destino' o 'destinoTuristico'
-             const idExterno = item.idExterno 
-                            || item.destino?.idExterno 
-                            || item.destinoTuristico?.idExterno;
+             // CORRECCIÓN: Buscamos 'geoDBId' que es como se llama en tu DTO (FavoritoDto)
+             // Agregamos también 'idExterno' por si acaso
+             const idCorrecto = item.geoDBId || item.geoDbId || item.idExterno;
 
-             if (idExterno) {
-                ids.add(idExterno);
+             if (idCorrecto) {
+                ids.add(idCorrecto);
              }
         });
 
@@ -152,7 +150,7 @@ export class HomeComponent implements OnInit {
 
     // Si ya es favorito, avisamos y no hacemos nada
     if (this.esFavorito(ciudadId)) {
-        this.toaster.info('Esta ciudad ya está en tu lista de deseos.', 'Información');
+        this.toaster.info('Esta ciudad ya está en tu lista de deseos, si queres eliminarla de allí dirigite a la sección de favoritos.', 'Información');
         return;
     }
 
@@ -326,11 +324,8 @@ export class HomeComponent implements OnInit {
   }
 
   public crearExperiencia(ciudad: CiudadDTO): void {
-      // 1. Guardar el destino en base de datos si no existe
-      // 2. Abrir la modal de app-experiencias
       console.log('Abriendo modal para crear experiencia en:', ciudad.nombre);
       this.toaster.info('¡Próximamente! Aquí podrás crear tu experiencia detallada.', 'En construcción');
-      
       // TODO: Conectar con el componente ExperienciasComponent
   }
 
