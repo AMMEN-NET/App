@@ -1,5 +1,6 @@
 ﻿using AmmenTravel.Destinos;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.EntityFrameworkCore; // Necesario para .Include() e .IgnoreQueryFilters()
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -47,7 +48,7 @@ namespace AmmenTravel.Experiencias
             {
                 Id = experiencia.Id,
                 DestinoId = experiencia.DestinoId,
-                DestinoNombre = destino.Nombre, // Devolvemos el nombre
+                DestinoNombre = destino.Nombre,
                 Valoracion = experiencia.Valoracion,
                 Comentario = experiencia.Comentario,
                 CreationTime = DateTime.Now,
@@ -58,9 +59,10 @@ namespace AmmenTravel.Experiencias
 
         public async Task<ExperienciaDto> UpdateAsync(Guid id, CreateUpdateExperienciaDto input)
         {
-            // Usamos WithDetailsAsync para traer la relación del destino
-            var query = await _experienciaRepository.WithDetailsAsync(x => x.Destino);
-            var experiencia = query.FirstOrDefault(x => x.Id == id);
+            var queryable = await _experienciaRepository.GetQueryableAsync();
+            var experiencia = await queryable
+                .Include(x => x.Destino)
+                .FirstOrDefaultAsync(x => x.Id == id);
 
             if (experiencia == null) throw new EntityNotFoundException(typeof(Experiencia), id);
 
@@ -98,58 +100,71 @@ namespace AmmenTravel.Experiencias
             await _experienciaRepository.DeleteAsync(experiencia);
         }
 
-        public async Task<List<ExperienciaDto>> GetListAsync(string destinoId, TipoExperiencia? filtroValoracion = null, string filtroTexto = null)
+        // Método para ver experiencias PÚBLICAS (de un destino o todas)
+        public async Task<List<ExperienciaDto>> GetListAsync(string? destinoId = null, TipoExperiencia? filtroValoracion = null, string filtroTexto = null)
         {
-            Guid idReal;
+            Guid? idReal = null;
 
-            // 1. Resolver ID (Guid o Externo)
-            if (Guid.TryParse(destinoId, out var parsedGuid))
+            // 1. Resolver ID solo si se envía uno (Guid o Externo)
+            if (!string.IsNullOrWhiteSpace(destinoId))
             {
-                idReal = parsedGuid;
+                if (Guid.TryParse(destinoId, out var parsedGuid))
+                {
+                    idReal = parsedGuid;
+                }
+                else
+                {
+                    var destino = await _destinoRepository.FirstOrDefaultAsync(d => d.IdExterno == destinoId);
+                    if (destino != null)
+                    {
+                        idReal = destino.Id;
+                    }
+                }
             }
-            else
+
+            // 2. Construir Query Robusta
+            var queryable = await _experienciaRepository.GetQueryableAsync();
+
+            var query = queryable
+                .IgnoreQueryFilters()       // CLAVE: Ignora filtros de seguridad (IUserOwned) y SoftDelete
+                .Include(x => x.Destino)    // JOIN Explícito
+                .Where(x => !x.IsDeleted);  // Re-aplicamos filtro de borrado lógico manualmente
+
+            // 3. Aplicar Filtro de Destino (Solo si se resolvió un ID válido)
+            if (idReal.HasValue)
             {
-                var destino = await _destinoRepository.FirstOrDefaultAsync(d => d.IdExterno == destinoId);
-                if (destino == null) return new List<ExperienciaDto>();
-                idReal = destino.Id;
+                query = query.Where(x => x.DestinoId == idReal.Value);
             }
 
-            // 2. OBTENER QUERY CON INCLUDES (ESTO EVITA QUE EXPLOTE AL BUSCAR EL NOMBRE)
-            // 'WithDetailsAsync' le dice a EF Core que haga el JOIN con la tabla Destinos
-            var query = await _experienciaRepository.WithDetailsAsync(x => x.Destino);
-
-            // 3. Aplicar Filtros sobre la Query en memoria o IQueryable
-            // Nota: Al usar WithDetailsAsync a veces devuelve IQueryable o List dependiendo de la versión de ABP.
-            // Para asegurar, trabajamos sobre la queryable:
-
-            var queryFiltrada = query.AsQueryable().Where(x => x.DestinoId == idReal);
-
+            // 4. Filtros opcionales
             if (filtroValoracion.HasValue)
             {
-                queryFiltrada = queryFiltrada.Where(x => x.Valoracion == filtroValoracion.Value);
+                query = query.Where(x => x.Valoracion == filtroValoracion.Value);
             }
 
+            // NUEVO: El buscador busca en el comentario O en el nombre del destino
             if (!string.IsNullOrWhiteSpace(filtroTexto))
             {
-                queryFiltrada = queryFiltrada.Where(x => x.Comentario.ToLower().Contains(filtroTexto.ToLower()));
+                var texto = filtroTexto.ToLower();
+                query = query.Where(x =>
+                    x.Comentario.ToLower().Contains(texto) ||
+                    x.Destino.Nombre.ToLower().Contains(texto));
             }
 
-            queryFiltrada = queryFiltrada.OrderByDescending(x => x.CreationTime);
+            query = query.OrderByDescending(x => x.CreationTime);
 
-            var experiencias = await AsyncExecuter.ToListAsync(queryFiltrada);
+            var experiencias = await AsyncExecuter.ToListAsync(query);
 
-            // 4. Obtener usuarios para mostrar nombres
+            // 5. Mapeo de Usuarios
             var userIds = experiencias.Select(x => x.CreatorId).Distinct().Where(id => id.HasValue).Select(id => id.Value).ToList();
             var usuarios = await _userRepository.GetListByIdsAsync(userIds);
             var diccionarioUsuarios = usuarios.ToDictionary(u => u.Id, u => u.UserName);
 
-            // 5. Mapear a DTO
             return experiencias.Select(e => new ExperienciaDto
             {
                 Id = e.Id,
                 DestinoId = e.DestinoId,
-                // Aquí asignamos el nombre de forma segura. Si Destino es null (error de integridad vieja), ponemos "Desconocido"
-                DestinoNombre = e.Destino != null ? e.Destino.Nombre : "Destino Desconocido",
+                DestinoNombre = e.Destino?.Nombre ?? "Destino Desconocido",
                 Valoracion = e.Valoracion,
                 Comentario = e.Comentario,
                 CreationTime = e.CreationTime,
@@ -159,51 +174,52 @@ namespace AmmenTravel.Experiencias
                             : "Usuario Desconocido"
             }).ToList();
         }
+
+        // Método para ver "MIS EXPERIENCIAS" (Perfil de usuario)
         public async Task<List<ExperienciaDto>> GetListPorUsuarioAsync(Guid userId, TipoExperiencia? filtroValoracion = null, string filtroTexto = null)
-{
-    var query = await _experienciaRepository.WithDetailsAsync(x => x.Destino);
+        {
+            // 1. Construir Query Robusta
+            var queryable = await _experienciaRepository.GetQueryableAsync();
 
-    // 2. Filtramos DIRECTO por el ID del usuario (CreatorId es campo de auditoría de ABP)
-    var queryFiltrada = query.AsQueryable().Where(x => x.CreatorId == userId);
+            var query = queryable
+                .Include(x => x.Destino) // JOIN Explícito
+                .Where(x => x.CreatorId == userId);
 
-    // 3. Filtros opcionales (por si el usuario quiere buscar en sus propias reseñas)
-    if (filtroValoracion.HasValue)
-    {
-        queryFiltrada = queryFiltrada.Where(x => x.Valoracion == filtroValoracion.Value);
+            // 2. Filtros opcionales
+            if (filtroValoracion.HasValue)
+            {
+                query = query.Where(x => x.Valoracion == filtroValoracion.Value);
+            }
+
+            // NUEVO: Búsqueda también por nombre de destino en Mis Experiencias
+            if (!string.IsNullOrWhiteSpace(filtroTexto))
+            {
+                var texto = filtroTexto.ToLower();
+                query = query.Where(x =>
+                    x.Comentario.ToLower().Contains(texto) ||
+                    x.Destino.Nombre.ToLower().Contains(texto));
+            }
+
+            query = query.OrderByDescending(x => x.CreationTime);
+
+            var experiencias = await AsyncExecuter.ToListAsync(query);
+
+            // 3. Obtener nombre del usuario
+            var usuario = await _userRepository.GetAsync(userId);
+            string nombreUsuario = usuario.UserName;
+
+            // 4. Mapeo
+            return experiencias.Select(e => new ExperienciaDto
+            {
+                Id = e.Id,
+                DestinoId = e.DestinoId,
+                DestinoNombre = e.Destino?.Nombre ?? "Destino Eliminado",
+                Valoracion = e.Valoracion,
+                Comentario = e.Comentario,
+                CreationTime = e.CreationTime,
+                CreatorId = e.CreatorId,
+                UserName = nombreUsuario
+            }).ToList();
+        }
     }
-
-    if (!string.IsNullOrWhiteSpace(filtroTexto))
-    {
-        queryFiltrada = queryFiltrada.Where(x => x.Comentario.ToLower().Contains(filtroTexto.ToLower()));
-    }
-
-    // 4. Ordenamos por fecha (lo más nuevo arriba)
-    queryFiltrada = queryFiltrada.OrderByDescending(x => x.CreationTime);
-
-    // 5. Ejecutamos la consulta
-    var experiencias = await AsyncExecuter.ToListAsync(queryFiltrada);
-
-    // 6. Obtenemos el nombre del usuario UNA sola vez (ya que todas son del mismo userId)
-    var usuario = await _userRepository.GetAsync(userId);
-    string nombreUsuario = usuario.UserName;
-
-    // 7. Mapeamos a DTO
-    return experiencias.Select(e => new ExperienciaDto
-    {
-        Id = e.Id,
-        DestinoId = e.DestinoId,
-        
-        // Acá es importante: mostramos el nombre del destino
-        DestinoNombre = e.Destino != null ? e.Destino.Nombre : "Destino Eliminado",
-        
-        Valoracion = e.Valoracion,
-        Comentario = e.Comentario,
-        CreationTime = e.CreationTime,
-        CreatorId = e.CreatorId,
-        
-        // Como todas son del mismo usuario, usamos el nombre que buscamos arriba
-        UserName = nombreUsuario 
-    }).ToList();
-}
-    } 
 }

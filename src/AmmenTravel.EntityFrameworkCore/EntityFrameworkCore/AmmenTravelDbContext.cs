@@ -149,12 +149,17 @@ public class AmmenTravelDbContext :
         builder.Entity<Experiencia>(b =>
         {
             b.ToTable(AmmenTravelConsts.DbTablePrefix + "Experiencias", AmmenTravelConsts.DbSchema);
-            b.ConfigureByConvention(); // Configura Id, CreationTime, etc. automágicamente
+            b.ConfigureByConvention();
 
-            b.Property(x => x.Comentario).IsRequired().HasMaxLength(1000); // Límite de caracteres opcional
+            b.Property(x => x.Comentario).IsRequired().HasMaxLength(1000);
             b.Property(x => x.Valoracion).IsRequired();
 
-            // Índice para búsquedas rápidas por Destino
+            // --- AGREGAR ESTO PARA QUE FUNCIONE EL INCLUDE/JOIN ---
+            b.HasOne(x => x.Destino)
+             .WithMany()
+             .HasForeignKey(x => x.DestinoId)
+             .IsRequired();
+
             b.HasIndex(x => x.DestinoId);
         });
 

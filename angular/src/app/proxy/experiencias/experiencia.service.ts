@@ -27,7 +27,7 @@ export class ExperienciaService {
     { apiName: this.apiName,...config });
   
 
-  getList = (destinoId: string, filtroValoracion?: TipoExperiencia, filtroTexto?: string, config?: Partial<Rest.Config>) =>
+  getList = (destinoId?: string, filtroValoracion?: TipoExperiencia, filtroTexto?: string, config?: Partial<Rest.Config>) =>
     this.restService.request<any, ExperienciaDto[]>({
       method: 'GET',
       url: '/api/app/experiencia',

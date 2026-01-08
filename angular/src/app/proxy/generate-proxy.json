@@ -1770,7 +1770,7 @@
                   "typeAsString": "System.String, System.Private.CoreLib",
                   "type": "System.String",
                   "typeSimple": "string",
-                  "isOptional": false,
+                  "isOptional": true,
                   "defaultValue": null
                 },
                 {

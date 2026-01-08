@@ -1,8 +1,9 @@
-import { Component, Input, OnInit, OnChanges, SimpleChanges, inject, signal } from '@angular/core'; // 1. Agregamos OnChanges y SimpleChanges
+//
+import { Component, Input, OnInit, OnChanges, SimpleChanges, inject, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormControl } from '@angular/forms';
 import { ExperienciaService } from '../proxy/experiencias/experiencia.service';
-import { ExperienciaDto, CreateUpdateExperienciaDto } from '../proxy/experiencias/models'; // Asegurate de importar el DTO de creación
+import { ExperienciaDto, CreateUpdateExperienciaDto } from '../proxy/experiencias/models';
 import { TipoExperiencia } from '../proxy/experiencias';
 import { ConfigStateService } from '@abp/ng.core';
 import { ConfirmationService, Confirmation } from '@abp/ng.theme.shared';
@@ -23,31 +24,26 @@ export class ExperienciasComponent implements OnInit, OnChanges {
   private confirmation = inject(ConfirmationService);
   private toaster = inject(ToasterService);
 
-  // --- INPUTS (MODIFICADOS) ---
-  // Ahora son opcionales para permitir los dos modos de uso
-  @Input() destinoId?: string; 
-  @Input() userId?: string;
-
+  // --- INPUTS ---
+  @Input() destinoId?: string; // Si viene del Home (filtro fijo)
+  
   // Estado
   experiencias = signal<ExperienciaDto[]>([]);
   cargando = signal(false);
   usuarioActualId: string | undefined;
-  
-  // Filtros
+
+  // Filtros y Modos
+  modoVisualizacion = signal<'mias' | 'todas'>('todas'); // Por defecto 'todas' o 'mias' según prefieras
   filtroValoracion = signal<TipoExperiencia | null>(null);
   buscador = new FormControl('');
-  
-  // Modal y Formulario
+
+  // Modal Crear/Editar
   mostrarModal = signal(false);
   modoEdicion = signal(false);
   idEnEdicion: string | null = null;
-  // GUARDAMOS EL DESTINO DE LA EXPERIENCIA EN EDICIÓN
-  // (Fundamental para cuando estamos en modo "Usuario" y no tenemos destinoId global)
-  destinoIdEnEdicion: string | null = null; 
+  destinoIdEnEdicion: string | null = null;
   
   form: FormGroup;
-  
-  // Enums para usar en HTML
   TipoExperiencia = TipoExperiencia;
 
   constructor() {
@@ -57,18 +53,22 @@ export class ExperienciasComponent implements OnInit, OnChanges {
     });
   }
 
-  // 2. Reactividad ante cambios de inputs
   ngOnChanges(changes: SimpleChanges) {
-    // Si cambia el destino O el usuario, recargamos
-    if (changes['destinoId'] || changes['userId']) {
+    if (changes['destinoId']) {
+      // Si nos pasan un destino fijo (desde Home), forzamos modo "todas" para ver las de ese lugar
+      this.modoVisualizacion.set('todas');
       this.cargarExperiencias();
     }
   }
 
   ngOnInit() {
     this.usuarioActualId = this.configState.getOne('currentUser')?.id;
+    
+    // Si no hay destino fijo, iniciamos en 'mias' (opcional)
+    if (!this.destinoId && this.usuarioActualId) {
+        this.modoVisualizacion.set('mias');
+    }
 
-    // Si ya tenemos datos al inicio, cargamos
     this.cargarExperiencias();
 
     this.buscador.valueChanges.pipe(
@@ -77,58 +77,65 @@ export class ExperienciasComponent implements OnInit, OnChanges {
     ).subscribe(() => this.cargarExperiencias());
   }
 
+  // --- CAMBIO DE MODO (MÍAS vs TODAS) ---
+  cambiarModo(modo: 'mias' | 'todas') {
+    this.modoVisualizacion.set(modo);
+    this.cargarExperiencias();
+  }
+
   cargarExperiencias() {
+    this.cargando.set(true);
     const texto = this.buscador.value || undefined;
     const valoracion = this.filtroValoracion() !== null ? this.filtroValoracion()! : undefined;
 
-    // --- LÓGICA HÍBRIDA ---
-    if (this.destinoId) {
-      // MODO 1: Por Destino (Comportamiento original)
-      this.cargando.set(true);
-      this.service.getList(this.destinoId, valoracion, texto).subscribe({
-        next: (data) => {
-          this.experiencias.set(data);
-          this.cargando.set(false);
-        },
-        error: () => this.cargando.set(false)
-      });
-    } 
-    else if (this.userId || this.usuarioActualId) {
-      // MODO 2: Por Usuario (Nuevo método)
-      // Usamos el userId pasado por input, o fallback al usuario logueado
-      const targetUserId = this.userId || this.usuarioActualId;
-      
-      if (!targetUserId) return; // Si no hay ID de usuario, no hacemos nada
-
-      this.cargando.set(true);
-      // Acá usamos el nuevo método que agregaste al servicio
-      this.service.getListPorUsuario(targetUserId, valoracion, texto).subscribe({
-        next: (data) => {
-          this.experiencias.set(data);
-          this.cargando.set(false);
-        },
-        error: () => this.cargando.set(false)
-      });
+    // LÓGICA PRINCIPAL DE CARGA
+    if (this.modoVisualizacion() === 'mias' && this.usuarioActualId) {
+        // Opción A: Ver solo MIS experiencias
+        this.service.getListPorUsuario(this.usuarioActualId, valoracion, texto).subscribe({
+            next: (data) => {
+                this.experiencias.set(data);
+                this.cargando.set(false);
+            },
+            error: () => this.cargando.set(false)
+        });
+    } else {
+        // Opción B: Ver experiencias PÚBLICAS (Globales o de un Destino específico)
+        // Si this.destinoId tiene valor, el backend filtrará por ciudad. Si es null, busca globalmente.
+        const idDestinoParaEnviar = this.destinoId || null; 
+        
+        this.service.getList(idDestinoParaEnviar, valoracion, texto).subscribe({
+            next: (data) => {
+                this.experiencias.set(data);
+                this.cargando.set(false);
+            },
+            error: () => this.cargando.set(false)
+        });
     }
   }
 
-  // --- FILTROS ---
+  // --- MÉTODOS AUXILIARES (Filtros) ---
   cambiarFiltro(val: TipoExperiencia | null) {
     this.filtroValoracion.set(val);
     this.cargarExperiencias();
   }
 
-  // --- CRUD ---
-  
+  // --- CRUD (Abrir modal para CREAR nueva experiencia desde aquí si se desea) ---
+  abrirModalCrear() {
+      // Solo permitimos crear si estamos en el contexto de un destino (desde Home)
+      // O si implementas un selector de destinos en el modal.
+      if (!this.destinoId) {
+          this.toaster.warn('Debes seleccionar un destino desde el inicio para agregar una experiencia.');
+          return;
+      }
+      this.modoEdicion.set(false);
+      this.form.reset({ valoracion: TipoExperiencia.MuyBueno });
+      this.mostrarModal.set(true);
+  }
+
   abrirModalEditar(exp: ExperienciaDto) {
     this.modoEdicion.set(true);
     this.idEnEdicion = exp.id;
-    
-    // IMPORTANTE: Capturamos el destinoId de la experiencia que se va a editar.
-    // Si estamos viendo el perfil del usuario, 'this.destinoId' es undefined,
-    // así que necesitamos sacar el ID de la experiencia misma.
     this.destinoIdEnEdicion = exp.destinoId; 
-
     this.form.patchValue({
       valoracion: exp.valoracion,
       comentario: exp.comentario
@@ -139,35 +146,39 @@ export class ExperienciasComponent implements OnInit, OnChanges {
   guardar() {
     if (this.form.invalid) return;
     
-    // Determinamos qué ID de destino usar
-    const idDestinoFinal = this.destinoId || this.destinoIdEnEdicion;
+    // Si estamos editando, usamos el ID guardado. Si creamos, usamos el Input destinoId.
+    const idDestinoFinal = this.modoEdicion() ? this.destinoIdEnEdicion : this.destinoId;
 
     if (!idDestinoFinal) {
-      this.toaster.error("No se pudo identificar el destino para esta experiencia.");
+      this.toaster.error("Error: No hay destino seleccionado.");
       return;
     }
 
     const data: CreateUpdateExperienciaDto = {
       valoracion: Number(this.form.value.valoracion),
       comentario: this.form.value.comentario,
-      destinoId: idDestinoFinal // Usamos el ID resuelto
+      destinoId: idDestinoFinal
     };
 
     if (this.modoEdicion() && this.idEnEdicion) {
       this.service.update(this.idEnEdicion, data).subscribe({
-        next: () => {
-          this.toaster.success('Experiencia actualizada');
-          this.cerrarModal();
-          this.cargarExperiencias();
-        }
+        next: () => this.finalizarGuardado('Experiencia actualizada')
       });
+    } else {
+       this.service.create(data).subscribe({
+        next: () => this.finalizarGuardado('Experiencia creada')
+       });
     }
   }
 
+  finalizarGuardado(mensaje: string) {
+      this.toaster.success(mensaje);
+      this.cerrarModal();
+      this.cargarExperiencias();
+  }
+
   eliminar(id: string) {
-    this.confirmation.warn('¿Borrar esta experiencia?', 'Confirmar', {
-        yesText: 'Borrar', cancelText: 'Cancelar'
-    }).subscribe(status => {
+    this.confirmation.warn('¿Borrar esta experiencia?', 'Confirmar').subscribe(status => {
       if (status === Confirmation.Status.confirm) {
         this.service.delete(id).subscribe(() => {
           this.toaster.info('Experiencia eliminada');
@@ -180,6 +191,6 @@ export class ExperienciasComponent implements OnInit, OnChanges {
   cerrarModal() {
     this.mostrarModal.set(false);
     this.idEnEdicion = null;
-    this.destinoIdEnEdicion = null; // Limpiamos referencia
+    this.destinoIdEnEdicion = null;
   }
 }

@@ -1,13 +1,31 @@
 <div class="mt-8 bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
 
-  <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-    <h2 class="text-2xl font-bold text-gray-800">
-      @if (userId) {
+  <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4 border-b border-gray-100 pb-4">
+    
+    <div class="flex bg-gray-100 p-1 rounded-lg">
+      <button (click)="cambiarModo('mias')"
+              [class.bg-white]="modoVisualizacion() === 'mias'"
+              [class.shadow-sm]="modoVisualizacion() === 'mias'"
+              [class.text-blue-600]="modoVisualizacion() === 'mias'"
+              class="px-4 py-2 rounded-md text-sm font-bold text-gray-500 transition-all focus:outline-none">
         Mis Experiencias
-      } @else {
-        Experiencias de Viajeros
-      }
-    </h2>
+      </button>
+      <button (click)="cambiarModo('todas')"
+              [class.bg-white]="modoVisualizacion() === 'todas'"
+              [class.shadow-sm]="modoVisualizacion() === 'todas'"
+              [class.text-blue-600]="modoVisualizacion() === 'todas'"
+              class="px-4 py-2 rounded-md text-sm font-bold text-gray-500 transition-all focus:outline-none">
+        Explorar Todas
+      </button>
+    </div>
+
+    @if (destinoId) {
+        <button (click)="abrirModalCrear()" 
+                class="bg-[#0079CC] hover:bg-[#045288] text-white px-4 py-2 rounded-lg text-sm font-bold shadow-md transition-all flex items-center gap-2 transform active:scale-95">
+            <i class="fas fa-plus"></i> 
+            <span>Nueva Experiencia</span>
+        </button>
+    }
   </div>
 
   <div class="flex flex-col md:flex-row gap-4 mb-8">
@@ -44,7 +62,7 @@
       </span>
       <input [formControl]="buscador" 
              type="text" 
-             placeholder="Buscar en comentarios..." 
+             placeholder="Buscar ciudad o comentario..." 
              class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-full focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all">
     </div>
   </div>
@@ -53,7 +71,7 @@
     @if (cargando()) {
       <div class="text-center py-10">
         <i class="fa fa-circle-notch fa-spin text-3xl text-blue-500"></i>
-        <p class="text-gray-400 mt-2 text-sm">Cargando opiniones...</p>
+        <p class="text-gray-400 mt-2 text-sm">Cargando experiencias...</p>
       </div>
     } @else {
       @for (exp of experiencias(); track exp.id) {
@@ -63,7 +81,7 @@
             <div class="flex items-center gap-3">
               
               <div class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 border border-gray-200 shadow-sm">
-                @if (userId) {
+                @if (modoVisualizacion() === 'mias') {
                   <i class="fa fa-map-marker-alt text-red-400"></i>
                 } @else {
                   <i class="fa fa-user text-blue-400"></i>
@@ -72,13 +90,11 @@
 
               <div>
                 <h4 class="font-bold text-gray-800 text-sm flex items-center gap-2">
-                  @if (userId) {
+                  @if (modoVisualizacion() === 'mias') {
                     {{ exp.destinoNombre }}
-                    @if (exp.esFavorito) {
-                      <i class="fa fa-heart text-red-500 text-xs" title="Es uno de tus favoritos"></i>
-                    }
                   } @else {
                     {{ exp.userName }}
+                    <span class="text-gray-400 font-normal text-xs">en {{ exp.destinoNombre }}</span>
                   }
                 </h4>
                 <span class="text-xs text-gray-500 flex items-center gap-1">
@@ -132,7 +148,13 @@
             <i class="fa fa-comment-dots"></i>
           </div>
           <p class="text-gray-500 font-medium">No se encontraron experiencias.</p>
-          <p class="text-xs text-gray-400 mt-1">Sé el primero en comentar o ajusta los filtros.</p>
+          <p class="text-xs text-gray-400 mt-1">
+            @if(modoVisualizacion() === 'mias') {
+              Aún no has compartido ninguna experiencia.
+            } @else {
+              Sé el primero en comentar o ajusta los filtros.
+            }
+          </p>
         </div>
       }
     }
@@ -144,7 +166,9 @@
     <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden transform transition-all scale-100" (click)="$event.stopPropagation()">
       
       <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
-        <h3 class="text-lg font-bold text-gray-800">Editar Experiencia</h3>
+        <h3 class="text-lg font-bold text-gray-800">
+            {{ modoEdicion() ? 'Editar Experiencia' : 'Nueva Experiencia' }}
+        </h3>
         <button (click)="cerrarModal()" class="text-gray-400 hover:text-gray-600 w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-200 transition-colors">
             <i class="fa fa-times"></i>
         </button>
@@ -196,7 +220,7 @@
           <button type="submit" 
                   [disabled]="form.invalid" 
                   class="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-bold py-3.5 rounded-xl shadow-lg shadow-blue-500/30 transition-all transform active:scale-[0.98]">
-            Guardar Cambios
+            {{ modoEdicion() ? 'Guardar Cambios' : 'Publicar Experiencia' }}
           </button>
         </div>
 
