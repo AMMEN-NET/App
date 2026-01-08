@@ -36,6 +36,15 @@ export class ExperienciaService {
     { apiName: this.apiName,...config });
   
 
+  getListPorUsuario = (userId: string, filtroValoracion?: TipoExperiencia, filtroTexto?: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, ExperienciaDto[]>({
+      method: 'GET',
+      url: `/api/app/experiencia/por-usuario/${userId}`,
+      params: { filtroValoracion, filtroTexto },
+    },
+    { apiName: this.apiName,...config });
+  
+
   update = (id: string, input: CreateUpdateExperienciaDto, config?: Partial<Rest.Config>) =>
     this.restService.request<any, ExperienciaDto>({
       method: 'PUT',

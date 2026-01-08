@@ -9,6 +9,7 @@ export interface CreateUpdateExperienciaDto {
 
 export interface ExperienciaDto extends FullAuditedEntityDto<string> {
   destinoId?: string;
+  destinoNombre?: string;
   valoracion?: TipoExperiencia;
   comentario?: string;
   userName?: string;

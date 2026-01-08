@@ -1,11 +1,15 @@
 ﻿using System;
 using Volo.Abp.Domain.Entities.Auditing;
+using AmmenTravel.Destinos;
 
 namespace AmmenTravel.Experiencias
 {
     public class Experiencia : FullAuditedEntity<Guid>
     {
-        public Guid DestinoId { get; set; } // Vinculada al destino
+        public Guid DestinoId { get; set; }
+
+        public virtual DestinoTuristico Destino { get; set; }
+
         public TipoExperiencia Valoracion { get; set; } // Malo, Neutral, Bueno
         public string Comentario { get; set; }
 

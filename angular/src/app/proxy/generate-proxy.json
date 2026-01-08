@@ -1562,6 +1562,39 @@
                   "parametersOnMethod": [
                     {
                       "name": "destinoId",
+                      "typeAsString": "System.String, System.Private.CoreLib",
+                      "type": "System.String",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    },
+                    {
+                      "name": "filtroValoracion",
+                      "typeAsString": "System.Nullable`1[[AmmenTravel.Experiencias.TipoExperiencia, AmmenTravel.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], System.Private.CoreLib",
+                      "type": "AmmenTravel.Experiencias.TipoExperiencia?",
+                      "typeSimple": "enum?",
+                      "isOptional": true,
+                      "defaultValue": null
+                    },
+                    {
+                      "name": "filtroTexto",
+                      "typeAsString": "System.String, System.Private.CoreLib",
+                      "type": "System.String",
+                      "typeSimple": "string",
+                      "isOptional": true,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Collections.Generic.List<AmmenTravel.Experiencias.ExperienciaDto>",
+                    "typeSimple": "[AmmenTravel.Experiencias.ExperienciaDto]"
+                  }
+                },
+                {
+                  "name": "GetListPorUsuarioAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "userId",
                       "typeAsString": "System.Guid, System.Private.CoreLib",
                       "type": "System.Guid",
                       "typeSimple": "string",
@@ -1734,8 +1767,8 @@
               "parametersOnMethod": [
                 {
                   "name": "destinoId",
-                  "typeAsString": "System.Guid, System.Private.CoreLib",
-                  "type": "System.Guid",
+                  "typeAsString": "System.String, System.Private.CoreLib",
+                  "type": "System.String",
                   "typeSimple": "string",
                   "isOptional": false,
                   "defaultValue": null
@@ -1762,12 +1795,89 @@
                   "nameOnMethod": "destinoId",
                   "name": "destinoId",
                   "jsonName": null,
-                  "type": "System.Guid",
+                  "type": "System.String",
                   "typeSimple": "string",
                   "isOptional": false,
                   "defaultValue": null,
                   "constraintTypes": null,
                   "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "filtroValoracion",
+                  "name": "filtroValoracion",
+                  "jsonName": null,
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "filtroTexto",
+                  "name": "filtroTexto",
+                  "jsonName": null,
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Collections.Generic.List<AmmenTravel.Experiencias.ExperienciaDto>",
+                "typeSimple": "[AmmenTravel.Experiencias.ExperienciaDto]"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "AmmenTravel.Experiencias.IExperienciaAppService"
+            },
+            "GetListPorUsuarioAsyncByUserIdAndFiltroValoracionAndFiltroTexto": {
+              "uniqueName": "GetListPorUsuarioAsyncByUserIdAndFiltroValoracionAndFiltroTexto",
+              "name": "GetListPorUsuarioAsync",
+              "httpMethod": "GET",
+              "url": "api/app/experiencia/por-usuario/{userId}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "userId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                },
+                {
+                  "name": "filtroValoracion",
+                  "typeAsString": "System.Nullable`1[[AmmenTravel.Experiencias.TipoExperiencia, AmmenTravel.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], System.Private.CoreLib",
+                  "type": "AmmenTravel.Experiencias.TipoExperiencia?",
+                  "typeSimple": "enum?",
+                  "isOptional": true,
+                  "defaultValue": null
+                },
+                {
+                  "name": "filtroTexto",
+                  "typeAsString": "System.String, System.Private.CoreLib",
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": true,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "userId",
+                  "name": "userId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
                   "descriptorName": ""
                 },
                 {
@@ -4932,6 +5042,18 @@
           "name": "DestinoId",
           "jsonName": null,
           "type": "System.Guid",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "DestinoNombre",
+          "jsonName": null,
+          "type": "System.String",
           "typeSimple": "string",
           "isRequired": false,
           "minLength": null,

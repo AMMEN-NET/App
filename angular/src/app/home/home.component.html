@@ -458,4 +458,87 @@
 
     </div>
   </div>
+
+}
+
+@if (ciudadExperiencia(); as ciudad) {
+  <div class="fixed inset-0 z-[70] flex items-center justify-center p-4">
+    
+    <div class="absolute inset-0 bg-slate-900/70 backdrop-blur-sm transition-opacity" (click)="cerrarModalExperiencia()"></div>
+
+    <div class="relative w-full max-w-lg bg-white rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 fade-in duration-200">
+      
+      <div class="px-6 py-5 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+        <div>
+          <h3 class="text-xl font-bold text-gray-800">Nueva Experiencia</h3>
+          <p class="text-sm text-gray-500">En <span class="font-bold text-blue-600">{{ ciudad.nombre }}</span></p>
+        </div>
+        <button (click)="cerrarModalExperiencia()" class="text-gray-400 hover:text-gray-600 transition-colors">
+          <i class="fas fa-times text-xl"></i>
+        </button>
+      </div>
+
+      <form [formGroup]="formExperiencia" (ngSubmit)="guardarExperiencia()" class="p-6 space-y-6">
+        
+        <div>
+          <label class="block text-sm font-bold text-gray-700 mb-3">¿Cómo describirías tu experiencia?</label>
+          <div class="grid grid-cols-3 gap-4">
+            
+            <label class="cursor-pointer group">
+              <input type="radio" formControlName="valoracion" [value]="TipoExperiencia.Malo" class="peer sr-only">
+              <div class="flex flex-col items-center p-4 rounded-xl border-2 border-gray-100 bg-white hover:bg-red-50 hover:border-red-100 peer-checked:border-red-500 peer-checked:bg-red-50 transition-all">
+                <i class="fas fa-frown text-3xl text-gray-300 group-hover:text-red-400 peer-checked:text-red-500 mb-2 transition-colors"></i>
+                <span class="text-xs font-bold text-gray-500 peer-checked:text-red-600">Malo</span>
+              </div>
+            </label>
+
+            <label class="cursor-pointer group">
+              <input type="radio" formControlName="valoracion" [value]="TipoExperiencia.Neutral" class="peer sr-only">
+              <div class="flex flex-col items-center p-4 rounded-xl border-2 border-gray-100 bg-white hover:bg-yellow-50 hover:border-yellow-100 peer-checked:border-yellow-400 peer-checked:bg-yellow-50 transition-all">
+                <i class="fas fa-meh text-3xl text-gray-300 group-hover:text-yellow-400 peer-checked:text-yellow-500 mb-2 transition-colors"></i>
+                <span class="text-xs font-bold text-gray-500 peer-checked:text-yellow-600">Neutral</span>
+              </div>
+            </label>
+
+            <label class="cursor-pointer group">
+              <input type="radio" formControlName="valoracion" [value]="TipoExperiencia.MuyBueno" class="peer sr-only">
+              <div class="flex flex-col items-center p-4 rounded-xl border-2 border-gray-100 bg-white hover:bg-green-50 hover:border-green-100 peer-checked:border-green-500 peer-checked:bg-green-50 transition-all">
+                <i class="fas fa-smile text-3xl text-gray-300 group-hover:text-green-400 peer-checked:text-green-500 mb-2 transition-colors"></i>
+                <span class="text-xs font-bold text-gray-500 peer-checked:text-green-600">Muy Bueno</span>
+              </div>
+            </label>
+
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-sm font-bold text-gray-700 mb-2">Cuéntanos más detalles</label>
+          <div class="relative">
+            <textarea 
+              formControlName="comentario" 
+              rows="4" 
+              class="w-full border border-gray-200 rounded-xl p-4 text-gray-700 placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-shadow resize-none bg-gray-50 focus:bg-white"
+              placeholder="¿Qué lugares visitaste? ¿Qué tal la comida? ¿Algún consejo?"></textarea>
+            
+            @if(formExperiencia.get('comentario')?.hasError('minlength') && formExperiencia.get('comentario')?.touched) {
+               <span class="absolute bottom-3 right-4 text-xs text-red-500 font-medium">Mínimo 10 caracteres</span>
+            }
+          </div>
+        </div>
+
+        <button 
+          type="submit" 
+          [disabled]="formExperiencia.invalid || enviandoExperiencia()"
+          class="w-full py-3.5 rounded-xl bg-blue-600 text-white font-bold shadow-lg shadow-blue-500/30 hover:bg-blue-700 hover:shadow-xl hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center gap-2">
+          
+          @if (enviandoExperiencia()) {
+            <i class="fas fa-circle-notch fa-spin"></i> Publicando...
+          } @else {
+            <i class="fas fa-paper-plane"></i> Compartir Experiencia
+          }
+        </button>
+
+      </form>
+    </div>
+  </div>
 }
