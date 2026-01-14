@@ -1,12 +1,41 @@
-<abp-page [title]="'Panel de Control'">
-  
-  <div class="flex items-center gap-3 mb-6 text-gray-700">
-    <i class="fa fa-chart-line text-3xl text-blue-600"></i>
-    <p class="text-gray-500 text-sm mt-1">Visión general de las métricas del sistema</p>
-  </div>
-
-  <div class="grid grid-cols-1 md:grid-cols-4 gap-6" *ngIf="resumen">
+<div class="grid grid-cols-1 md:grid-cols-4 gap-6" *ngIf="resumen">
     
+    <div class="rounded-lg shadow-lg bg-indigo-600 text-white overflow-hidden transform hover:scale-105 transition-transform duration-200">
+      <div class="p-6">
+        <div class="flex justify-between items-center">
+          <div>
+            <h6 class="text-xs font-semibold uppercase tracking-wider opacity-90">Total Usuarios</h6>
+            <h2 class="text-3xl font-bold mt-2">{{ resumen.totalUsuarios }}</h2>
+          </div>
+          <i class="fa fa-users fa-2x opacity-40"></i>
+        </div>
+      </div>
+    </div>
+
+    <div class="rounded-lg shadow-lg bg-pink-600 text-white overflow-hidden transform hover:scale-105 transition-transform duration-200">
+      <div class="p-6">
+        <div class="flex justify-between items-center">
+          <div>
+            <h6 class="text-xs font-semibold uppercase tracking-wider opacity-90">Experiencias</h6>
+            <h2 class="text-3xl font-bold mt-2">{{ resumen.totalExperiencias }}</h2>
+          </div>
+          <i class="fa fa-book-open fa-2x opacity-40"></i>
+        </div>
+      </div>
+    </div>
+
+    <div class="rounded-lg shadow-lg bg-orange-500 text-white overflow-hidden transform hover:scale-105 transition-transform duration-200">
+      <div class="p-6">
+        <div class="flex justify-between items-center">
+          <div>
+            <h6 class="text-xs font-semibold uppercase tracking-wider opacity-90">Opiniones</h6>
+            <h2 class="text-3xl font-bold mt-2">{{ resumen.totalOpiniones }}</h2>
+          </div>
+          <i class="fa fa-comments fa-2x opacity-40"></i>
+        </div>
+      </div>
+    </div>
+
     <div class="rounded-lg shadow-lg bg-blue-600 text-white overflow-hidden transform hover:scale-105 transition-transform duration-200">
       <div class="p-6">
         <div class="flex justify-between items-center">
@@ -99,9 +128,3 @@
     </div>
 
   </div>
-
-  <div *ngIf="loading" class="flex justify-center items-center h-64">
-    <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-  </div>
-
-</abp-page>
