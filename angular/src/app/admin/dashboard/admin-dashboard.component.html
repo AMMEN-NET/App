@@ -1,0 +1,107 @@
+<abp-page [title]="'Panel de Control'">
+  
+  <div class="flex items-center gap-3 mb-6 text-gray-700">
+    <i class="fa fa-chart-line text-3xl text-blue-600"></i>
+    <p class="text-gray-500 text-sm mt-1">Visión general de las métricas del sistema</p>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-6" *ngIf="resumen">
+    
+    <div class="rounded-lg shadow-lg bg-blue-600 text-white overflow-hidden transform hover:scale-105 transition-transform duration-200">
+      <div class="p-6">
+        <div class="flex justify-between items-center">
+          <div>
+            <h6 class="text-xs font-semibold uppercase tracking-wider opacity-90">Total Búsquedas</h6>
+            <h2 class="text-3xl font-bold mt-2">{{ resumen.totalBusquedas }}</h2>
+          </div>
+          <i class="fa fa-search fa-2x opacity-40"></i>
+        </div>
+      </div>
+    </div>
+
+    <div class="rounded-lg shadow-lg bg-green-600 text-white overflow-hidden transform hover:scale-105 transition-transform duration-200">
+      <div class="p-6">
+        <div class="flex justify-between items-center">
+          <div>
+            <h6 class="text-xs font-semibold uppercase tracking-wider opacity-90">Destinos Guardados</h6>
+            <h2 class="text-3xl font-bold mt-2">{{ resumen.totalDestinosGuardados }}</h2>
+          </div>
+          <i class="fa fa-heart fa-2x opacity-40"></i>
+        </div>
+      </div>
+    </div>
+
+    <div class="rounded-lg shadow-lg bg-cyan-500 text-white overflow-hidden transform hover:scale-105 transition-transform duration-200">
+      <div class="p-6">
+        <div class="flex justify-between items-center">
+          <div>
+            <h6 class="text-xs font-semibold uppercase tracking-wider opacity-90">Llamadas API Externa</h6>
+            <h2 class="text-3xl font-bold mt-2">{{ resumen.totalLlamadasApi }}</h2>
+          </div>
+          <i class="fa fa-globe fa-2x opacity-40"></i>
+        </div>
+      </div>
+    </div>
+
+    <div 
+      class="rounded-lg shadow-lg overflow-hidden transform hover:scale-105 transition-transform duration-200"
+      [ngClass]="resumen.totalErroresApi > 0 ? 'bg-red-600 text-white' : 'bg-white text-gray-700 border border-gray-200'">
+      <div class="p-6">
+        <div class="flex justify-between items-center">
+          <div>
+            <h6 class="text-xs font-semibold uppercase tracking-wider opacity-90">Errores API</h6>
+            <h2 class="text-3xl font-bold mt-2">{{ resumen.totalErroresApi }}</h2>
+            <p *ngIf="resumen.totalLlamadasApi > 0" class="text-xs mt-1 opacity-80">
+              Latencia: {{ resumen.tiempoPromedioRespuestaMs }}ms
+            </p>
+          </div>
+          <i class="fa fa-exclamation-triangle fa-2x opacity-40"></i>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-span-1 md:col-span-4 mt-4">
+      <div class="bg-white rounded-lg shadow border border-gray-200 overflow-hidden">
+        
+        <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
+          <h5 class="font-bold text-gray-800 mb-0">Top 5 Destinos Más Buscados</h5>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm text-left text-gray-500">
+            <thead class="text-xs text-gray-700 uppercase bg-gray-50 border-b border-gray-200">
+              <tr>
+                <th scope="col" class="px-6 py-3 font-semibold">Término</th>
+                <th scope="col" class="px-6 py-3 font-semibold text-right">Cantidad de Búsquedas</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200">
+              <tr *ngFor="let item of resumen.topBusquedas" class="bg-white hover:bg-gray-50 transition-colors">
+                <td class="px-6 py-4 font-medium text-gray-900">
+                  {{ item.termino }}
+                </td>
+                <td class="px-6 py-4 text-right">
+                  <span class="inline-flex items-center justify-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                    {{ item.cantidad }}
+                  </span>
+                </td>
+              </tr>
+
+              <tr *ngIf="resumen.topBusquedas.length === 0">
+                <td colspan="2" class="px-6 py-8 text-center text-gray-400 italic">
+                  Aún no hay búsquedas registradas.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div *ngIf="loading" class="flex justify-center items-center h-64">
+    <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+  </div>
+
+</abp-page>

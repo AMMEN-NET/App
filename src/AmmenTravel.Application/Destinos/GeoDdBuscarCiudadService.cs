@@ -5,14 +5,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Json;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Volo.Abp.DependencyInjection;
 using Volo.Abp.Domain.Repositories;
-using AmmenTravel.Destinos; 
+using AmmenTravel.Destinos;
 using AmmenTravel.Opiniones;
 using Microsoft.EntityFrameworkCore;
+using AmmenTravel.Estadisticas;
+using Volo.Abp.Guids;
+using System.Diagnostics; // Para el Stopwatch
 
 namespace AmmenTravel.Application.ExternalServices
 {
@@ -21,20 +22,32 @@ namespace AmmenTravel.Application.ExternalServices
         private const string rapidApiKey = "28b89efbaemsh750f2ed4984863ap14d14djsnd3061a788080";
         private const string rapidApiHost = "wft-geo-db.p.rapidapi.com";
         private const string BaseUrl = "https://wft-geo-db.p.rapidapi.com/v1/geo";
+
         private readonly HttpClient _httpClient;
 
-        // --- INYECCIÓN DE REPOSITORIOS ---
+        // --- REPOSITORIOS EXISTENTES ---
         private readonly IRepository<DestinoTuristico, Guid> _destinoRepository;
         private readonly IRepository<Opinion, Guid> _opinionRepository;
+
+        // --- NUEVAS INYECCIONES PARA ESTADÍSTICAS ---
+        private readonly IRepository<HistorialBusqueda, Guid> _historialRepository;
+        private readonly IRepository<RegistroApiExterna, Guid> _registroApiRepository;
+        private readonly IGuidGenerator _guidGenerator;
 
         public GeoDdBuscarCiudadService(
             HttpClient httpClient,
             IRepository<DestinoTuristico, Guid> destinoRepository,
-            IRepository<Opinion, Guid> opinionRepository)
+            IRepository<Opinion, Guid> opinionRepository,
+            IRepository<HistorialBusqueda, Guid> historialRepository,
+            IRepository<RegistroApiExterna, Guid> registroApiRepository,
+            IGuidGenerator guidGenerator)
         {
             _httpClient = httpClient;
             _destinoRepository = destinoRepository;
             _opinionRepository = opinionRepository;
+            _historialRepository = historialRepository;
+            _registroApiRepository = registroApiRepository;
+            _guidGenerator = guidGenerator;
         }
 
         public async Task<CiudadResultadoDTO> BuscarCiudadesAsync(CiudadBuscadaDTO request)
@@ -44,6 +57,7 @@ namespace AmmenTravel.Application.ExternalServices
             if (string.IsNullOrWhiteSpace(request?.Nombre))
                 return result;
 
+            // --- PREPARACIÓN DE URL ---
             var queryParams = new List<string>
             {
                 $"namePrefix={Uri.EscapeDataString(request.Nombre)}",
@@ -60,12 +74,38 @@ namespace AmmenTravel.Application.ExternalServices
             httpRequest.Headers.Add("X-RapidAPI-Key", rapidApiKey);
             httpRequest.Headers.Add("X-RapidAPI-Host", rapidApiHost);
 
+            // VARIABLES PARA MÉTRICAS
+            var stopwatch = Stopwatch.StartNew();
+            bool fueExitoso = false;
+            int codigoEstado = 0;
+            string? mensajeError = null;
+            int cantidadEncontrada = 0;
+
             try
             {
+                // --- LLAMADA A LA API ---
                 var response = await _httpClient.SendAsync(httpRequest);
-                if (!response.IsSuccessStatusCode) return result;
+
+                stopwatch.Stop(); // Paramos el reloj justo después de recibir respuesta
+                codigoEstado = (int)response.StatusCode;
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    mensajeError = $"Error HTTP {codigoEstado}";
+                    return result;
+                }
+
                 var json = await response.Content.ReadFromJsonAsync<GeoDbResponse>();
-                if (json?.Data == null) return new CiudadResultadoDTO { Ciudades = new List<CiudadDTO>() };
+
+                fueExitoso = true; // Si llegamos aquí y el JSON parseó, consideramos éxito técnico
+
+                if (json?.Data == null)
+                {
+                    // Guardamos historial vacío
+                    await GuardarHistorial(request.Nombre, false, request.PoblacionMinima);
+                    await GuardarMetricaApi(url, stopwatch.ElapsedMilliseconds, codigoEstado, true, "Data nula");
+                    return new CiudadResultadoDTO { Ciudades = new List<CiudadDTO>() };
+                }
 
                 var cities = json.Data.Select(c => new CiudadDTO
                 {
@@ -80,7 +120,9 @@ namespace AmmenTravel.Application.ExternalServices
                             (string.IsNullOrWhiteSpace(request.Pais) || (c.Pais != null && c.Pais.Contains(request.Pais, StringComparison.OrdinalIgnoreCase))))
                 .ToList();
 
-                // --- CORRECCIÓN AQUÍ: HACER EL PROMEDIO GLOBAL ---
+                cantidadEncontrada = cities.Count;
+
+                // --- LÓGICA DE PROMEDIO GLOBAL (EXISTENTE) ---
                 if (cities.Any())
                 {
                     var externalIds = cities.Where(c => !string.IsNullOrEmpty(c.GeoDBId)).Select(c => c.GeoDBId).ToList();
@@ -89,12 +131,7 @@ namespace AmmenTravel.Application.ExternalServices
                     if (destinosLocales.Any())
                     {
                         var idsLocales = destinosLocales.Select(d => d.Id).ToList();
-
-                        // 1. Obtenemos el Queryable para poder manipular los filtros
                         var queryable = await _opinionRepository.GetQueryableAsync();
-
-                        // 2. Usamos IgnoreQueryFilters() para ver las opiniones de TODOS los usuarios.
-                        //    IMPORTANTE: Al ignorar filtros, debemos filtrar IsDeleted manualmente.
                         var opiniones = await queryable
                             .IgnoreQueryFilters()
                             .Where(o => idsLocales.Contains(o.DestinoTuristicoId) && !o.IsDeleted)
@@ -116,11 +153,60 @@ namespace AmmenTravel.Application.ExternalServices
                     }
                 }
 
+                // --- GUARDAR ESTADÍSTICAS AL FINAL DEL PROCESO EXITOSO ---
+                await GuardarHistorial(request.Nombre, cantidadEncontrada > 0, request.PoblacionMinima);
+                await GuardarMetricaApi(url, stopwatch.ElapsedMilliseconds, codigoEstado, true, null);
+
                 return new CiudadResultadoDTO { Ciudades = cities };
             }
             catch (Exception ex)
             {
+                stopwatch.Stop();
+                // En caso de excepción, guardamos el fallo en la métrica
+                await GuardarMetricaApi(url, stopwatch.ElapsedMilliseconds, 500, false, ex.Message);
                 throw new Exception($"Error al buscar ciudades: {ex.Message}");
+            }
+        }
+
+        // --- MÉTODOS PRIVADOS PARA GUARDAR DATOS ---
+
+        private async Task GuardarHistorial(string termino, bool encontro, int? poblacionMinima)
+        {
+            try
+            {
+                string filtros = poblacionMinima.HasValue ? $"MinPop: {poblacionMinima}" : "Ninguno";
+                var historial = new HistorialBusqueda(
+                    _guidGenerator.Create(),
+                    termino,
+                    encontro,
+                    filtros
+                );
+                await _historialRepository.InsertAsync(historial);
+            }
+            catch
+            {
+                // No queremos que falle la búsqueda si falla el guardado del historial
+            }
+        }
+
+        private async Task GuardarMetricaApi(string url, long duracion, int codigo, bool exito, string? error)
+        {
+            try
+            {
+                var registro = new RegistroApiExterna(
+                    _guidGenerator.Create(),
+                    "GeoDB Cities",
+                    url,
+                    (int)duracion,
+                    codigo,
+                    exito,
+                    error
+                );
+                await _registroApiRepository.InsertAsync(registro);
+            }
+            catch
+            {
+                // Ignorar errores de log
             }
         }
 

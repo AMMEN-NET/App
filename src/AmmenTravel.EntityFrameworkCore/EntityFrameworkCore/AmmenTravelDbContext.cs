@@ -21,6 +21,7 @@ using System.Reflection;
 using AmmenTravel.Common;
 using AmmenTravel.ListaFavoritos;
 using AmmenTravel.Experiencias;
+using AmmenTravel.Estadisticas;
 
 namespace AmmenTravel.EntityFrameworkCore;
 
@@ -33,8 +34,9 @@ public class AmmenTravelDbContext :
     /* DbSets para tus entidades */
     public DbSet<DestinoTuristico> Destinos { get; set; }
     public DbSet<Opinion> Opiniones { get; set; }
-
     public DbSet<Experiencia> Experiencias { get; set; }
+    public DbSet<HistorialBusqueda> HistorialBusquedas { get; set; }
+    public DbSet<RegistroApiExterna> RegistrosApiExterna { get; set; }
 
     #region Entities from the modules
 

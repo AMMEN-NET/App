@@ -1486,6 +1486,47 @@
             }
           }
         },
+        "AmmenTravel.Estadisticas.DashboardAppService": {
+          "controllerName": "Dashboard",
+          "controllerGroupName": "Dashboard",
+          "isRemoteService": true,
+          "isIntegrationService": false,
+          "apiVersion": null,
+          "type": "AmmenTravel.Estadisticas.DashboardAppService",
+          "interfaces": [
+            {
+              "type": "AmmenTravel.Estadisticas.IDashboardAppService",
+              "name": "IDashboardAppService",
+              "methods": [
+                {
+                  "name": "GetResumenAsync",
+                  "parametersOnMethod": [],
+                  "returnValue": {
+                    "type": "AmmenTravel.Estadisticas.DashboardResumenDto",
+                    "typeSimple": "AmmenTravel.Estadisticas.DashboardResumenDto"
+                  }
+                }
+              ]
+            }
+          ],
+          "actions": {
+            "GetResumenAsync": {
+              "uniqueName": "GetResumenAsync",
+              "name": "GetResumenAsync",
+              "httpMethod": "GET",
+              "url": "api/app/dashboard/resumen",
+              "supportedVersions": [],
+              "parametersOnMethod": [],
+              "parameters": [],
+              "returnValue": {
+                "type": "AmmenTravel.Estadisticas.DashboardResumenDto",
+                "typeSimple": "AmmenTravel.Estadisticas.DashboardResumenDto"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "AmmenTravel.Estadisticas.IDashboardAppService"
+            }
+          }
+        },
         "AmmenTravel.Experiencias.ExperienciaAppService": {
           "controllerName": "Experiencia",
           "controllerGroupName": "Experiencia",
@@ -4978,6 +5019,120 @@
           "type": "System.Single",
           "typeSimple": "number",
           "isRequired": true,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "AmmenTravel.Estadisticas.DashboardResumenDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "TotalBusquedas",
+          "jsonName": null,
+          "type": "System.Int32",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "TotalDestinosGuardados",
+          "jsonName": null,
+          "type": "System.Int32",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "TotalLlamadasApi",
+          "jsonName": null,
+          "type": "System.Int32",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "TotalErroresApi",
+          "jsonName": null,
+          "type": "System.Int32",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "TiempoPromedioRespuestaMs",
+          "jsonName": null,
+          "type": "System.Double",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "TopBusquedas",
+          "jsonName": null,
+          "type": "[AmmenTravel.Estadisticas.TerminoBusquedaDto]",
+          "typeSimple": "[AmmenTravel.Estadisticas.TerminoBusquedaDto]",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "AmmenTravel.Estadisticas.TerminoBusquedaDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "Termino",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Cantidad",
+          "jsonName": null,
+          "type": "System.Int32",
+          "typeSimple": "number",
+          "isRequired": false,
           "minLength": null,
           "maxLength": null,
           "minimum": null,
