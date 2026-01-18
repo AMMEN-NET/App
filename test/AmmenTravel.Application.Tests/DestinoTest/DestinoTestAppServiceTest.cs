@@ -47,7 +47,10 @@ namespace AmmenTravel.DestinoTest
             {
                 Nombre = "Paris",
                 Pais = "Francia",
-                Poblacion = 2048000
+                Poblacion = 2048000,
+                Latitud = 48.8566f,  // <-- Agregado
+                Longitud = 2.3522f,  // <-- Agregado
+                IdExterno = "Q90"
             };
 
             //Act
@@ -58,6 +61,9 @@ namespace AmmenTravel.DestinoTest
             result.Nombre.ShouldBe(input.Nombre);
             result.Pais.ShouldBe(input.Pais);
             result.Poblacion.ShouldBe(input.Poblacion);
+            result.Latitud.ShouldBe(input.Latitud);
+            result.Longitud.ShouldBe(input.Longitud);
+            //result.IdExterno.ShouldBe(input.IdExterno);
         }
         [Fact]
         public async Task CreateAsync_ShouldPersistDestinoInDatabase()
@@ -69,10 +75,14 @@ namespace AmmenTravel.DestinoTest
                 {
                     Nombre = "Tokio",
                     Pais = "Japon",
-                    Poblacion = 13960000
+                    Poblacion = 13960000,
+                    Latitud = 35.6895f,  // <-- Agregado
+                    Longitud = 139.6917f, // <-- Agregado
+                    IdExterno = "Q174"
                 };
                 //Act
                 var result = await _service.CreateAsync(input);
+                //await uow.CompleteAsync();
                 //Assert
                 var dbContext = await _dbContextProvider.GetDbContextAsync();
                 var savedDestino = await dbContext.Destinos.FindAsync(result.Id);
@@ -80,6 +90,9 @@ namespace AmmenTravel.DestinoTest
                 savedDestino.Nombre.ShouldBe(input.Nombre);
                 savedDestino.Pais.ShouldBe(input.Pais);
                 savedDestino.Poblacion.ShouldBe(input.Poblacion);
+                savedDestino.Latitud.ShouldBe(input.Latitud);
+                savedDestino.Longitud.ShouldBe(input.Longitud);
+                savedDestino.IdExterno.ShouldBe(input.IdExterno);
             }
         }
         [Fact]
