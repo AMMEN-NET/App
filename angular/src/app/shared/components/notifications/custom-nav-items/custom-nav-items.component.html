@@ -1,0 +1,58 @@
+<div class="flex items-center gap-4 h-full px-4 py-1 bg-[#F5F5F7] rounded-md text-slate-800 min-w-[120px] justify-end"
+     *ngIf="currentUser$ | async as user">
+
+  <ng-container *ngIf="user.isAuthenticated; else loginTemplate">
+    
+    <app-notifications-dropdown></app-notifications-dropdown>
+
+    <div class="w-px h-5 bg-gray-300 mx-1"></div>
+
+    <div class="relative">
+      <button (click)="toggleUserMenu()" class="flex items-center gap-3 focus:outline-none hover:text-slate-600 transition-colors group">
+        <span class="text-sm font-bold hidden md:block group-hover:underline decoration-slate-400 underline-offset-4 text-slate-800">
+          {{ user.userName }}
+        </span>
+        <div class="w-8 h-8 rounded-full overflow-hidden border border-gray-300 group-hover:border-slate-500 transition-colors shadow-sm">
+          <img [src]="getFotoUrl(user.id)" 
+               (error)="avatar.src = 'assets/images/avatar-default.png'" 
+               #avatar
+               alt="Avatar" 
+               class="w-full h-full object-cover">
+        </div>
+      </button>
+
+      <div *ngIf="isUserMenuOpen" (click)="closeUserMenu()" class="fixed inset-0 z-40 cursor-default"></div>
+
+      <div *ngIf="isUserMenuOpen" class="absolute right-0 mt-3 w-56 bg-[#FFFBF0] rounded-lg shadow-xl py-2 z-50 ring-1 ring-black ring-opacity-5 origin-top-right animate-fade-in-down">
+        
+        <div class="px-4 py-3 border-b border-gray-200/50">
+          <p class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Cuenta actual</p>
+          <p class="text-sm text-gray-800 font-semibold truncate">{{ user.name || user.userName }}</p>
+          <p class="text-xs text-gray-500 truncate">{{ user.email }}</p>
+        </div>
+
+        <div class="py-1">
+          <a href="/account/manage" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-orange-100/50 hover:text-orange-900 transition-colors">
+            <i class="fa fa-cog mr-3 text-gray-400"></i> Mi Cuenta
+          </a>
+        </div>
+
+        <div class="border-t border-gray-200/50 my-1"></div>
+
+        <button (click)="logout()" class="w-full text-left flex items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors">
+          <i class="fa fa-sign-out mr-3"></i> Cerrar Sesión
+        </button>
+      </div>
+    </div>
+  </ng-container>
+
+
+  <ng-template #loginTemplate>
+    <button (click)="login()" 
+            class="flex items-center gap-2 bg-slate-900 text-white px-4 py-1.5 rounded rounded-full text-sm font-bold hover:bg-slate-500 hover:scale-105 transition-all shadow-lg">
+      Inicia sesión acá
+      <span class="fa fa-sign-in"></span>
+    </button>
+  </ng-template>
+
+</div>

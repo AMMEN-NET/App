@@ -1,6 +1,14 @@
+using AmmenTravel.Common;
 using AmmenTravel.Destinos;
+using AmmenTravel.Estadisticas;
+using AmmenTravel.Experiencias;
+using AmmenTravel.ListaFavoritos;
+using AmmenTravel.Notificaciones;
 using AmmenTravel.Opiniones;
 using Microsoft.EntityFrameworkCore;
+using System;
+using System.Linq;
+using System.Reflection;
 using Volo.Abp.AuditLogging.EntityFrameworkCore;
 using Volo.Abp.BackgroundJobs.EntityFrameworkCore;
 using Volo.Abp.BlobStoring.Database.EntityFrameworkCore;
@@ -15,13 +23,6 @@ using Volo.Abp.OpenIddict.EntityFrameworkCore;
 using Volo.Abp.PermissionManagement.EntityFrameworkCore;
 using Volo.Abp.SettingManagement.EntityFrameworkCore;
 using Volo.Abp.Users;
-using System;
-using System.Linq;
-using System.Reflection;
-using AmmenTravel.Common;
-using AmmenTravel.ListaFavoritos;
-using AmmenTravel.Experiencias;
-using AmmenTravel.Estadisticas;
 
 namespace AmmenTravel.EntityFrameworkCore;
 
@@ -37,6 +38,7 @@ public class AmmenTravelDbContext :
     public DbSet<Experiencia> Experiencias { get; set; }
     public DbSet<HistorialBusqueda> HistorialBusquedas { get; set; }
     public DbSet<RegistroApiExterna> RegistrosApiExterna { get; set; }
+    public DbSet<Notificacion> Notificaciones { get; set; }
 
     #region Entities from the modules
 
@@ -163,6 +165,15 @@ public class AmmenTravelDbContext :
              .IsRequired();
 
             b.HasIndex(x => x.DestinoId);
+        });
+
+        builder.Entity<Notificacion>(b =>
+        {
+            b.ToTable(AmmenTravelConsts.DbTablePrefix + "Notificaciones", AmmenTravelConsts.DbSchema);
+            b.ConfigureByConvention();
+            b.Property(x => x.Titulo).IsRequired().HasMaxLength(100);
+            b.Property(x => x.Mensaje).IsRequired().HasMaxLength(500);
+            b.HasIndex(x => x.UserId); // Importante para rendimiento
         });
 
         /* Filtro global para entidades que implementen IUserOwned */

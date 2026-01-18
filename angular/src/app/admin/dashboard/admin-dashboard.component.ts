@@ -10,7 +10,6 @@ import { CoreModule } from '@abp/ng.core';
   standalone: true,
   imports: [CommonModule, PageModule, CoreModule],
   templateUrl: './admin-dashboard.component.html',
-  styleUrls: ['./admin-dashboard.component.scss']
 })
 export class AdminDashboardComponent implements OnInit {
   resumen: DashboardResumenDto | null = null;
