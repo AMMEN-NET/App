@@ -20,11 +20,12 @@ using Volo.Abp.Validation;
 using NSubstitute;
 using AmmenTravel.ExternalService;
 using Volo.Abp.Domain.Repositories;
+using Volo.Abp.Threading;
 
 
 namespace AmmenTravel.DestinoTest
 {
-    public abstract class classDestinoTestAppServiceTest<TStartupModule> : AmmenTravelApplicationTestBase<TStartupModule>
+    public abstract class classCuentaTestAppServiceTest<TStartupModule> : AmmenTravelApplicationTestBase<TStartupModule>
         where TStartupModule : IAbpModule
     {
         private readonly IBuscarCiudadService _buscarCiudadService;
@@ -32,7 +33,7 @@ namespace AmmenTravel.DestinoTest
         private readonly IDbContextProvider<AmmenTravelDbContext> _dbContextProvider;
         private readonly IUnitOfWorkManager _unitOfWorkManager;
 
-        protected classDestinoTestAppServiceTest()
+        protected classCuentaTestAppServiceTest()
         {
             _service = GetRequiredService<IDestinoAppService>();
             _dbContextProvider = GetRequiredService<IDbContextProvider<AmmenTravelDbContext>>();
@@ -47,7 +48,10 @@ namespace AmmenTravel.DestinoTest
             {
                 Nombre = "Paris",
                 Pais = "Francia",
-                Poblacion = 2048000
+                Poblacion = 2048000,
+                Latitud=48.8566f,
+                Longitud=2.3522f,
+                IdExterno="paris-test-001"
             };
 
             //Act
@@ -69,7 +73,10 @@ namespace AmmenTravel.DestinoTest
                 {
                     Nombre = "Tokio",
                     Pais = "Japon",
-                    Poblacion = 13960000
+                    Poblacion = 13960000,
+                    Latitud=35.6895f,
+                    Longitud=139.6917f,
+                    IdExterno="tokio-test-001"
                 };
                 //Act
                 var result = await _service.CreateAsync(input);

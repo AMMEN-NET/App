@@ -1,4 +1,6 @@
-﻿using AmmenTravel.ExternalService;
+﻿using AmmenTravel;
+using AmmenTravel.Destinos;
+using AmmenTravel.ExternalService;
 using AmmenTravel.Opiniones;
 using AmmenTravel.Opiniones.OpinionesDTO;
 using NSubstitute;
@@ -7,11 +9,11 @@ using System;
 using System.Threading.Tasks;
 using Volo.Abp;
 using Volo.Abp.Authorization;
+using Volo.Abp.Domain.Repositories;
 using Volo.Abp.Modularity;
 using Volo.Abp.Testing;
 using Volo.Abp.Users;
 using Xunit;
-using AmmenTravel;
 
 namespace AmmenTravel.OpinionTest
 {
@@ -21,18 +23,35 @@ namespace AmmenTravel.OpinionTest
         where TStartupModule : IAbpModule
     {
         private readonly IOpinionAppService _opinionService;
+        private readonly IRepository<DestinoTuristico, Guid> _destinoRepository;
 
         protected OpinionTestAppServiceTest()
         {
             _opinionService = GetRequiredService<IOpinionAppService>();
+            _destinoRepository = GetRequiredService<IRepository<DestinoTuristico, Guid>>();
         }
 
         [Fact]
         public async Task CrearOpinionAsync_DebeRetornarOpinionDto()
         {
+            var destinoId = Guid.NewGuid();
+            var destino = new DestinoTuristico(destinoId)
+            {
+                Nombre = "Destino Test",
+                Pais = "Argentina",
+                Poblacion = 100000,
+                Latitud = -34.6f,
+                Longitud = -58.4f,
+                IdExterno = "test-geo-001"
+            };
+
+            await _destinoRepository.InsertAsync(destino);
+
+           
+
             var input = new createUpdateOpinionDto
             {
-                DestinoTuristicoId = Guid.NewGuid(),
+                DestinoTuristicoId = destinoId,
                 Puntuacion = ValorPuntuacion.Cinco,
                 Comentario = "Excelente destino turístico!"
             };
@@ -52,6 +71,19 @@ namespace AmmenTravel.OpinionTest
         {
             var destinoId = Guid.NewGuid();
 
+            var destino = new DestinoTuristico(destinoId)
+            {
+                Nombre = "Destino Test",
+                Pais = "Argentina",
+                Poblacion = 100000,
+                Latitud = -34.6f,
+                Longitud = -58.4f,
+                IdExterno = "test-geo-002"
+            };
+
+            await _destinoRepository.InsertAsync(destino);
+
+
             var input = new createUpdateOpinionDto
             {
                 DestinoTuristicoId = destinoId,
@@ -62,7 +94,7 @@ namespace AmmenTravel.OpinionTest
             var primeraOpinion = await _opinionService.CrearOpinionAsync(input);
 
             var ex = await Assert.ThrowsAsync<UserFriendlyException>(() => _opinionService.CrearOpinionAsync(input));
-            ex.Message.ShouldBe("Ya has calificado este destino.");
+            ex.Message.ShouldBe("Ya calificaste Destino Test. Podes actualizar tu opinión en la sección 'Mis calificaciones' si lo deseas.");
         }
 
         [Fact]
@@ -72,6 +104,18 @@ namespace AmmenTravel.OpinionTest
             CurrentUser.IsAuthenticated.ShouldBeTrue();
 
             var destinoId = Guid.NewGuid();
+
+            var destino = new DestinoTuristico(destinoId)
+            {
+                Nombre = "Destino Filtro Usuario",
+                Pais = "Argentina",
+                Poblacion = 50000,
+                Latitud = -34.5f,
+                Longitud = -58.3f,
+                IdExterno = "test-geo-003"
+            };
+
+            await _destinoRepository.InsertAsync(destino);
 
             var input = new createUpdateOpinionDto
             {
