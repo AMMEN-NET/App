@@ -11,4 +11,3 @@ public abstract class AmmenTravelApplicationTestBase<TStartupModule>
     //  Expone al usuario actual para los tests
     protected ICurrentUser CurrentUser => GetRequiredService<ICurrentUser>();
 }
-
