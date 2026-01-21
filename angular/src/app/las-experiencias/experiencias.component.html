@@ -1,0 +1,230 @@
+<div class="mt-8 bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+
+  <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4 border-b border-gray-100 pb-4">
+    
+    <div class="flex bg-gray-100 p-1 rounded-lg">
+      <button (click)="cambiarModo('mias')"
+              [class.bg-white]="modoVisualizacion() === 'mias'"
+              [class.shadow-sm]="modoVisualizacion() === 'mias'"
+              [class.text-blue-600]="modoVisualizacion() === 'mias'"
+              class="px-4 py-2 rounded-md text-sm font-bold text-gray-500 transition-all focus:outline-none">
+        Mis Experiencias
+      </button>
+      <button (click)="cambiarModo('todas')"
+              [class.bg-white]="modoVisualizacion() === 'todas'"
+              [class.shadow-sm]="modoVisualizacion() === 'todas'"
+              [class.text-blue-600]="modoVisualizacion() === 'todas'"
+              class="px-4 py-2 rounded-md text-sm font-bold text-gray-500 transition-all focus:outline-none">
+        Explorar Todas
+      </button>
+    </div>
+
+    @if (destinoId) {
+        <button (click)="abrirModalCrear()" 
+                class="bg-[#0079CC] hover:bg-[#045288] text-white px-4 py-2 rounded-lg text-sm font-bold shadow-md transition-all flex items-center gap-2 transform active:scale-95">
+            <i class="fas fa-plus"></i> 
+            <span>Nueva Experiencia</span>
+        </button>
+    }
+  </div>
+
+  <div class="flex flex-col md:flex-row gap-4 mb-8">
+    
+    <div class="flex flex-wrap gap-2">
+      <button (click)="cambiarFiltro(null)" 
+              [class]="filtroValoracion() === null ? 'bg-gray-800 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'"
+              class="px-4 py-2 rounded-full text-sm font-medium transition-colors">
+        Todas
+      </button>
+      
+      <button (click)="cambiarFiltro(TipoExperiencia.MuyBueno)" 
+              [class]="filtroValoracion() === TipoExperiencia.MuyBueno ? 'bg-green-600 text-white' : 'bg-green-50 text-green-700 hover:bg-green-100'"
+              class="px-4 py-2 rounded-full text-sm font-medium transition-colors flex items-center gap-1">
+        <i class="fa fa-smile"></i> Buenas
+      </button>
+
+      <button (click)="cambiarFiltro(TipoExperiencia.Neutral)" 
+              [class]="filtroValoracion() === TipoExperiencia.Neutral ? 'bg-yellow-500 text-white' : 'bg-yellow-50 text-yellow-700 hover:bg-yellow-100'"
+              class="px-4 py-2 rounded-full text-sm font-medium transition-colors flex items-center gap-1">
+        <i class="fa fa-meh"></i> Neutrales
+      </button>
+
+      <button (click)="cambiarFiltro(TipoExperiencia.Malo)" 
+              [class]="filtroValoracion() === TipoExperiencia.Malo ? 'bg-red-600 text-white' : 'bg-red-50 text-red-700 hover:bg-red-100'"
+              class="px-4 py-2 rounded-full text-sm font-medium transition-colors flex items-center gap-1">
+        <i class="fa fa-frown"></i> Malas
+      </button>
+    </div>
+
+    <div class="flex-1 relative">
+      <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
+        <i class="fa fa-search"></i>
+      </span>
+      <input [formControl]="buscador" 
+             type="text" 
+             placeholder="Buscar ciudad o comentario..." 
+             class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-full focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all">
+    </div>
+  </div>
+
+  <div class="space-y-6">
+    @if (cargando()) {
+      <div class="text-center py-10">
+        <i class="fa fa-circle-notch fa-spin text-3xl text-blue-500"></i>
+        <p class="text-gray-400 mt-2 text-sm">Cargando experiencias...</p>
+      </div>
+    } @else {
+      @for (exp of experiencias(); track exp.id) {
+        <div class="border-b border-gray-100 pb-12 last:border-0 relative group transition-colors hover:bg-gray-50/50 rounded-lg p-2 -mx-2">
+          
+          <div class="flex justify-between items-start mb-2">
+            <div class="flex items-center gap-3">
+              
+              <div class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 border border-gray-200 shadow-sm">
+                @if (modoVisualizacion() === 'mias') {
+                  <i class="fa fa-map-marker-alt text-blue-400"></i>
+                } @else {
+                  <i class="fa fa-user text-blue-400"></i>
+                }
+              </div>
+
+              <div>
+                <h4 class="font-bold text-gray-800 text-sm flex items-center gap-2">
+                  @if (modoVisualizacion() === 'mias') {
+                    {{ exp.destinoNombre }}
+                  } @else {
+                    {{ exp.userName }}
+                    <span class="text-gray-400 font-normal text-xs">en <span class="text-blue-700/80">{{ exp.destinoNombre }}</span></span>
+                  }
+                </h4>
+                <span class="text-xs text-gray-500 flex items-center gap-1">
+                  <i class="far fa-calendar text-[12px]"></i>
+                  {{ exp.creationTime | date:'mediumDate' }}
+                </span>
+              </div>
+            </div>
+
+            @switch (exp.valoracion) {
+              @case (TipoExperiencia.MuyBueno) {
+                <span class="px-3 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-full flex items-center gap-1 shadow-sm border border-green-200">
+                  <i class="fa fa-smile"></i> Bueno
+                </span>
+              }
+              @case (TipoExperiencia.Neutral) {
+                <span class="px-3 py-1 bg-yellow-100 text-yellow-700 text-xs font-bold rounded-full flex items-center gap-1 shadow-sm border border-yellow-200">
+                  <i class="fa fa-meh"></i> Neutral
+                </span>
+              }
+              @case (TipoExperiencia.Malo) {
+                <span class="px-3 py-1 bg-red-100 text-red-700 text-xs font-bold rounded-full flex items-center gap-1 shadow-sm border border-red-200">
+                  <i class="fa fa-frown"></i> Malo
+                </span>
+              }
+            }
+          </div>
+
+          <p class="text-gray-600 mt-2 leading-relaxed pl-[3.25rem] text-sm md:text-base">
+            {{ exp.comentario }}
+          </p>
+
+          @if (usuarioActualId === exp.creatorId) {
+            <div class="absolute bottom-3 right-4 md:opacity-0 md:group-hover:opacity-100 transition-opacity flex gap-2">
+              <button (click)="abrirModalEditar(exp)" 
+                      class="text-blue-600 rounded rounded-full hover:bg-blue-600 bg-white border border-gray-200 p-2 w-8 h-8 flex items-center justify-center transition-all shadow-sm" 
+                      title="Editar">
+                <i class="fa fa-pencil-alt text-xs"></i>
+              </button>
+              <button (click)="eliminar(exp.id)" 
+                      class="text-red-600 rounded rounded-full hover:bg-red-600 bg-white border border-gray-200 p-2 w-8 h-8 flex items-center justify-center transition-all shadow-sm" 
+                      title="Eliminar">
+                <i class="fa fa-trash-alt text-xs"></i>
+              </button>
+            </div>
+          }
+        </div>
+      } @empty {
+        <div class="text-center py-12 bg-gray-50 rounded-xl border border-dashed border-gray-200">
+          <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-3 shadow-sm text-gray-300 text-2xl">
+            <i class="fa fa-comment-dots"></i>
+          </div>
+          <p class="text-gray-500 font-medium">No se encontraron experiencias.</p>
+          <p class="text-xs text-gray-400 mt-1">
+            @if(modoVisualizacion() === 'mias') {
+              Aún no has compartido ninguna experiencia.
+            } @else {
+              Sé el primero en comentar o ajusta los filtros.
+            }
+          </p>
+        </div>
+      }
+    }
+  </div>
+</div>
+
+@if (mostrarModal()) {
+  <div class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-sm transition-all" (click)="cerrarModal()">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden transform transition-all scale-100" (click)="$event.stopPropagation()">
+      
+      <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+        <h3 class="text-lg font-bold text-gray-800">
+            {{ modoEdicion() ? 'Editar Experiencia' : 'Nueva Experiencia' }}
+        </h3>
+        <button (click)="cerrarModal()" class="text-gray-400 hover:text-gray-600 w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-200 transition-colors">
+            <i class="fa fa-times"></i>
+        </button>
+      </div>
+
+      <form [formGroup]="form" (ngSubmit)="guardar()" class="p-6 space-y-5">
+        
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-3">¿Cómo calificarías tu experiencia?</label>
+          <div class="grid grid-cols-3 gap-4">
+            <label class="cursor-pointer group">
+              <input type="radio" formControlName="valoracion" [value]="TipoExperiencia.Malo" class="peer sr-only">
+              <div class="border-2 border-gray-100 rounded-xl p-4 text-center hover:bg-red-50 hover:border-red-200 peer-checked:border-red-500 peer-checked:bg-red-50 peer-checked:text-red-700 transition-all h-full flex flex-col items-center justify-center gap-2">
+                <i class="fa fa-frown text-3xl text-gray-300 group-hover:text-red-400 peer-checked:text-red-500 transition-colors"></i>
+                <span class="text-xs font-bold text-gray-500 peer-checked:text-red-700">Malo</span>
+              </div>
+            </label>
+
+            <label class="cursor-pointer group">
+              <input type="radio" formControlName="valoracion" [value]="TipoExperiencia.Neutral" class="peer sr-only">
+              <div class="border-2 border-gray-100 rounded-xl p-4 text-center hover:bg-yellow-50 hover:border-yellow-200 peer-checked:border-yellow-500 peer-checked:bg-yellow-50 peer-checked:text-yellow-700 transition-all h-full flex flex-col items-center justify-center gap-2">
+                <i class="fa fa-meh text-3xl text-gray-300 group-hover:text-yellow-400 peer-checked:text-yellow-500 transition-colors"></i>
+                <span class="text-xs font-bold text-gray-500 peer-checked:text-yellow-700">Neutral</span>
+              </div>
+            </label>
+
+            <label class="cursor-pointer group">
+              <input type="radio" formControlName="valoracion" [value]="TipoExperiencia.MuyBueno" class="peer sr-only">
+              <div class="border-2 border-gray-100 rounded-xl p-4 text-center hover:bg-green-50 hover:border-green-200 peer-checked:border-green-500 peer-checked:bg-green-50 peer-checked:text-green-700 transition-all h-full flex flex-col items-center justify-center gap-2">
+                <i class="fa fa-smile text-3xl text-gray-300 group-hover:text-green-400 peer-checked:text-green-500 transition-colors"></i>
+                <span class="text-xs font-bold text-gray-500 peer-checked:text-green-700">Bueno</span>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-2">Tu comentario</label>
+          <textarea formControlName="comentario" 
+                    rows="4" 
+                    placeholder="Cuéntanos más detalles..."
+                    class="w-full border border-gray-200 rounded-xl p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none resize-none text-gray-700 bg-gray-50 focus:bg-white transition-colors"></textarea>
+           @if (form.get('comentario')?.hasError('minlength') && form.get('comentario')?.touched) {
+             <p class="text-red-500 text-xs mt-1 pl-1">El comentario debe tener al menos 10 caracteres.</p>
+           }
+        </div>
+
+        <div class="pt-2">
+          <button type="submit" 
+                  [disabled]="form.invalid" 
+                  class="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-bold py-3.5 rounded-xl shadow-lg shadow-blue-500/30 transition-all transform active:scale-[0.98]">
+            {{ modoEdicion() ? 'Guardar Cambios' : 'Publicar Experiencia' }}
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+}

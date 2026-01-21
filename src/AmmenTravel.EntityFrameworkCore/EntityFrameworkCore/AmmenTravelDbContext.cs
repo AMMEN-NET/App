@@ -20,6 +20,7 @@ using System.Linq;
 using System.Reflection;
 using AmmenTravel.Common;
 using AmmenTravel.ListaFavoritos;
+using AmmenTravel.Experiencias;
 
 namespace AmmenTravel.EntityFrameworkCore;
 
@@ -32,6 +33,8 @@ public class AmmenTravelDbContext :
     /* DbSets para tus entidades */
     public DbSet<DestinoTuristico> Destinos { get; set; }
     public DbSet<Opinion> Opiniones { get; set; }
+
+    public DbSet<Experiencia> Experiencias { get; set; }
 
     #region Entities from the modules
 
@@ -141,6 +144,23 @@ public class AmmenTravelDbContext :
                 .WithMany()
                 .HasForeignKey(x => x.DestinoTuristicoId)
                 .OnDelete(DeleteBehavior.Cascade); // Si borras el destino (ej. París), desaparece de los favoritos de todos.
+        });
+
+        builder.Entity<Experiencia>(b =>
+        {
+            b.ToTable(AmmenTravelConsts.DbTablePrefix + "Experiencias", AmmenTravelConsts.DbSchema);
+            b.ConfigureByConvention();
+
+            b.Property(x => x.Comentario).IsRequired().HasMaxLength(1000);
+            b.Property(x => x.Valoracion).IsRequired();
+
+            // --- AGREGAR ESTO PARA QUE FUNCIONE EL INCLUDE/JOIN ---
+            b.HasOne(x => x.Destino)
+             .WithMany()
+             .HasForeignKey(x => x.DestinoId)
+             .IsRequired();
+
+            b.HasIndex(x => x.DestinoId);
         });
 
         /* Filtro global para entidades que implementen IUserOwned */

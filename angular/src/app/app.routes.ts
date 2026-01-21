@@ -27,6 +27,12 @@ export const APP_ROUTES: Routes = [
     canActivate: [authGuard]
   },
   {
+    path: 'experiencias', 
+    loadComponent: () => 
+      import('./las-experiencias/experiencias.component').then(c => c.ExperienciasComponent),
+    canActivate: [authGuard]
+  },
+  {
     path: 'account',
     loadChildren: () => import('@abp/ng.account').then(c => c.createRoutes()),
   },

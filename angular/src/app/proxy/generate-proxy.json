@@ -1486,6 +1486,434 @@
             }
           }
         },
+        "AmmenTravel.Experiencias.ExperienciaAppService": {
+          "controllerName": "Experiencia",
+          "controllerGroupName": "Experiencia",
+          "isRemoteService": true,
+          "isIntegrationService": false,
+          "apiVersion": null,
+          "type": "AmmenTravel.Experiencias.ExperienciaAppService",
+          "interfaces": [
+            {
+              "type": "AmmenTravel.Experiencias.IExperienciaAppService",
+              "name": "IExperienciaAppService",
+              "methods": [
+                {
+                  "name": "CreateAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "input",
+                      "typeAsString": "AmmenTravel.Experiencias.CreateUpdateExperienciaDto, AmmenTravel.Application.Contracts",
+                      "type": "AmmenTravel.Experiencias.CreateUpdateExperienciaDto",
+                      "typeSimple": "AmmenTravel.Experiencias.CreateUpdateExperienciaDto",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "AmmenTravel.Experiencias.ExperienciaDto",
+                    "typeSimple": "AmmenTravel.Experiencias.ExperienciaDto"
+                  }
+                },
+                {
+                  "name": "UpdateAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "id",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    },
+                    {
+                      "name": "input",
+                      "typeAsString": "AmmenTravel.Experiencias.CreateUpdateExperienciaDto, AmmenTravel.Application.Contracts",
+                      "type": "AmmenTravel.Experiencias.CreateUpdateExperienciaDto",
+                      "typeSimple": "AmmenTravel.Experiencias.CreateUpdateExperienciaDto",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "AmmenTravel.Experiencias.ExperienciaDto",
+                    "typeSimple": "AmmenTravel.Experiencias.ExperienciaDto"
+                  }
+                },
+                {
+                  "name": "DeleteAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "id",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Void",
+                    "typeSimple": "System.Void"
+                  }
+                },
+                {
+                  "name": "GetListAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "destinoId",
+                      "typeAsString": "System.String, System.Private.CoreLib",
+                      "type": "System.String",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    },
+                    {
+                      "name": "filtroValoracion",
+                      "typeAsString": "System.Nullable`1[[AmmenTravel.Experiencias.TipoExperiencia, AmmenTravel.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], System.Private.CoreLib",
+                      "type": "AmmenTravel.Experiencias.TipoExperiencia?",
+                      "typeSimple": "enum?",
+                      "isOptional": true,
+                      "defaultValue": null
+                    },
+                    {
+                      "name": "filtroTexto",
+                      "typeAsString": "System.String, System.Private.CoreLib",
+                      "type": "System.String",
+                      "typeSimple": "string",
+                      "isOptional": true,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Collections.Generic.List<AmmenTravel.Experiencias.ExperienciaDto>",
+                    "typeSimple": "[AmmenTravel.Experiencias.ExperienciaDto]"
+                  }
+                },
+                {
+                  "name": "GetListPorUsuarioAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "userId",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    },
+                    {
+                      "name": "filtroValoracion",
+                      "typeAsString": "System.Nullable`1[[AmmenTravel.Experiencias.TipoExperiencia, AmmenTravel.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], System.Private.CoreLib",
+                      "type": "AmmenTravel.Experiencias.TipoExperiencia?",
+                      "typeSimple": "enum?",
+                      "isOptional": true,
+                      "defaultValue": null
+                    },
+                    {
+                      "name": "filtroTexto",
+                      "typeAsString": "System.String, System.Private.CoreLib",
+                      "type": "System.String",
+                      "typeSimple": "string",
+                      "isOptional": true,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Collections.Generic.List<AmmenTravel.Experiencias.ExperienciaDto>",
+                    "typeSimple": "[AmmenTravel.Experiencias.ExperienciaDto]"
+                  }
+                }
+              ]
+            }
+          ],
+          "actions": {
+            "CreateAsyncByInput": {
+              "uniqueName": "CreateAsyncByInput",
+              "name": "CreateAsync",
+              "httpMethod": "POST",
+              "url": "api/app/experiencia",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "input",
+                  "typeAsString": "AmmenTravel.Experiencias.CreateUpdateExperienciaDto, AmmenTravel.Application.Contracts",
+                  "type": "AmmenTravel.Experiencias.CreateUpdateExperienciaDto",
+                  "typeSimple": "AmmenTravel.Experiencias.CreateUpdateExperienciaDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "input",
+                  "name": "input",
+                  "jsonName": null,
+                  "type": "AmmenTravel.Experiencias.CreateUpdateExperienciaDto",
+                  "typeSimple": "AmmenTravel.Experiencias.CreateUpdateExperienciaDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "AmmenTravel.Experiencias.ExperienciaDto",
+                "typeSimple": "AmmenTravel.Experiencias.ExperienciaDto"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "AmmenTravel.Experiencias.IExperienciaAppService"
+            },
+            "UpdateAsyncByIdAndInput": {
+              "uniqueName": "UpdateAsyncByIdAndInput",
+              "name": "UpdateAsync",
+              "httpMethod": "PUT",
+              "url": "api/app/experiencia/{id}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "id",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                },
+                {
+                  "name": "input",
+                  "typeAsString": "AmmenTravel.Experiencias.CreateUpdateExperienciaDto, AmmenTravel.Application.Contracts",
+                  "type": "AmmenTravel.Experiencias.CreateUpdateExperienciaDto",
+                  "typeSimple": "AmmenTravel.Experiencias.CreateUpdateExperienciaDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "id",
+                  "name": "id",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "input",
+                  "name": "input",
+                  "jsonName": null,
+                  "type": "AmmenTravel.Experiencias.CreateUpdateExperienciaDto",
+                  "typeSimple": "AmmenTravel.Experiencias.CreateUpdateExperienciaDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "AmmenTravel.Experiencias.ExperienciaDto",
+                "typeSimple": "AmmenTravel.Experiencias.ExperienciaDto"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "AmmenTravel.Experiencias.IExperienciaAppService"
+            },
+            "DeleteAsyncById": {
+              "uniqueName": "DeleteAsyncById",
+              "name": "DeleteAsync",
+              "httpMethod": "DELETE",
+              "url": "api/app/experiencia/{id}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "id",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "id",
+                  "name": "id",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "AmmenTravel.Experiencias.IExperienciaAppService"
+            },
+            "GetListAsyncByDestinoIdAndFiltroValoracionAndFiltroTexto": {
+              "uniqueName": "GetListAsyncByDestinoIdAndFiltroValoracionAndFiltroTexto",
+              "name": "GetListAsync",
+              "httpMethod": "GET",
+              "url": "api/app/experiencia",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "destinoId",
+                  "typeAsString": "System.String, System.Private.CoreLib",
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": true,
+                  "defaultValue": null
+                },
+                {
+                  "name": "filtroValoracion",
+                  "typeAsString": "System.Nullable`1[[AmmenTravel.Experiencias.TipoExperiencia, AmmenTravel.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], System.Private.CoreLib",
+                  "type": "AmmenTravel.Experiencias.TipoExperiencia?",
+                  "typeSimple": "enum?",
+                  "isOptional": true,
+                  "defaultValue": null
+                },
+                {
+                  "name": "filtroTexto",
+                  "typeAsString": "System.String, System.Private.CoreLib",
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": true,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "destinoId",
+                  "name": "destinoId",
+                  "jsonName": null,
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "filtroValoracion",
+                  "name": "filtroValoracion",
+                  "jsonName": null,
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "filtroTexto",
+                  "name": "filtroTexto",
+                  "jsonName": null,
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Collections.Generic.List<AmmenTravel.Experiencias.ExperienciaDto>",
+                "typeSimple": "[AmmenTravel.Experiencias.ExperienciaDto]"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "AmmenTravel.Experiencias.IExperienciaAppService"
+            },
+            "GetListPorUsuarioAsyncByUserIdAndFiltroValoracionAndFiltroTexto": {
+              "uniqueName": "GetListPorUsuarioAsyncByUserIdAndFiltroValoracionAndFiltroTexto",
+              "name": "GetListPorUsuarioAsync",
+              "httpMethod": "GET",
+              "url": "api/app/experiencia/por-usuario/{userId}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "userId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                },
+                {
+                  "name": "filtroValoracion",
+                  "typeAsString": "System.Nullable`1[[AmmenTravel.Experiencias.TipoExperiencia, AmmenTravel.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], System.Private.CoreLib",
+                  "type": "AmmenTravel.Experiencias.TipoExperiencia?",
+                  "typeSimple": "enum?",
+                  "isOptional": true,
+                  "defaultValue": null
+                },
+                {
+                  "name": "filtroTexto",
+                  "typeAsString": "System.String, System.Private.CoreLib",
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": true,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "userId",
+                  "name": "userId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "filtroValoracion",
+                  "name": "filtroValoracion",
+                  "jsonName": null,
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "filtroTexto",
+                  "name": "filtroTexto",
+                  "jsonName": null,
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Collections.Generic.List<AmmenTravel.Experiencias.ExperienciaDto>",
+                "typeSimple": "[AmmenTravel.Experiencias.ExperienciaDto]"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "AmmenTravel.Experiencias.IExperienciaAppService"
+            }
+          }
+        },
         "AmmenTravel.ListaDeFavoritos.ListaDeFavoritosAppService": {
           "controllerName": "ListaDeFavoritos",
           "controllerGroupName": "ListaDeFavoritos",
@@ -2159,7 +2587,7 @@
                 "type": "System.Collections.Generic.List<AmmenTravel.Viajeros.ViajeroDto>",
                 "typeSimple": "[AmmenTravel.Viajeros.ViajeroDto]"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": false,
               "implementFrom": "AmmenTravel.Viajeros.IViajerosAppService"
             },
             "GetPerfilPublicoAsyncById": {
@@ -2196,7 +2624,7 @@
                 "type": "AmmenTravel.Viajeros.PerfilPublicoDto",
                 "typeSimple": "AmmenTravel.Viajeros.PerfilPublicoDto"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": false,
               "implementFrom": "AmmenTravel.Viajeros.IViajerosAppService"
             }
           }
@@ -4558,6 +4986,136 @@
         }
       ]
     },
+    "AmmenTravel.Experiencias.CreateUpdateExperienciaDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "DestinoId",
+          "jsonName": null,
+          "type": "System.Guid",
+          "typeSimple": "string",
+          "isRequired": true,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Valoracion",
+          "jsonName": null,
+          "type": "AmmenTravel.Experiencias.TipoExperiencia",
+          "typeSimple": "enum",
+          "isRequired": true,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Comentario",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": true,
+          "minLength": 10,
+          "maxLength": 1000,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "AmmenTravel.Experiencias.ExperienciaDto": {
+      "baseType": "Volo.Abp.Application.Dtos.FullAuditedEntityDto<System.Guid>",
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "DestinoId",
+          "jsonName": null,
+          "type": "System.Guid",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "DestinoNombre",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Valoracion",
+          "jsonName": null,
+          "type": "AmmenTravel.Experiencias.TipoExperiencia",
+          "typeSimple": "enum",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Comentario",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "UserName",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "AmmenTravel.Experiencias.TipoExperiencia": {
+      "baseType": "System.Enum",
+      "isEnum": true,
+      "enumNames": [
+        "Malo",
+        "Neutral",
+        "MuyBueno"
+      ],
+      "enumValues": [
+        0,
+        1,
+        2
+      ],
+      "genericArguments": null,
+      "properties": null
+    },
     "AmmenTravel.ExternalService.CiudadBuscadaDTO": {
       "baseType": null,
       "isEnum": false,
@@ -5320,6 +5878,41 @@
       "enumValues": null,
       "genericArguments": null,
       "properties": []
+    },
+    "System.Nullable<T0>": {
+      "baseType": "System.ValueType",
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": [
+        "T"
+      ],
+      "properties": [
+        {
+          "name": "HasValue",
+          "jsonName": null,
+          "type": "System.Boolean",
+          "typeSimple": "boolean",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Value",
+          "jsonName": null,
+          "type": "T",
+          "typeSimple": "T",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
     },
     "Volo.Abp.Account.ChangePasswordInput": {
       "baseType": null,
@@ -6138,6 +6731,53 @@
           "maxLength": null,
           "minimum": "0",
           "maximum": "2147483647",
+          "regex": null
+        }
+      ]
+    },
+    "Volo.Abp.Application.Dtos.FullAuditedEntityDto<T0>": {
+      "baseType": "Volo.Abp.Application.Dtos.AuditedEntityDto<TPrimaryKey>",
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": [
+        "TPrimaryKey"
+      ],
+      "properties": [
+        {
+          "name": "IsDeleted",
+          "jsonName": null,
+          "type": "System.Boolean",
+          "typeSimple": "boolean",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "DeleterId",
+          "jsonName": null,
+          "type": "System.Guid?",
+          "typeSimple": "string?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "DeletionTime",
+          "jsonName": null,
+          "type": "System.DateTime?",
+          "typeSimple": "string?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
           "regex": null
         }
       ]
