@@ -1,4 +1,5 @@
 ﻿using AmmenTravel.Notificaciones;
+using Microsoft.EntityFrameworkCore;
 using Shouldly;
 using System;
 using System.Linq;
@@ -59,7 +60,7 @@ namespace AmmenTravel.NotificacionTest
             var count = await WithUnitOfWorkAsync(async () => await _service.GetCantidadNoLeidasAsync());
             count.ShouldBe(2);
         }
-
+        
         [Fact]
         public async Task MarcarComoLeidaAsync_MarcaSoloSiEsDelUsuarioActual()
         {
@@ -86,14 +87,36 @@ namespace AmmenTravel.NotificacionTest
             // Assert dentro de UoW para leer desde DB activo
             await WithUnitOfWorkAsync(async () =>
             {
-                var updatedUserNotif = await _notificacionRepository.GetAsync(idUserNotificacion);
+                var queryable = await _notificacionRepository.GetQueryableAsync();
+
+                var updatedUserNotif = await queryable
+                    .IgnoreQueryFilters()
+                    .FirstOrDefaultAsync(n => n.Id == idUserNotificacion);
+
+                updatedUserNotif.ShouldNotBeNull();
                 updatedUserNotif.Leida.ShouldBeTrue();
 
-                var otherNotif = await _notificacionRepository.GetAsync(idOtherNotificacion);
+                var otherNotif = await queryable
+                    .IgnoreQueryFilters()
+                    .FirstOrDefaultAsync(n => n.Id == idOtherNotificacion);
+
+                otherNotif.ShouldNotBeNull();
                 otherNotif.Leida.ShouldBeFalse();
+
+                /*
+                        var updatedUserNotif = await _notificacionRepository.GetAsync(idUserNotificacion);
+                        updatedUserNotif.Leida.ShouldBeTrue();
+
+                        var otherNotif = await _notificacionRepository.GetAsync(idOtherNotificacion);
+                        otherNotif.Leida.ShouldBeFalse();
+                */
             });
         }
+        
 
+        // Por ahora funcionan los tres de arriba
+
+        
         [Fact]
         public async Task MarcarTodasComoLeidasAsync_MarcaTodasLasNoLeidasDelUsuarioActual()
         {
@@ -114,14 +137,37 @@ namespace AmmenTravel.NotificacionTest
             // Leer y comprobar dentro de UoW
             await WithUnitOfWorkAsync(async () =>
             {
-                var mine = (await _notificacionRepository.GetListAsync(n => n.UserId == userId)).ToList();
+                var queryable = await _notificacionRepository.GetQueryableAsync();
+
+                var mine = (await queryable
+                    .IgnoreQueryFilters()
+                    .Where(n => n.UserId == userId)
+                    .ToListAsync());
+
+                mine.ShouldNotBeEmpty();
                 mine.ShouldAllBe(n => n.Leida);
 
-                var others = (await _notificacionRepository.GetListAsync(n => n.UserId == otherUser)).ToList();
+                var others = (await queryable
+                    .IgnoreQueryFilters()
+                    .Where(n => n.UserId == otherUser)
+                    .ToListAsync());
+
                 others.Any().ShouldBeTrue();
                 // Las de otros usuarios no deben haber sido marcadas por el servicio
                 others.All(n => n.Leida == false).ShouldBeTrue();
+
+
+                /*
+                        var mine = (await _notificacionRepository.GetListAsync(n => n.UserId == userId)).ToList();
+                        mine.ShouldAllBe(n => n.Leida);
+
+                        var others = (await _notificacionRepository.GetListAsync(n => n.UserId == otherUser)).ToList();
+                        others.Any().ShouldBeTrue();
+                        // Las de otros usuarios no deben haber sido marcadas por el servicio
+                        others.All(n => n.Leida == false).ShouldBeTrue();
+                */
             });
         }
+        
     }
 }
