@@ -1,15 +1,19 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using NSubstitute;
-using Volo.Abp.Modularity;
-using Volo.Abp;
-using AmmenTravel.ExternalService;
+﻿using AmmenTravel.ExternalService;
 using AmmenTravel.Opiniones;
+using Microsoft.Extensions.DependencyInjection;
+using NSubstitute;
+using Volo.Abp;
+using Volo.Abp.Modularity;
+using Volo.Abp.PermissionManagement;
+using Volo.Abp.SettingManagement;
 
 namespace AmmenTravel;
 
 [DependsOn(
     typeof(AmmenTravelApplicationModule),
-    typeof(AmmenTravelDomainTestModule)
+    typeof(AmmenTravelDomainTestModule),
+    typeof(AbpPermissionManagementDomainModule), // <--- AGREGAR ESTA
+    typeof(AbpSettingManagementDomainModule)
 )]
 public class AmmenTravelApplicationTestModule : AbpModule
 {
