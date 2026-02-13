@@ -110,7 +110,7 @@ export class MisCalificacionesComponent implements OnInit {
 
   guardarEdicion() {
     const opinionActual = this.opinionEditando();
-    if (!opinionActual) return;
+    if (!opinionActual || this.ratingEditando() === 0) return;
 
     this.guardandoEdicion.set(true);
 
