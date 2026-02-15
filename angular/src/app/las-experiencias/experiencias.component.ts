@@ -162,7 +162,8 @@ export class ExperienciasComponent implements OnInit, OnChanges {
 
     if (this.modoEdicion() && this.idEnEdicion) {
       this.service.update(this.idEnEdicion, data).subscribe({
-        next: () => this.finalizarGuardado('Experiencia actualizada')
+        next: () => this.finalizarGuardado('Experiencia actualizada'),
+        error: () => this.toaster.error('No se pudo guardar la experiencia.', 'Error')
       });
     } else {
        this.service.create(data).subscribe({
