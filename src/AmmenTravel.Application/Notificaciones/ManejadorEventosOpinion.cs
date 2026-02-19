@@ -1,6 +1,7 @@
 ﻿using AmmenTravel.Destinos;
 using AmmenTravel.ListaFavoritos;
 using AmmenTravel.Opiniones;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -8,7 +9,6 @@ using Volo.Abp.DependencyInjection;
 using Volo.Abp.Domain.Entities.Events; // Para EntityCreatedEventData
 using Volo.Abp.Domain.Repositories;
 using Volo.Abp.EventBus;
-using Volo.Abp.EventBus.Local;
 using Volo.Abp.Guids;
 
 namespace AmmenTravel.Notificaciones
@@ -21,6 +21,7 @@ namespace AmmenTravel.Notificaciones
         private readonly IRepository<Opinion, Guid> _opinionRepository;
         private readonly IRepository<DestinoTuristico, Guid> _destinoRepository;
         private readonly IRepository<LineaListaFavorito, Guid> _favoritosRepository;
+        private readonly IRepository<ListaFavorito, Guid> _listaFavoritoRepository;
         private readonly IGuidGenerator _guidGenerator;
 
         public ManejadorEventosOpinion(
@@ -28,12 +29,14 @@ namespace AmmenTravel.Notificaciones
             IRepository<Opinion, Guid> opinionRepository,
             IRepository<DestinoTuristico, Guid> destinoRepository,
             IRepository<LineaListaFavorito, Guid> favoritosRepository,
+            IRepository<ListaFavorito, Guid> listaFavoritoRepository,
             IGuidGenerator guidGenerator)
         {
             _notificacionRepository = notificacionRepository;
             _opinionRepository = opinionRepository;
             _destinoRepository = destinoRepository;
             _favoritosRepository = favoritosRepository;
+            _listaFavoritoRepository = listaFavoritoRepository;
             _guidGenerator = guidGenerator;
         }
 
@@ -66,12 +69,16 @@ namespace AmmenTravel.Notificaciones
                     TipoNotificacion.Exito, "fa-star");
             }
 
-            // Racha de Viajero (Lógica simplificada: chequeamos si tiene 3 destinos distintos)
-            // Podrías refinar esto para que sea "este mes" filtrando por CreationTime
-            var destinosDistintos = await _opinionRepository.CountAsync(x => x.UserId == userId);
-            // Nota: CountAsync directo no hace distinct por columna fácilmente en repo genérico, 
-            // para una racha real compleja requeriría un Queryable con GroupBy, lo simplifico aquí:
-            if (totalOpinionesUsuario == 3)
+            // Racha de Viajero: contamos destinos distintos opinados por el usuario
+            var opinionesQueryable = await _opinionRepository.GetQueryableAsync();
+            var destinosDistintos = await opinionesQueryable
+                .Where(o => o.UserId == userId)
+                .Select(o => o.DestinoTuristicoId)
+                .Distinct()
+                .CountAsync();
+
+            // Disparo de notificación cuando el usuario tiene 3 destinos distintos
+            if (destinosDistintos == 3)
             {
                 await CrearNotificacion(userId, "¡Racha de Viajero! 🔥",
                    "Estás compartiendo muchas experiencias. ¡Sigue así!",
@@ -92,25 +99,26 @@ namespace AmmenTravel.Notificaciones
             }
 
             // ---------------------------------------------------------
-            // 3. MIS FAVORITOS (Para OTROS usuarios)
+            // 3. MIS FAVORITOS (Para OTROS usuarios) - Optimizado
             // ---------------------------------------------------------
-            // Buscamos a TODOS los usuarios que tienen este destino en favoritos
-            var seguidores = await _favoritosRepository.GetListAsync(f => f.DestinoTuristicoId == destinoId && f.CreatorId != userId);
+            // Evitar N+1: hacemos JOIN entre LineaListaFavorito y ListaFavorito y obtenemos los UserId distintos
+            var favQueryable = await _favoritosRepository.GetQueryableAsync();
+            var listasQueryable = await _listaFavoritoRepository.GetQueryableAsync();
 
-            foreach (var favorito in seguidores)
+            var ownerIds = await (from f in favQueryable
+                                  join l in listasQueryable on f.ListaFavoritoId equals l.Id
+                                  where f.DestinoTuristicoId == destinoId && l.UserId != userId
+                                  select l.UserId)
+                                 .Distinct()
+                                 .ToListAsync();
+
+            foreach (var ownerId in ownerIds)
             {
-                // Obtenemos el UserId real del dueño de la lista (usando la relación con ListaFavorito si es necesario)
-                // Asumiré que LineaListaFavorito tiene acceso al UserId de la Lista o lo obtienes con un Join.
-                // Si LineaListaFavorito NO tiene UserId directo, necesitarás hacer un Join con ListaFavorito.
-                // Aquí simulo que obtenemos el ID del dueño de la lista:
-                var idDueñoLista = await ObtenerDueñoLista(favorito.ListaFavoritoId); // (Ver helper abajo)
+                if (ownerId == Guid.Empty || ownerId == userId) continue;
 
-                if (idDueñoLista != Guid.Empty && idDueñoLista != userId)
-                {
-                    await CrearNotificacion(idDueñoLista, "¡Novedades en tus favoritos! 🔔",
-                        $"Alguien acaba de opinar sobre {destino.Nombre}. Mira qué dicen.",
-                        TipoNotificacion.Social, "fa-heart", $"/destinos/{destinoId}");
-                }
+                await CrearNotificacion(ownerId, "¡Novedades en tus favoritos! 🔔",
+                    $"Alguien acaba de opinar sobre {destino.Nombre}. Mira qué dicen.",
+                    TipoNotificacion.Social, "fa-heart", $"/destinos/{destinoId}");
             }
         }
 
@@ -124,9 +132,12 @@ namespace AmmenTravel.Notificaciones
         // Helper auxiliar (implementar lógica real con repositorios)
         private async Task<Guid> ObtenerDueñoLista(Guid listaId)
         {
-            // Implementa la búsqueda del UserId de la ListaFavorito aquí
-            // return (await _listaFavoritoRepository.GetAsync(listaId)).UserId;
-            return Guid.Empty; // Placeholder
+            if (listaId == Guid.Empty) return Guid.Empty;
+
+            // Intentamos obtener la lista; FirstOrDefaultAsync evita excepciones si no existe
+            var lista = await _listaFavoritoRepository.FirstOrDefaultAsync(l => l.Id == listaId);
+
+            return lista?.UserId ?? Guid.Empty;
         }
     }
 }

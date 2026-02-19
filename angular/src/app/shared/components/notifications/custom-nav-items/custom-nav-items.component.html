@@ -14,7 +14,7 @@
         </span>
         <div class="w-8 h-8 rounded-full overflow-hidden border border-gray-300 group-hover:border-slate-500 transition-colors shadow-sm">
           <img [src]="getFotoUrl(user.id)" 
-               (error)="avatar.src = 'assets/images/avatar-default.png'" 
+               (error)="avatar.src = 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Crect fill=%22%23e5e7eb%22 width=%22100%22 height=%22100%22/%3E%3Ctext x=%2250%22 y=%2270%22 font-size=%2250%22 fill=%22%239ca3af%22 text-anchor=%22middle%22%3E👤%3C/text%3E%3C/svg%3E'" 
                #avatar
                alt="Avatar" 
                class="w-full h-full object-cover">

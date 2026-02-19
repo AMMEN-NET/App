@@ -4,20 +4,17 @@ using AmmenTravel.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
-using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Volo.Abp.EntityFrameworkCore;
 
 #nullable disable
 
-namespace AmmenTravel.Migrations
+namespace AmmenTravel.src.AmmenTravel.EntityFrameworkCore.Migrations
 {
     [DbContext(typeof(AmmenTravelDbContext))]
-    [Migration("20260107212912_RelacionExperienciaDestino")]
-    partial class RelacionExperienciaDestino
+    partial class AmmenTravelDbContextModelSnapshot : ModelSnapshot
     {
-        /// <inheritdoc />
-        protected override void BuildTargetModel(ModelBuilder modelBuilder)
+        protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -86,6 +83,73 @@ namespace AmmenTravel.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("AppDestinos", (string)null);
+                });
+
+            modelBuilder.Entity("AmmenTravel.Estadisticas.HistorialBusqueda", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreationTime")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("CreationTime");
+
+                    b.Property<Guid?>("CreatorId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("CreatorId");
+
+                    b.Property<bool>("EncontroResultados")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("FiltrosUtilizados")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TerminoBusqueda")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("HistorialBusquedas");
+                });
+
+            modelBuilder.Entity("AmmenTravel.Estadisticas.RegistroApiExterna", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("CodigoEstadoHttp")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreationTime")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("CreationTime");
+
+                    b.Property<Guid?>("CreatorId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("CreatorId");
+
+                    b.Property<string>("Endpoint")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("FueExitoso")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("MensajeError")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("NombreApi")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("TiempoDuracionMs")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("RegistrosApiExterna");
                 });
 
             modelBuilder.Entity("AmmenTravel.Experiencias.Experiencia", b =>
@@ -232,6 +296,51 @@ namespace AmmenTravel.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("AppListasFavoritos", (string)null);
+                });
+
+            modelBuilder.Entity("AmmenTravel.Notificaciones.Notificacion", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreationTime")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("CreationTime");
+
+                    b.Property<Guid?>("CreatorId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("CreatorId");
+
+                    b.Property<string>("Icono")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("Leida")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("LinkReferencia")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Mensaje")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<int>("Tipo")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Titulo")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("AppNotificaciones", (string)null);
                 });
 
             modelBuilder.Entity("AmmenTravel.Opiniones.Opinion", b =>
@@ -2057,6 +2166,17 @@ namespace AmmenTravel.Migrations
                         .IsUnique();
 
                     b.ToTable("AbpSettingDefinitions", (string)null);
+                });
+
+            modelBuilder.Entity("AmmenTravel.Experiencias.Experiencia", b =>
+                {
+                    b.HasOne("AmmenTravel.Destinos.DestinoTuristico", "Destino")
+                        .WithMany()
+                        .HasForeignKey("DestinoId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Destino");
                 });
 
             modelBuilder.Entity("AmmenTravel.ListaFavoritos.LineaListaFavorito", b =>

@@ -3,10 +3,10 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace AmmenTravel.Migrations
+namespace AmmenTravel.src.AmmenTravel.EntityFrameworkCore.Migrations
 {
     /// <inheritdoc />
-    public partial class initial : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -423,6 +423,84 @@ namespace AmmenTravel.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "AppDestinos",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Nombre = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
+                    Pais = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    Poblacion = table.Column<int>(type: "int", nullable: false),
+                    Latitud = table.Column<float>(type: "real", nullable: false),
+                    Longitud = table.Column<float>(type: "real", nullable: false),
+                    IdExterno = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
+                    ExtraProperties = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ConcurrencyStamp = table.Column<string>(type: "nvarchar(40)", maxLength: 40, nullable: false),
+                    CreationTime = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    CreatorId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    LastModificationTime = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    LastModifierId = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AppDestinos", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "AppListasFavoritos",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    CreationTime = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    CreatorId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    LastModificationTime = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    LastModifierId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
+                    DeleterId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    DeletionTime = table.Column<DateTime>(type: "datetime2", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AppListasFavoritos", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "AppNotificaciones",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Titulo = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    Mensaje = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
+                    Tipo = table.Column<int>(type: "int", nullable: false),
+                    Leida = table.Column<bool>(type: "bit", nullable: false),
+                    LinkReferencia = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Icono = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    CreationTime = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    CreatorId = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AppNotificaciones", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "HistorialBusquedas",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    TerminoBusqueda = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    EncontroResultados = table.Column<bool>(type: "bit", nullable: false),
+                    FiltrosUtilizados = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CreationTime = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    CreatorId = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_HistorialBusquedas", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "OpenIddictApplications",
                 columns: table => new
                 {
@@ -483,6 +561,25 @@ namespace AmmenTravel.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_OpenIddictScopes", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "RegistrosApiExterna",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    NombreApi = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Endpoint = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    TiempoDuracionMs = table.Column<int>(type: "int", nullable: false),
+                    CodigoEstadoHttp = table.Column<int>(type: "int", nullable: false),
+                    FueExitoso = table.Column<bool>(type: "bit", nullable: false),
+                    MensajeError = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    CreationTime = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    CreatorId = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_RegistrosApiExterna", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -717,6 +814,93 @@ namespace AmmenTravel.Migrations
                         name: "FK_AbpUserTokens_AbpUsers_UserId",
                         column: x => x.UserId,
                         principalTable: "AbpUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "AppExperiencias",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    DestinoId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Valoracion = table.Column<int>(type: "int", nullable: false),
+                    Comentario = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: false),
+                    CreationTime = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    CreatorId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    LastModificationTime = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    LastModifierId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
+                    DeleterId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    DeletionTime = table.Column<DateTime>(type: "datetime2", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AppExperiencias", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_AppExperiencias_AppDestinos_DestinoId",
+                        column: x => x.DestinoId,
+                        principalTable: "AppDestinos",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "AppOpiniones",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Puntuacion = table.Column<int>(type: "int", nullable: false),
+                    Comentario = table.Column<string>(type: "nvarchar(2000)", maxLength: 2000, nullable: false),
+                    DestinoTuristicoId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    CreationTime = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    CreatorId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    LastModificationTime = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    LastModifierId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
+                    DeleterId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    DeletionTime = table.Column<DateTime>(type: "datetime2", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AppOpiniones", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_AppOpiniones_AppDestinos_DestinoTuristicoId",
+                        column: x => x.DestinoTuristicoId,
+                        principalTable: "AppDestinos",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "AppLineasListasFavoritos",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ListaFavoritoId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    DestinoTuristicoId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    CreationTime = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    CreatorId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    LastModificationTime = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    LastModifierId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
+                    DeleterId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    DeletionTime = table.Column<DateTime>(type: "datetime2", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AppLineasListasFavoritos", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_AppLineasListasFavoritos_AppDestinos_DestinoTuristicoId",
+                        column: x => x.DestinoTuristicoId,
+                        principalTable: "AppDestinos",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_AppLineasListasFavoritos_AppListasFavoritos_ListaFavoritoId",
+                        column: x => x.ListaFavoritoId,
+                        principalTable: "AppListasFavoritos",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -1027,6 +1211,31 @@ namespace AmmenTravel.Migrations
                 column: "UserName");
 
             migrationBuilder.CreateIndex(
+                name: "IX_AppExperiencias_DestinoId",
+                table: "AppExperiencias",
+                column: "DestinoId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AppLineasListasFavoritos_DestinoTuristicoId",
+                table: "AppLineasListasFavoritos",
+                column: "DestinoTuristicoId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AppLineasListasFavoritos_ListaFavoritoId",
+                table: "AppLineasListasFavoritos",
+                column: "ListaFavoritoId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AppNotificaciones_UserId",
+                table: "AppNotificaciones",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AppOpiniones_DestinoTuristicoId",
+                table: "AppOpiniones",
+                column: "DestinoTuristicoId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_OpenIddictApplications_ClientId",
                 table: "OpenIddictApplications",
                 column: "ClientId");
@@ -1136,10 +1345,28 @@ namespace AmmenTravel.Migrations
                 name: "AbpUserTokens");
 
             migrationBuilder.DropTable(
+                name: "AppExperiencias");
+
+            migrationBuilder.DropTable(
+                name: "AppLineasListasFavoritos");
+
+            migrationBuilder.DropTable(
+                name: "AppNotificaciones");
+
+            migrationBuilder.DropTable(
+                name: "AppOpiniones");
+
+            migrationBuilder.DropTable(
+                name: "HistorialBusquedas");
+
+            migrationBuilder.DropTable(
                 name: "OpenIddictScopes");
 
             migrationBuilder.DropTable(
                 name: "OpenIddictTokens");
+
+            migrationBuilder.DropTable(
+                name: "RegistrosApiExterna");
 
             migrationBuilder.DropTable(
                 name: "AbpBlobContainers");
@@ -1155,6 +1382,12 @@ namespace AmmenTravel.Migrations
 
             migrationBuilder.DropTable(
                 name: "AbpUsers");
+
+            migrationBuilder.DropTable(
+                name: "AppListasFavoritos");
+
+            migrationBuilder.DropTable(
+                name: "AppDestinos");
 
             migrationBuilder.DropTable(
                 name: "OpenIddictAuthorizations");

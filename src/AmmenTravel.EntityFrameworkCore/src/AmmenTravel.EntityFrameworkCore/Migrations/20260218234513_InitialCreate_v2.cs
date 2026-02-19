@@ -2,10 +2,10 @@
 
 #nullable disable
 
-namespace AmmenTravel.Migrations
+namespace AmmenTravel.src.AmmenTravel.EntityFrameworkCore.Migrations
 {
     /// <inheritdoc />
-    public partial class inicial : Migration
+    public partial class InitialCreate_v2 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
