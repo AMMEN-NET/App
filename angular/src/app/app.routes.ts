@@ -1,5 +1,6 @@
 import { authGuard, permissionGuard } from '@abp/ng.core';
 import { Routes } from '@angular/router';
+import { AdminDashboardComponent } from './admin/dashboard/admin-dashboard.component';
 
 
 export const APP_ROUTES: Routes = [
@@ -25,6 +26,17 @@ export const APP_ROUTES: Routes = [
     loadComponent: () => 
       import('./los-viajeros/viajeros.component').then(c => c.ViajerosComponent),
     canActivate: [authGuard]
+  },
+  {
+    path: 'experiencias', 
+    loadComponent: () => 
+      import('./las-experiencias/experiencias.component').then(c => c.ExperienciasComponent),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'admin/dashboard',
+    component: AdminDashboardComponent,
+    // canActivate: [authGuard, permissionGuard] // Descomenta si usas guards y permisos específicos
   },
   {
     path: 'account',

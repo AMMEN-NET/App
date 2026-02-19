@@ -1,5 +1,5 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { ChangeDetectionStrategy, Component, inject, signal, OnInit } from '@angular/core';
+import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { ToasterService } from '@abp/ng.theme.shared';
 import { ConfigStateService } from '@abp/ng.core'; 
@@ -9,31 +9,39 @@ import { DestinoService } from '../proxy/destinos';
 import { ListaDeFavoritosService } from '../proxy/lista-de-favoritos'; 
 import { CiudadBuscadaDTO, CiudadResultadoDTO, CiudadDTO } from '../proxy/external-service/models';
 
-// --- NUEVOS IMPORTS PARA LA CALIFICACIÓN ---
-// Ajusta las rutas si tus archivos están en carpetas diferentes
+// OPINIONES
 import { OpinionService } from '../proxy/opiniones/opinion.service'; 
 import { ValorPuntuacion } from '../proxy/opiniones/valor-puntuacion.enum';
 import { createUpdateOpinionDto } from '../proxy/opiniones/opiniones-dto/models';
-import { OpinionPublicaDto } from '../proxy/opiniones/opiniones-dto/models'; // Ajusta la ruta según tu generación
+import { OpinionPublicaDto } from '../proxy/opiniones/opiniones-dto/models'; 
+
+// EXPERIENCIAS (NUEVO)
+import { ExperienciaService } from '../proxy/experiencias/experiencia.service';
+import { TipoExperiencia } from '../proxy/experiencias/tipo-experiencia.enum';
+import { CreateUpdateExperienciaDto } from '../proxy/experiencias/models'; 
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class HomeComponent {
+export class HomeComponent implements OnInit {
 
   protected Math = Math;
+  // Enum para usar en el HTML de la modal de experiencia
+  TipoExperiencia = TipoExperiencia; 
 
   // --- INYECCIÓN DE SERVICIOS ---
   private readonly destinoService = inject(DestinoService);
   private readonly toaster = inject(ToasterService);
   private readonly listaFavoritosService = inject(ListaDeFavoritosService);
-  private readonly opinionService = inject(OpinionService); // <--- Inyectamos el servicio de opiniones
-  private configState = inject(ConfigStateService);
+  private readonly opinionService = inject(OpinionService); 
+  private readonly experienciaService = inject(ExperienciaService); // Inyectado
+  private readonly configState = inject(ConfigStateService);
+  private readonly fb = inject(FormBuilder); // Inyectado para el formulario
 
   // --- SEÑALES DE INPUTS (Búsqueda) ---
   public nombre = signal<string>('');
@@ -45,28 +53,67 @@ export class HomeComponent {
   public estaCargando = signal<boolean>(false);
   public error = signal<string | null>(null);
 
-  // --- SEÑAL PARA CONTROLAR QUÉ BOTONES ESTÁN CARGANDO (Favoritos) ---
+  // --- SEÑAL FAVORITOS ---
   public favoritosEnProceso = signal<Set<string>>(new Set());
+  public favoritosIds = signal<Set<string>>(new Set());
 
-  // --- NUEVAS SEÑALES PARA LA MODAL DE CALIFICACIÓN ---
-  public ciudadParaCalificar = signal<CiudadDTO | null>(null); // Controla si la modal se ve
-  public ratingSeleccionado = signal<number>(0);               // Almacena las estrellas (1-5)
-  public comentarioCalificacion = signal<string>('');          // Almacena el texto
-  public enviandoCalificacion = signal<boolean>(false);        // Loading del botón Enviar
-  public opinionesDelDestino = signal<OpinionPublicaDto[]>([]); // Opiniones cargadas
-  public cargandoOpiniones = signal<boolean>(false);            // Loading de opiniones
+  // --- SEÑALES MODAL OPINIÓN (CALIFICAR) ---
+  public ciudadParaCalificar = signal<CiudadDTO | null>(null); 
+  public ratingSeleccionado = signal<number>(0);               
+  public comentarioCalificacion = signal<string>('');          
+  public enviandoCalificacion = signal<boolean>(false);        
+  public opinionesDelDestino = signal<OpinionPublicaDto[]>([]); 
+  public cargandoOpiniones = signal<boolean>(false);            
+
+  // --- SEÑALES MODAL EXPERIENCIA (LO QUE TE FALTABA) ---
+  public ciudadExperiencia = signal<CiudadDTO | null>(null); 
+  public enviandoExperiencia = signal<boolean>(false);
+  public formExperiencia: FormGroup;
+
+  constructor() {
+    // Inicializamos el formulario de experiencia
+    this.formExperiencia = this.fb.group({
+      valoracion: [null, Validators.required],
+      comentario: ['', [Validators.required, Validators.minLength(10), Validators.maxLength(1000)]]
+    });
+  }
 
   get userName(): string {
-    // Busca el usuario actual en el estado de ABP
     const currentUser = this.configState.getOne('currentUser');
-    
-    // Si existe y tiene nombre, lo devuelve. Si no, devuelve 'Viajero'
     return currentUser?.name || currentUser?.userName || 'Viajero';
   }
 
-  /**
-   * Llama al servicio para buscar ciudades
-   */
+  ngOnInit() {
+    this.cargarFavoritosExistentes();
+  }
+
+  // --- LÓGICA DE CARGA INICIAL DE FAVORITOS ---
+  private cargarFavoritosExistentes() {
+    this.listaFavoritosService.obtenerFavoritos().subscribe({
+      next: (resultado: any[]) => {
+        const lista = Array.isArray(resultado) ? resultado : (resultado['items'] || []);
+        
+        const ids = new Set<string>();
+        lista.forEach((item: any) => {
+             const idExterno = item.geoDBId || item.geoDbId || item.idExterno || item.destino?.idExterno || item.destinoTuristico?.idExterno;
+             if (idExterno) ids.add(idExterno);
+        });
+
+        this.favoritosIds.set(ids);
+        console.log(`💙 Favoritos cargados al inicio: ${ids.size}`, ids);
+      },
+      error: (err) => {
+        console.log('No se pudieron cargar favoritos iniciales.');
+      }
+    });
+  }
+
+  public esFavorito(geoDBId: string | undefined): boolean {
+    if (!geoDBId) return false;
+    return this.favoritosIds().has(geoDBId);
+  }
+
+  // --- BÚSQUEDA ---
   public buscarCiudades(): void {
     const nombreVal = this.nombre();
     const paisVal = this.pais();
@@ -100,9 +147,7 @@ export class HomeComponent {
     });
   }
 
-  /**
-   * Guarda la ciudad en favoritos
-   */
+  // --- FAVORITOS ---
   public agregarAFavoritos(ciudad: CiudadDTO): void {
     const ciudadId = ciudad.geoDBId; 
     
@@ -111,7 +156,11 @@ export class HomeComponent {
         return;
     }
 
-    // 1. Añadimos el ID al Set para mostrar el spinner en el botón
+    if (this.esFavorito(ciudadId)) {
+        this.toaster.info('Esta ciudad ya está en tu lista de deseos.', 'Información');
+        return;
+    }
+
     this.favoritosEnProceso.update(set => {
         const newSet = new Set(set);
         newSet.add(ciudadId);
@@ -121,12 +170,17 @@ export class HomeComponent {
     this.listaFavoritosService.agregarFavoritoDesdeBusqueda(ciudad).subscribe({
       next: () => {
         this.toaster.success(`¡"${ciudad.nombre}" agregado a favoritos!`, 'Éxito');
+        
+        this.favoritosIds.update(ids => {
+            const nuevosIds = new Set(ids);
+            nuevosIds.add(ciudadId);
+            return nuevosIds;
+        });
       },
       error: (error) => {
         this.toaster.error('No se pudo guardar. ¿Estás logueado?', 'Error');
         console.error(error);
       },
-      // 2. Al finalizar (sea éxito o error), quitamos el ID del Set
       complete: () => {
         this.favoritosEnProceso.update(set => {
             const newSet = new Set(set);
@@ -137,27 +191,17 @@ export class HomeComponent {
     });
   }
 
-  /**
-   * Helper para el HTML: verifica si una ciudad específica se está guardando
-   */
   public estaAgregando(geoDBId: string | undefined): boolean {
       if (!geoDBId) return false;
       return this.favoritosEnProceso().has(geoDBId);
   }
 
-  // =========================================================
-  // LÓGICA DE LA MODAL DE CALIFICACIÓN
-  // =========================================================
-
-  /**
-   * Abre la modal para la ciudad seleccionada y resetea el formulario
-   */
+  // --- MODAL CALIFICAR (OPINIÓN SIMPLE) ---
   public abrirModalCalificar(ciudad: CiudadDTO): void {
     this.ratingSeleccionado.set(0);
     this.comentarioCalificacion.set('');
     this.ciudadParaCalificar.set(ciudad);
     
-    // --- NUEVO: Cargar opiniones al abrir ---
     if (ciudad.geoDBId) {
         this.cargarOpiniones(ciudad.geoDBId);
     }
@@ -166,14 +210,11 @@ export class HomeComponent {
   public cerrarModalCalificar(): void {
     this.ciudadParaCalificar.set(null);
     this.enviandoCalificacion.set(false);
-    this.opinionesDelDestino.set([]); // Limpiamos al cerrar
+    this.opinionesDelDestino.set([]); 
   }
 
-  // --- NUEVO MÉTODO PRIVADO ---
   private cargarOpiniones(idExterno: string): void {
       this.cargandoOpiniones.set(true);
-      
-      // Llamamos al nuevo endpoint (asegúrate de haber regenerado proxies o agrégalo a tu servicio manual)
       this.opinionService.obtenerListaPublicaPorDestino(idExterno).subscribe({
           next: (lista) => {
               this.opinionesDelDestino.set(lista);
@@ -186,19 +227,12 @@ export class HomeComponent {
       });
   }
 
-  /**
-   * Envía la calificación al backend
-   */
   public enviarCalificacion(): void {
     const ciudad = this.ciudadParaCalificar();
     const rating = this.ratingSeleccionado();
     const comentario = this.comentarioCalificacion();
 
-    // Validaciones básicas del frontend
-    if (!ciudad || !ciudad.geoDBId) {
-      this.toaster.error('No se pudo identificar la ciudad.', 'Error');
-      return;
-    }
+    if (!ciudad || !ciudad.geoDBId) return;
 
     if (rating === 0) {
       this.toaster.warn('Debes seleccionar al menos una estrella.', 'Atención');
@@ -207,77 +241,110 @@ export class HomeComponent {
 
     this.enviandoCalificacion.set(true);
 
-    // --- OBJETO PARA EL BACKEND ---
-    // Mapeamos los datos de GeoDB a lo que espera tu API de Destinos
     const destinoParaGuardar = {
       nombre: ciudad.nombre,
       pais: ciudad.pais,
-      idExterno: ciudad.geoDBId, // Importante: Mapeamos geoDBId a idExterno
+      idExterno: ciudad.geoDBId, 
       poblacion: ciudad.poblacion,
       latitud: ciudad.latitud,
       longitud: ciudad.longitud
     };
 
-    // 1. Primero intentamos registrar el destino en tu BD
     this.destinoService.create(destinoParaGuardar as any).subscribe({
       next: (destinoGuardado: any) => {
-        
-        // 2. Si se guardó (o ya existía y devolvió el objeto), usamos su ID real (GUID)
         const guidReal = destinoGuardado.id; 
-
         const input: createUpdateOpinionDto = {
           destinoTuristicoId: guidReal, 
           puntuacion: rating as ValorPuntuacion,
           comentario: comentario || ''
         };
 
-        // 3. Guardamos la opinión vinculada a ese GUID
         this.opinionService.crearOpinion(input).subscribe({
         next: (opinionCreada) => { 
             const fechaCreacion = new Date(opinionCreada.creationTime || new Date());
             const ahora = new Date();
-            const diferenciaMilisegundos = ahora.getTime() - fechaCreacion.getTime();
-            
-            if (diferenciaMilisegundos > 60000) { // Mayor a 1 minuto
-                 this.toaster.info(
-                    'Hemos detectado una calificación previa. Se ha restaurado y actualizado correctamente.', 
-                    'Calificación Restaurada'
-                 );
+            if ((ahora.getTime() - fechaCreacion.getTime()) > 60000) { 
+                 this.toaster.info('Calificación actualizada.', 'Info');
             } else {
                  this.toaster.success('¡Gracias por tu opinión!', 'Enviado');
             }
-
             this.cerrarModalCalificar();
             this.enviandoCalificacion.set(false);
           },
           error: (errOpinion) => {
-            console.error('Error al guardar opinión:', errOpinion);
-            
-            // Si el backend lanza la excepción "Ya has calificado...", el error suele venir aquí
             if (errOpinion.error?.error?.message) {
                  this.toaster.warn(errOpinion.error.error.message, 'Atención');
             } else {
-                 this.toaster.error('Error al guardar la opinión.', 'Error');
+                 this.toaster.error('Error al guardar.', 'Error');
             }
-            
             this.enviandoCalificacion.set(false);
           }
         });
       },
-      error: (errDestino) => {
-        console.error('Error al crear destino:', errDestino);
-        
-        // Si el error es 409 (Conflict), significa que la ciudad ya existe.
-        // En ese caso, la lógica ideal sería "Si falla, busca el destino por IdExterno y usa ese ID".
-        // Pero si tu backend devuelve el objeto incluso en error, o si necesitas esa lógica extra, avísame.
-        this.toaster.error(
-            'No se pudo procesar el destino en la base de datos.', 
-            'Error'
-        );
+      error: () => {
+        this.toaster.error('Error al procesar destino.', 'Error');
         this.enviandoCalificacion.set(false);
       }
     });
   }
 
-  
+  // --- MODAL EXPERIENCIA (NUEVO MÉTODO COMPLETO) ---
+  public crearExperiencia(ciudad: CiudadDTO): void {
+    this.formExperiencia.reset({
+      valoracion: TipoExperiencia.MuyBueno
+    });
+    this.ciudadExperiencia.set(ciudad);
   }
+
+  public cerrarModalExperiencia(): void {
+    this.ciudadExperiencia.set(null);
+    this.enviandoExperiencia.set(false);
+  }
+
+  public guardarExperiencia(): void {
+    if (this.formExperiencia.invalid) return;
+
+    const ciudad = this.ciudadExperiencia();
+    if (!ciudad || !ciudad.geoDBId) return;
+
+    this.enviandoExperiencia.set(true);
+
+    const destinoParaGuardar = {
+      nombre: ciudad.nombre,
+      pais: ciudad.pais,
+      idExterno: ciudad.geoDBId,
+      poblacion: ciudad.poblacion,
+      latitud: ciudad.latitud,
+      longitud: ciudad.longitud
+    };
+
+    this.destinoService.create(destinoParaGuardar as any).subscribe({
+      next: (destinoGuardado: any) => {
+        const destinoId = destinoGuardado.id;
+
+        const input: CreateUpdateExperienciaDto = {
+          destinoId: destinoId,
+          valoracion: this.formExperiencia.value.valoracion,
+          comentario: this.formExperiencia.value.comentario
+        };
+
+        this.experienciaService.create(input).subscribe({
+          next: () => {
+            this.toaster.success('¡Experiencia publicada con éxito!', 'Genial');
+            this.cerrarModalExperiencia();
+          },
+          error: (err) => {
+            console.error(err);
+            this.toaster.error('Ocurrió un error al publicar.', 'Error');
+            this.enviandoExperiencia.set(false);
+          }
+        });
+      },
+      error: (err) => {
+        console.error('Error destino:', err);
+        this.toaster.error('Error al procesar el destino.', 'Error');
+        this.enviandoExperiencia.set(false);
+      }
+    });
+  }
+}

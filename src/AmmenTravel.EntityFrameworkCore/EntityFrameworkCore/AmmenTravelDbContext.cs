@@ -1,6 +1,14 @@
+using AmmenTravel.Common;
 using AmmenTravel.Destinos;
+using AmmenTravel.Estadisticas;
+using AmmenTravel.Experiencias;
+using AmmenTravel.ListaFavoritos;
+using AmmenTravel.Notificaciones;
 using AmmenTravel.Opiniones;
 using Microsoft.EntityFrameworkCore;
+using System;
+using System.Linq;
+using System.Reflection;
 using Volo.Abp.AuditLogging.EntityFrameworkCore;
 using Volo.Abp.BackgroundJobs.EntityFrameworkCore;
 using Volo.Abp.BlobStoring.Database.EntityFrameworkCore;
@@ -15,11 +23,6 @@ using Volo.Abp.OpenIddict.EntityFrameworkCore;
 using Volo.Abp.PermissionManagement.EntityFrameworkCore;
 using Volo.Abp.SettingManagement.EntityFrameworkCore;
 using Volo.Abp.Users;
-using System;
-using System.Linq;
-using System.Reflection;
-using AmmenTravel.Common;
-using AmmenTravel.ListaFavoritos;
 
 namespace AmmenTravel.EntityFrameworkCore;
 
@@ -32,6 +35,10 @@ public class AmmenTravelDbContext :
     /* DbSets para tus entidades */
     public DbSet<DestinoTuristico> Destinos { get; set; }
     public DbSet<Opinion> Opiniones { get; set; }
+    public DbSet<Experiencia> Experiencias { get; set; }
+    public DbSet<HistorialBusqueda> HistorialBusquedas { get; set; }
+    public DbSet<RegistroApiExterna> RegistrosApiExterna { get; set; }
+    public DbSet<Notificacion> Notificaciones { get; set; }
 
     #region Entities from the modules
 
@@ -141,6 +148,32 @@ public class AmmenTravelDbContext :
                 .WithMany()
                 .HasForeignKey(x => x.DestinoTuristicoId)
                 .OnDelete(DeleteBehavior.Cascade); // Si borras el destino (ej. París), desaparece de los favoritos de todos.
+        });
+
+        builder.Entity<Experiencia>(b =>
+        {
+            b.ToTable(AmmenTravelConsts.DbTablePrefix + "Experiencias", AmmenTravelConsts.DbSchema);
+            b.ConfigureByConvention();
+
+            b.Property(x => x.Comentario).IsRequired().HasMaxLength(1000);
+            b.Property(x => x.Valoracion).IsRequired();
+
+            // --- AGREGAR ESTO PARA QUE FUNCIONE EL INCLUDE/JOIN ---
+            b.HasOne(x => x.Destino)
+             .WithMany()
+             .HasForeignKey(x => x.DestinoId)
+             .IsRequired();
+
+            b.HasIndex(x => x.DestinoId);
+        });
+
+        builder.Entity<Notificacion>(b =>
+        {
+            b.ToTable(AmmenTravelConsts.DbTablePrefix + "Notificaciones", AmmenTravelConsts.DbSchema);
+            b.ConfigureByConvention();
+            b.Property(x => x.Titulo).IsRequired().HasMaxLength(100);
+            b.Property(x => x.Mensaje).IsRequired().HasMaxLength(500);
+            b.HasIndex(x => x.UserId); // Importante para rendimiento
         });
 
         /* Filtro global para entidades que implementen IUserOwned */
