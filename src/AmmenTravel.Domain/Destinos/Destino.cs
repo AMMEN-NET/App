@@ -1,9 +1,4 @@
-﻿using Polly.Simmy.Latency;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System;
 using Volo.Abp.Domain.Entities.Auditing;
 
 namespace AmmenTravel.Destinos
@@ -11,23 +6,27 @@ namespace AmmenTravel.Destinos
     public class DestinoTuristico : AuditedAggregateRoot<Guid>
     {
         public required string Nombre { get; set; }
-
         public required string Pais { get; set; }
-
         public required int Poblacion { get; set; }
-
         public required float Latitud { get; set; }
-
         public required float Longitud { get; set; }
+        public string? IdExterno { get; set; }
 
-        public string? IdExterno { get; set; } // Para guardar el ID de GeoDB
+        // Constructor para uso general (con todos los parámetros)
+        public DestinoTuristico(Guid id, string nombre, string pais, int poblacion, float latitud, float longitud, string? idExterno = null)
+            : base(id)
+        {
+            Nombre = nombre;
+            Pais = pais;
+            Poblacion = poblacion;
+            Latitud = latitud;
+            Longitud = longitud;
+            IdExterno = idExterno;
+        }
 
-        /* NO HACE FALTA DECLARAR ID, CREATION TIME, NI LAST MODIFICATION TIME. AuditedAggregateRoot ya lo hace */
-
-        // --- ES OBLIGATORIO PARA PASAR EL ID ---
+        // Constructor para cuando solo quieres setear el ID y usar inicializador { }
         public DestinoTuristico(Guid id) : base(id) { }
 
-        // --- OBLIGATORIO PARA QUE EF CORE FUNCIONE ---
         protected DestinoTuristico() { }
     }
 }

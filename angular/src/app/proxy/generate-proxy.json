@@ -1486,6 +1486,47 @@
             }
           }
         },
+        "AmmenTravel.Estadisticas.DashboardAppService": {
+          "controllerName": "Dashboard",
+          "controllerGroupName": "Dashboard",
+          "isRemoteService": true,
+          "isIntegrationService": false,
+          "apiVersion": null,
+          "type": "AmmenTravel.Estadisticas.DashboardAppService",
+          "interfaces": [
+            {
+              "type": "AmmenTravel.Estadisticas.IDashboardAppService",
+              "name": "IDashboardAppService",
+              "methods": [
+                {
+                  "name": "GetResumenAsync",
+                  "parametersOnMethod": [],
+                  "returnValue": {
+                    "type": "AmmenTravel.Estadisticas.DashboardResumenDto",
+                    "typeSimple": "AmmenTravel.Estadisticas.DashboardResumenDto"
+                  }
+                }
+              ]
+            }
+          ],
+          "actions": {
+            "GetResumenAsync": {
+              "uniqueName": "GetResumenAsync",
+              "name": "GetResumenAsync",
+              "httpMethod": "GET",
+              "url": "api/app/dashboard/resumen",
+              "supportedVersions": [],
+              "parametersOnMethod": [],
+              "parameters": [],
+              "returnValue": {
+                "type": "AmmenTravel.Estadisticas.DashboardResumenDto",
+                "typeSimple": "AmmenTravel.Estadisticas.DashboardResumenDto"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "AmmenTravel.Estadisticas.IDashboardAppService"
+            }
+          }
+        },
         "AmmenTravel.Experiencias.ExperienciaAppService": {
           "controllerName": "Experiencia",
           "controllerGroupName": "Experiencia",
@@ -2130,6 +2171,99 @@
               },
               "allowAnonymous": false,
               "implementFrom": "AmmenTravel.ListaDeFavoritos.ListaDeFavoritosAppService"
+            }
+          }
+        },
+        "AmmenTravel.Notificaciones.NotificacionAppService": {
+          "controllerName": "Notificacion",
+          "controllerGroupName": "Notificacion",
+          "isRemoteService": true,
+          "isIntegrationService": false,
+          "apiVersion": null,
+          "type": "AmmenTravel.Notificaciones.NotificacionAppService",
+          "interfaces": [],
+          "actions": {
+            "GetMisNotificacionesAsync": {
+              "uniqueName": "GetMisNotificacionesAsync",
+              "name": "GetMisNotificacionesAsync",
+              "httpMethod": "GET",
+              "url": "api/app/notificacion/mis-notificaciones",
+              "supportedVersions": [],
+              "parametersOnMethod": [],
+              "parameters": [],
+              "returnValue": {
+                "type": "System.Collections.Generic.List<AmmenTravel.Notificaciones.NotificacionDto>",
+                "typeSimple": "[AmmenTravel.Notificaciones.NotificacionDto]"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "AmmenTravel.Notificaciones.NotificacionAppService"
+            },
+            "GetCantidadNoLeidasAsync": {
+              "uniqueName": "GetCantidadNoLeidasAsync",
+              "name": "GetCantidadNoLeidasAsync",
+              "httpMethod": "GET",
+              "url": "api/app/notificacion/cantidad-no-leidas",
+              "supportedVersions": [],
+              "parametersOnMethod": [],
+              "parameters": [],
+              "returnValue": {
+                "type": "System.Int32",
+                "typeSimple": "number"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "AmmenTravel.Notificaciones.NotificacionAppService"
+            },
+            "MarcarComoLeidaAsyncById": {
+              "uniqueName": "MarcarComoLeidaAsyncById",
+              "name": "MarcarComoLeidaAsync",
+              "httpMethod": "POST",
+              "url": "api/app/notificacion/{id}/marcar-como-leida",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "id",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "id",
+                  "name": "id",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "AmmenTravel.Notificaciones.NotificacionAppService"
+            },
+            "MarcarTodasComoLeidasAsync": {
+              "uniqueName": "MarcarTodasComoLeidasAsync",
+              "name": "MarcarTodasComoLeidasAsync",
+              "httpMethod": "POST",
+              "url": "api/app/notificacion/marcar-todas-como-leidas",
+              "supportedVersions": [],
+              "parametersOnMethod": [],
+              "parameters": [],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "AmmenTravel.Notificaciones.NotificacionAppService"
             }
           }
         },
@@ -4986,6 +5120,156 @@
         }
       ]
     },
+    "AmmenTravel.Estadisticas.DashboardResumenDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "TotalBusquedas",
+          "jsonName": null,
+          "type": "System.Int32",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "TotalDestinosGuardados",
+          "jsonName": null,
+          "type": "System.Int32",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "TotalOpiniones",
+          "jsonName": null,
+          "type": "System.Int32",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "TotalUsuarios",
+          "jsonName": null,
+          "type": "System.Int32",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "TotalExperiencias",
+          "jsonName": null,
+          "type": "System.Int32",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "TotalLlamadasApi",
+          "jsonName": null,
+          "type": "System.Int32",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "TotalErroresApi",
+          "jsonName": null,
+          "type": "System.Int32",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "TiempoPromedioRespuestaMs",
+          "jsonName": null,
+          "type": "System.Double",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "TopBusquedas",
+          "jsonName": null,
+          "type": "[AmmenTravel.Estadisticas.TerminoBusquedaDto]",
+          "typeSimple": "[AmmenTravel.Estadisticas.TerminoBusquedaDto]",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "AmmenTravel.Estadisticas.TerminoBusquedaDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "Termino",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Cantidad",
+          "jsonName": null,
+          "type": "System.Int32",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
     "AmmenTravel.Experiencias.CreateUpdateExperienciaDto": {
       "baseType": null,
       "isEnum": false,
@@ -5403,6 +5687,111 @@
           "name": "UserId",
           "jsonName": null,
           "type": "System.Guid",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "AmmenTravel.Notificaciones.NotificacionDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "Id",
+          "jsonName": null,
+          "type": "System.Guid",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Titulo",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Mensaje",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Leida",
+          "jsonName": null,
+          "type": "System.Boolean",
+          "typeSimple": "boolean",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Icono",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "LinkReferencia",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Fecha",
+          "jsonName": null,
+          "type": "System.DateTime",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Color",
+          "jsonName": null,
+          "type": "System.String",
           "typeSimple": "string",
           "isRequired": false,
           "minLength": null,
