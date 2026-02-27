@@ -19,3 +19,11 @@ export interface CiudadDTO {
 export interface CiudadResultadoDTO {
   ciudades: CiudadDTO[];
 }
+
+export interface EventoTicketmasterDto {
+  id?: string;
+  nombre?: string;
+  urlTicket?: string;
+  fechaInicio?: string;
+  imagenUrl?: string;
+}

@@ -7,6 +7,10 @@ import { ToasterService } from '@abp/ng.theme.shared';
 import { ListaDeFavoritosService } from '../proxy/lista-de-favoritos';
 import { FavoritoDto } from '../proxy/favoritos/favoritos-dto';
 
+// PROXIES NUEVOS PARA TICKETMASTER
+import { EventosExternosService } from '../proxy/external-service'; 
+import { EventoTicketmasterDto } from '../proxy/external-service/models'; 
+
 @Component({
   selector: 'app-mis-favoritos',
   standalone: true,
@@ -19,11 +23,19 @@ export class MisFavoritosComponent implements OnInit {
   // INYECCIONES
   private readonly listaService = inject(ListaDeFavoritosService);
   private readonly toaster = inject(ToasterService);
+  
+  // NUEVA INYECCIÓN (Adaptada a tu estilo)
+  private readonly eventosExternosService = inject(EventosExternosService);
 
-  // SEÑALES (ESTADO)
+  // SEÑALES (ESTADO ORIGINAL)
   public favoritos = signal<FavoritoDto[]>([]);
   public estaCargando = signal<boolean>(true);
   public eliminandoId = signal<string | null>(null);
+
+  // --- VARIABLES NUEVAS PARA LOS EVENTOS ---
+  eventos: EventoTicketmasterDto[] = [];
+  mostrarModalEventos: boolean = false;
+  cargandoEventos: boolean = false;
 
   ngOnInit(): void {
     this.cargarFavoritos();
@@ -63,5 +75,27 @@ export class MisFavoritosComponent implements OnInit {
         this.eliminandoId.set(null);
       }
     });
+  }
+
+  // --- MÉTODOS NUEVOS PARA BUSCAR EVENTOS ---
+  abrirModalEventos(latitud: string, longitud: string) {
+    this.mostrarModalEventos = true;
+    this.cargandoEventos = true;
+    this.eventos = []; // Limpiamos eventos anteriores
+
+    this.eventosExternosService.obtenerEventosPorUbicacion(latitud, longitud).subscribe({
+      next: (data) => {
+        this.eventos = data;
+        this.cargandoEventos = false;
+      },
+      error: (err) => {
+        console.error('Error al cargar eventos', err);
+        this.cargandoEventos = false;
+      }
+    });
+  }
+
+  cerrarModalEventos() {
+    this.mostrarModalEventos = false;
   }
 }

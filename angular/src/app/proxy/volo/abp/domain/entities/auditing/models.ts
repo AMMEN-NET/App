@@ -1,3 +1,4 @@
+import { EntityDto } from '@abp/ng.core';
 import type { Entity } from '../models';
 
 export interface AuditedEntity<TKey> extends CreationAuditedEntity<TKey> {
