@@ -1,4 +1,3 @@
-import { EntityDto } from '@abp/ng.core';
 import type { Entity } from '../models';
 
 export interface AuditedEntity<TKey> extends CreationAuditedEntity<TKey> {
@@ -6,7 +5,7 @@ export interface AuditedEntity<TKey> extends CreationAuditedEntity<TKey> {
   lastModifierId?: string;
 }
 
-export interface CreationAuditedEntity<TKey> extends Entity {
+export interface CreationAuditedEntity<TKey> extends Entity{
   id: TKey;
   creationTime?: string;
   creatorId?: string;
