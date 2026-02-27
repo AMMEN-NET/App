@@ -37,6 +37,10 @@ public class AmmenTravelApplicationModule : AbpModule
         context.Services.AddTransient<IBuscarCiudadService, GeoDdBuscarCiudadService>();
         context.Services.AddTransient<ICreateUpdateOpinion, CrearOpinionService>();
 
+        context.Services.AddHttpClient("TicketmasterClient", client =>
+        {
+            client.DefaultRequestHeaders.Add("Accept", "application/json");
+        });
     }
 
 }
