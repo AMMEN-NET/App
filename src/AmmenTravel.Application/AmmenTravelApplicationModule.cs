@@ -1,9 +1,13 @@
 ﻿using AmmenTravel.Application.ExternalServices;
+using AmmenTravel.BackgroundWorkers;
 using AmmenTravel.ExternalService;
 using AmmenTravel.Opiniones;
 using Microsoft.Extensions.DependencyInjection;
+using System.Threading.Tasks;
+using Volo.Abp; // Necesario para ApplicationInitializationContext
 using Volo.Abp.Account;
 using Volo.Abp.AutoMapper;
+using Volo.Abp.BackgroundWorkers; // Necesario para AddBackgroundWorkerAsync
 using Volo.Abp.FeatureManagement;
 using Volo.Abp.Identity;
 using Volo.Abp.Modularity;
@@ -41,6 +45,10 @@ public class AmmenTravelApplicationModule : AbpModule
         {
             client.DefaultRequestHeaders.Add("Accept", "application/json");
         });
+    }
+    public override async Task OnApplicationInitializationAsync(ApplicationInitializationContext context)
+    { 
+        await context.AddBackgroundWorkerAsync<NotificarEventosFavoritosWorker>();
     }
 
 }
