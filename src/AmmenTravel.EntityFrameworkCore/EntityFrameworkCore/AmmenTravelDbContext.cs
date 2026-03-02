@@ -40,6 +40,9 @@ public class AmmenTravelDbContext :
     public DbSet<RegistroApiExterna> RegistrosApiExterna { get; set; }
     public DbSet<Notificacion> Notificaciones { get; set; }
 
+    public DbSet<HistorialNotificacionEvento> HistorialNotificacionesEventos { get; set; }
+
+
     #region Entities from the modules
 
     public DbSet<IdentityUser> Users { get; set; }
@@ -174,6 +177,17 @@ public class AmmenTravelDbContext :
             b.Property(x => x.Titulo).IsRequired().HasMaxLength(100);
             b.Property(x => x.Mensaje).IsRequired().HasMaxLength(500);
             b.HasIndex(x => x.UserId); // Importante para rendimiento
+        });
+
+        builder.Entity<HistorialNotificacionEvento>(b =>
+        {
+            b.ToTable(AmmenTravelConsts.DbTablePrefix + "HistorialNotificacionesEventos", AmmenTravelConsts.DbSchema);
+            b.ConfigureByConvention();
+
+            b.Property(x => x.EventoTicketmasterId).IsRequired().HasMaxLength(100);
+
+            // Índice compuesto fundamental para que el worker vuele buscando coincidencias
+            b.HasIndex(x => new { x.UserId, x.DestinoTuristicoId });
         });
 
         /* Filtro global para entidades que implementen IUserOwned */

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 using System.Globalization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -23,6 +24,7 @@ namespace AmmenTravel.BackgroundWorkers
         private readonly IRepository<DestinoTuristico, Guid> _destinoRepository;
         private readonly IEventosExternosAppService _eventosExternosService;
         private readonly IRepository<Notificacion, Guid> _notificacionRepository;
+        private readonly IRepository<HistorialNotificacionEvento, Guid> _historialRepo; // <-- Repo de la memoria de notificaciones
         private readonly IGuidGenerator _guidGenerator;
         private readonly ILogger<NotificadorEventosService> _logger;
 
@@ -32,6 +34,7 @@ namespace AmmenTravel.BackgroundWorkers
             IRepository<DestinoTuristico, Guid> destinoRepository,
             IEventosExternosAppService eventosExternosService,
             IRepository<Notificacion, Guid> notificacionRepository,
+            IRepository<HistorialNotificacionEvento, Guid> historialRepo,
             IGuidGenerator guidGenerator,
             ILogger<NotificadorEventosService> logger)
         {
@@ -40,6 +43,7 @@ namespace AmmenTravel.BackgroundWorkers
             _destinoRepository = destinoRepository;
             _eventosExternosService = eventosExternosService;
             _notificacionRepository = notificacionRepository;
+            _historialRepo = historialRepo;
             _guidGenerator = guidGenerator;
             _logger = logger;
         }
@@ -63,6 +67,7 @@ namespace AmmenTravel.BackgroundWorkers
                     string lat = destino.Latitud.ToString(CultureInfo.InvariantCulture);
                     string lon = destino.Longitud.ToString(CultureInfo.InvariantCulture);
 
+                    // 1. Buscamos TODOS los eventos de Ticketmaster
                     var eventos = await _eventosExternosService.ObtenerEventosPorUbicacionAsync(lat, lon);
 
                     if (eventos != null && eventos.Any())
@@ -86,22 +91,45 @@ namespace AmmenTravel.BackgroundWorkers
 
                             var userId = listaFavorito.UserId;
 
-                            int cantidadEventos = eventos.Count;
-                            string mensaje = cantidadEventos == 1
-                                ? $"¡Actualización! Hay un evento próximo en {destino.Nombre}. ¡Revisalo!"
-                                : $"¡Actualización! Hay {cantidadEventos} eventos próximos en {destino.Nombre}.";
+                            // 2. Buscamos en nuestra memoria los eventos de ESTE destino que ya le avisamos a ESTE usuario
+                            var historialAnterior = await _historialRepo.GetListAsync(h =>
+                                h.UserId == userId && h.DestinoTuristicoId == destinoId);
 
-                            var notificacion = new Notificacion(
-                                _guidGenerator.Create(),
-                                userId,
-                                $"Novedades en {destino.Nombre} 🎟️",
-                                mensaje,
-                                TipoNotificacion.Social,
-                                "/favoritos",
-                                "fa-ticket-alt"
-                            );
+                            var idsYaNotificados = historialAnterior.Select(h => h.EventoTicketmasterId).ToList();
 
-                            await _notificacionRepository.InsertAsync(notificacion);
+                            // 3. LA MAGIA: Filtramos solo los eventos de Ticketmaster cuyo ID no esté en nuestra memoria
+                            var eventosNuevos = eventos.Where(e => !idsYaNotificados.Contains(e.Id)).ToList();
+
+                            // 4. Solo enviamos notificación si realmente hay NUEVOS
+                            if (eventosNuevos.Any())
+                            {
+                                int cantidadNuevos = eventosNuevos.Count;
+                                string mensaje = cantidadNuevos == 1
+                                    ? $"¡Actualización! Hay 1 evento NUEVO en {destino.Nombre}. ¡Revisalo!"
+                                    : $"¡Actualización! Se agregaron {cantidadNuevos} eventos nuevos en {destino.Nombre}.";
+
+                                var notificacion = new Notificacion(
+                                    _guidGenerator.Create(),
+                                    userId,
+                                    $"Novedades en {destino.Nombre} 🎟️",
+                                    mensaje,
+                                    TipoNotificacion.Social,
+                                    "/favoritos",
+                                    "fa-ticket-alt"
+                                );
+
+                                await _notificacionRepository.InsertAsync(notificacion);
+
+                                // 5. Guardamos en la memoria los IDs nuevos para no volver a avisar mañana
+                                var nuevosRegistrosHistorial = eventosNuevos.Select(e => new HistorialNotificacionEvento(
+                                    _guidGenerator.Create(),
+                                    userId,
+                                    destinoId,
+                                    e.Id
+                                )).ToList();
+
+                                await _historialRepo.InsertManyAsync(nuevosRegistrosHistorial);
+                            }
                         }
                     }
                 }
