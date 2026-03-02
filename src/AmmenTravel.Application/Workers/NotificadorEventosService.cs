@@ -71,7 +71,19 @@ namespace AmmenTravel.BackgroundWorkers
 
                         foreach (var linea in lineasDeEsteDestino)
                         {
-                            var listaFavorito = await _listaFavoritosRepo.GetAsync(linea.ListaFavoritoId);
+                            // Obtenemos el IQueryable para poder usar funciones nativas de Entity Framework
+                            var listasQuery = await _listaFavoritosRepo.GetQueryableAsync();
+
+                            // Usamos IgnoreQueryFilters() para saltarnos la restricción de IUserOwned momentáneamente
+                            var listaFavorito = await listasQuery
+                                .IgnoreQueryFilters()
+                                .FirstOrDefaultAsync(l => l.Id == linea.ListaFavoritoId);
+
+                            if (listaFavorito == null)
+                            {
+                                continue; // Si por algún motivo la BD está inconsistente, saltamos a la siguiente
+                            }
+
                             var userId = listaFavorito.UserId;
 
                             int cantidadEventos = eventos.Count;
