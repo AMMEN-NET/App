@@ -21,6 +21,15 @@
     </div>
 
     <div class="max-h-80 overflow-y-auto custom-scrollbar">
+
+      <!-- Banner de frecuencia semanal -->
+      <div *ngIf="esFrecuenciaSemanal" class="mx-3 mt-2 mb-1 px-3 py-2.5 bg-amber-50 border border-amber-200 rounded-lg flex items-start gap-2.5">
+        <i class="fa fa-clock text-amber-500 mt-0.5 text-sm"></i>
+        <div>
+          <p class="text-xs font-semibold text-amber-700 leading-tight">Modo resumen semanal activo</p>
+          <p class="text-[10px] text-amber-600 mt-0.5 leading-snug">Tus nuevas notificaciones llegarán los domingos a las 20:00 hs. Podés cambiarlo desde tu <a routerLink="/mi-perfil" class="underline font-semibold hover:text-amber-800">perfil</a>.</p>
+        </div>
+      </div>
       
       <div *ngFor="let notif of notificaciones" 
            (click)="clickNotificacion(notif)" 

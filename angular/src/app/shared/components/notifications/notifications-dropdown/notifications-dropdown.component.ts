@@ -1,7 +1,8 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { NotificacionService } from '../../../../proxy/notificaciones/notificacion.service';
-import { NotificacionDto } from '../../../../proxy/notificaciones/models';
+import { PreferenciasNotificacionService } from '../../../../proxy/notificaciones/preferencias-notificacion.service';
+import { NotificacionDto, FrecuenciaNotificacion } from '../../../../proxy/notificaciones/models';
 
 @Component({
   selector: 'app-notifications-dropdown',
@@ -13,17 +14,20 @@ export class NotificationsDropdownComponent implements OnInit, OnDestroy {
   unreadCount = 0;
   notificaciones: NotificacionDto[] = []; 
   pollingInterval: any;
+  esFrecuenciaSemanal = false;
   
   // Variable para el temporizador del mouse
   closeTimer: any;
 
   constructor(
     private notificacionService: NotificacionService,
+    private preferenciasService: PreferenciasNotificacionService,
     private router: Router
   ) {}
 
   ngOnInit(): void {
     this.cargarDatos();
+    this.cargarPreferencias();
     this.pollingInterval = setInterval(() => {
       this.cargarDatos();
     }, 60000);
@@ -40,6 +44,12 @@ export class NotificationsDropdownComponent implements OnInit, OnDestroy {
     });
     this.notificacionService.getMisNotificaciones().subscribe(list => {
       this.notificaciones = list;
+    });
+  }
+
+  cargarPreferencias() {
+    this.preferenciasService.getMiPreferencia().subscribe(prefs => {
+      this.esFrecuenciaSemanal = prefs.frecuencia === FrecuenciaNotificacion.ResumenSemanal;
     });
   }
 

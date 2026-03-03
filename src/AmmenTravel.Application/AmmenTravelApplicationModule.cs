@@ -49,6 +49,7 @@ public class AmmenTravelApplicationModule : AbpModule
     public override async Task OnApplicationInitializationAsync(ApplicationInitializationContext context)
     { 
         await context.AddBackgroundWorkerAsync<NotificarEventosFavoritosWorker>();
+        await context.AddBackgroundWorkerAsync<WorkerResumenSemanalEmails>();
     }
 
 }

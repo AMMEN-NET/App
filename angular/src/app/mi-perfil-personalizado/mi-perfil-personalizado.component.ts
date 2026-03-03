@@ -7,6 +7,7 @@ import { CommonModule } from '@angular/common';
 import { ConfirmationService, Confirmation } from '@abp/ng.theme.shared';
 import { AuthService } from '@abp/ng.core';
 import { CuentaService } from '../proxy/cuentas/cuenta.service';
+import { PreferenciasNotificacionService, FrecuenciaNotificacion } from '../proxy/notificaciones';
 
 @Component({
   selector: 'app-mi-perfil-personalizado',
@@ -22,7 +23,8 @@ export class MiPerfilPersonalizadoComponent implements OnInit {
   private configState = inject(ConfigStateService);
   private confirmation = inject(ConfirmationService); 
   private authService = inject(AuthService);          
-  private cuentaService = inject(CuentaService);      
+  private cuentaService = inject(CuentaService);
+  private preferenciasService = inject(PreferenciasNotificacionService);      
 
   form: FormGroup;
   estaCargando = signal(false);
@@ -57,6 +59,24 @@ export class MiPerfilPersonalizadoComponent implements OnInit {
 
     // 3. Cargamos los datos del formulario
     this.cargarDatos();
+
+    // 4. Cargamos las preferencias de notificación
+    this.cargarPreferencias();
+  }
+
+  cargarPreferencias() {
+    this.preferenciasService.getMiPreferencia().subscribe({
+      next: (prefs) => {
+        this.form.patchValue({
+          notifyScreen: prefs.enPantalla,
+          notifyEmail: prefs.porEmail,
+          notifyFrequency: prefs.frecuencia === FrecuenciaNotificacion.Inmediata ? 'immediate' : 'weekly'
+        });
+      },
+      error: () => {
+        // Si falla, dejamos los valores por defecto del form
+      }
+    });
   }
 
   cargarDatos() {
@@ -133,6 +153,9 @@ export class MiPerfilPersonalizadoComponent implements OnInit {
       body: datosParaApi // <--- Enviamos el objeto filtrado, no el form completo
     }).subscribe({
       next: () => {
+        // Guardamos las preferencias de notificación
+        this.guardarPreferencias();
+
         // Si además había foto seleccionada, la subimos ahora
         if (this.archivoSeleccionado) {
             this.subirSoloFoto();
@@ -146,6 +169,25 @@ export class MiPerfilPersonalizadoComponent implements OnInit {
       error: (err) => {
         this.toaster.error('Error al guardar los datos personales.', 'Error');
         this.estaCargando.set(false);
+      }
+    });
+  }
+
+  guardarPreferencias() {
+    const formValues = this.form.getRawValue();
+    
+    this.preferenciasService.updateMiPreferencia({
+      enPantalla: formValues.notifyScreen,
+      porEmail: formValues.notifyEmail,
+      frecuencia: formValues.notifyFrequency === 'immediate' 
+        ? FrecuenciaNotificacion.Inmediata 
+        : FrecuenciaNotificacion.ResumenSemanal
+    }).subscribe({
+      next: () => {
+        // Preferencias guardadas silenciosamente
+      },
+      error: () => {
+        this.toaster.warn('No se pudieron guardar las preferencias de notificación.', 'Atención');
       }
     });
   }

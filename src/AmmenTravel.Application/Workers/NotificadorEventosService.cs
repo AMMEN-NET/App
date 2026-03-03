@@ -9,6 +9,8 @@ using Volo.Abp.DependencyInjection;
 using Volo.Abp.Domain.Repositories;
 using Volo.Abp.Uow;
 using Volo.Abp.Guids;
+using Volo.Abp.Emailing;
+using Volo.Abp.Identity;
 using AmmenTravel.ExternalService;
 using AmmenTravel.ListaFavoritos;
 using AmmenTravel.Notificaciones;
@@ -24,7 +26,11 @@ namespace AmmenTravel.BackgroundWorkers
         private readonly IRepository<DestinoTuristico, Guid> _destinoRepository;
         private readonly IEventosExternosAppService _eventosExternosService;
         private readonly IRepository<Notificacion, Guid> _notificacionRepository;
-        private readonly IRepository<HistorialNotificacionEvento, Guid> _historialRepo; // <-- Repo de la memoria de notificaciones
+        private readonly IRepository<HistorialNotificacionEvento, Guid> _historialRepo;
+        private readonly IRepository<PreferenciasNotificacion, Guid> _preferenciasRepo;
+        private readonly IRepository<ColaResumenSemanalEmail, Guid> _colaEmailRepo;
+        private readonly IdentityUserManager _userManager;
+        private readonly IEmailSender _emailSender;
         private readonly IGuidGenerator _guidGenerator;
         private readonly ILogger<NotificadorEventosService> _logger;
 
@@ -35,6 +41,10 @@ namespace AmmenTravel.BackgroundWorkers
             IEventosExternosAppService eventosExternosService,
             IRepository<Notificacion, Guid> notificacionRepository,
             IRepository<HistorialNotificacionEvento, Guid> historialRepo,
+            IRepository<PreferenciasNotificacion, Guid> preferenciasRepo,
+            IRepository<ColaResumenSemanalEmail, Guid> colaEmailRepo,
+            IdentityUserManager userManager,
+            IEmailSender emailSender,
             IGuidGenerator guidGenerator,
             ILogger<NotificadorEventosService> logger)
         {
@@ -44,6 +54,10 @@ namespace AmmenTravel.BackgroundWorkers
             _eventosExternosService = eventosExternosService;
             _notificacionRepository = notificacionRepository;
             _historialRepo = historialRepo;
+            _preferenciasRepo = preferenciasRepo;
+            _colaEmailRepo = colaEmailRepo;
+            _userManager = userManager;
+            _emailSender = emailSender;
             _guidGenerator = guidGenerator;
             _logger = logger;
         }
@@ -104,21 +118,62 @@ namespace AmmenTravel.BackgroundWorkers
                             if (eventosNuevos.Any())
                             {
                                 int cantidadNuevos = eventosNuevos.Count;
+                                string titulo = $"Novedades en {destino.Nombre} 🎟️";
                                 string mensaje = cantidadNuevos == 1
                                     ? $"¡Actualización! Hay 1 evento NUEVO en {destino.Nombre}. ¡Revisalo!"
                                     : $"¡Actualización! Se agregaron {cantidadNuevos} eventos nuevos en {destino.Nombre}.";
 
-                                var notificacion = new Notificacion(
-                                    _guidGenerator.Create(),
-                                    userId,
-                                    $"Novedades en {destino.Nombre} 🎟️",
-                                    mensaje,
-                                    TipoNotificacion.Social,
-                                    "/favoritos",
-                                    "fa-ticket-alt"
-                                );
+                                // Obtenemos las preferencias del usuario (o valores por defecto)
+                                var preferencias = await _preferenciasRepo.FirstOrDefaultAsync(p => p.UserId == userId);
+                                bool enPantalla = preferencias?.EnPantalla ?? true;
+                                bool porEmail = preferencias?.PorEmail ?? true;
+                                FrecuenciaNotificacion frecuencia = preferencias?.Frecuencia ?? FrecuenciaNotificacion.Inmediata;
 
-                                await _notificacionRepository.InsertAsync(notificacion);
+                                if (frecuencia == FrecuenciaNotificacion.Inmediata)
+                                {
+                                    // === MODO INMEDIATO: todo al instante ===
+
+                                    // Campanita
+                                    if (enPantalla)
+                                    {
+                                        var notificacion = new Notificacion(
+                                            _guidGenerator.Create(),
+                                            userId,
+                                            titulo,
+                                            mensaje,
+                                            TipoNotificacion.Social,
+                                            "/favoritos",
+                                            "fa-ticket-alt"
+                                        );
+                                        await _notificacionRepository.InsertAsync(notificacion);
+                                    }
+
+                                    // Email
+                                    if (porEmail)
+                                    {
+                                        var user = await _userManager.FindByIdAsync(userId.ToString());
+                                        var email = user?.Email;
+                                        if (!string.IsNullOrEmpty(email))
+                                        {
+                                            await _emailSender.SendAsync(email, titulo, mensaje);
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    // === MODO SEMANAL: todo se encola para el domingo ===
+                                    var user = await _userManager.FindByIdAsync(userId.ToString());
+                                    var email = user?.Email ?? "";
+
+                                    var colaEmail = new ColaResumenSemanalEmail(
+                                        _guidGenerator.Create(),
+                                        userId,
+                                        email,
+                                        titulo,
+                                        mensaje
+                                    );
+                                    await _colaEmailRepo.InsertAsync(colaEmail);
+                                }
 
                                 // 5. Guardamos en la memoria los IDs nuevos para no volver a avisar mañana
                                 var nuevosRegistrosHistorial = eventosNuevos.Select(e => new HistorialNotificacionEvento(

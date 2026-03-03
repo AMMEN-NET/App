@@ -44,7 +44,9 @@ public class AmmenTravelDomainModule : AbpModule
 
 
 #if DEBUG
-        context.Services.Replace(ServiceDescriptor.Singleton<IEmailSender, NullEmailSender>());
+        // NullEmailSender desactivado para permitir envío de emails reales.
+        // Si querés volver a desactivar emails en desarrollo, descomentá la línea:
+        // context.Services.Replace(ServiceDescriptor.Singleton<IEmailSender, NullEmailSender>());
 #endif
     }
 }
