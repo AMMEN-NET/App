@@ -113,67 +113,89 @@ export class MiPerfilPersonalizadoComponent implements OnInit {
   }
 
   guardar() {
-    // Validamos: Si el formulario es inválido y se intentó cambiar texto, paramos.
-    if (this.form.invalid && !this.form.pristine) return;
+    if (this.form.invalid) return;
 
     this.estaCargando.set(true);
 
-    // ESCENARIO 1: Solo se seleccionó foto nueva (Texto sin cambios)
-    if (this.form.pristine && this.archivoSeleccionado) {
-        this.subirSoloFoto();
+    // Detectamos QUÉ cambió para ejecutar solo las llamadas necesarias
+    const perfilCambio = ['email', 'name', 'surname', 'phoneNumber']
+        .some(f => this.form.get(f)?.dirty);
+    const prefsCambio = ['notifyScreen', 'notifyEmail', 'notifyFrequency']
+        .some(f => this.form.get(f)?.dirty);
+    const hayFoto = !!this.archivoSeleccionado;
+
+    // Contamos operaciones pendientes para saber cuándo terminó todo
+    let operacionesPendientes = 0;
+    if (perfilCambio) operacionesPendientes++;
+    if (prefsCambio) operacionesPendientes++;
+    if (hayFoto) operacionesPendientes++;
+
+    // Si nada cambió (no debería pasar, pero por seguridad)
+    if (operacionesPendientes === 0) {
+        this.estaCargando.set(false);
         return;
     }
 
-    // ESCENARIO 2: Se cambió texto (y quizás también foto)
-    
-    // --- CAMBIO IMPORTANTE AQUÍ ---
-    // Obtenemos todos los valores del formulario
-    const formValues = this.form.getRawValue();
+    let exitoAlguno = false;
 
-    // Filtramos SOLO los datos que el Backend actual entiende (ProfileUpdateDto)
-    // Dejamos fuera 'notifyScreen', 'notifyEmail', etc. para que no rompa la API.
-    const datosParaApi = {
-        userName: formValues.userName,
-        email: formValues.email,
-        name: formValues.name,
-        surname: formValues.surname,
-        phoneNumber: formValues.phoneNumber
-    };
-    
-    // Aquí podrías guardar las preferencias en LocalStorage temporalmente si quisieras
-    // console.log('Preferencias seleccionadas:', { 
-    //    screen: formValues.notifyScreen, 
-    //    email: formValues.notifyEmail,
-    //    freq: formValues.notifyFrequency 
-    // });
-
-    this.rest.request<any, any>({
-      method: 'PUT',
-      url: '/api/account/my-profile',
-      body: datosParaApi // <--- Enviamos el objeto filtrado, no el form completo
-    }).subscribe({
-      next: () => {
-        // Guardamos las preferencias de notificación
-        this.guardarPreferencias();
-
-        // Si además había foto seleccionada, la subimos ahora
-        if (this.archivoSeleccionado) {
-            this.subirSoloFoto();
-        } else {
-            // Solo texto cambiado
-            this.toaster.success('Perfil actualizado correctamente.', 'Éxito');
-            this.form.markAsPristine(); // Reseteamos estado del form
+    const finalizarOperacion = () => {
+        operacionesPendientes--;
+        if (operacionesPendientes <= 0) {
+            if (exitoAlguno) {
+                this.toaster.success('Cambios guardados correctamente.', 'Éxito');
+            }
+            this.form.markAsPristine();
             this.estaCargando.set(false);
         }
-      },
-      error: (err) => {
-        this.toaster.error('Error al guardar los datos personales.', 'Error');
-        this.estaCargando.set(false);
-      }
-    });
+    };
+
+    // --- OPERACIÓN 1: Datos del perfil ---
+    if (perfilCambio) {
+        const formValues = this.form.getRawValue();
+        const datosParaApi = {
+            userName: formValues.userName,
+            email: formValues.email,
+            name: formValues.name,
+            surname: formValues.surname,
+            phoneNumber: formValues.phoneNumber
+        };
+
+        this.rest.request<any, any>({
+            method: 'PUT',
+            url: '/api/account/my-profile',
+            body: datosParaApi
+        }).subscribe({
+            next: () => { exitoAlguno = true; finalizarOperacion(); },
+            error: () => {
+                this.toaster.error('Error al guardar los datos personales.', 'Error');
+                finalizarOperacion();
+            }
+        });
+    }
+
+    // --- OPERACIÓN 2: Preferencias de notificación (INDEPENDIENTE del perfil) ---
+    if (prefsCambio) {
+        this.guardarPreferencias(finalizarOperacion, () => { exitoAlguno = true; });
+    }
+
+    // --- OPERACIÓN 3: Foto de perfil ---
+    if (hayFoto) {
+        this.fotoService.subirFoto(this.archivoSeleccionado!).subscribe({
+            next: () => {
+                exitoAlguno = true;
+                this.archivoSeleccionado = null;
+                this.actualizarUrlImagen();
+                finalizarOperacion();
+            },
+            error: () => {
+                this.toaster.warn('Hubo un error al subir la imagen.', 'Atención');
+                finalizarOperacion();
+            }
+        });
+    }
   }
 
-  guardarPreferencias() {
+  guardarPreferencias(onComplete?: () => void, onSuccess?: () => void) {
     const formValues = this.form.getRawValue();
     
     this.preferenciasService.updateMiPreferencia({
@@ -184,34 +206,16 @@ export class MiPerfilPersonalizadoComponent implements OnInit {
         : FrecuenciaNotificacion.ResumenSemanal
     }).subscribe({
       next: () => {
-        // Preferencias guardadas silenciosamente
+        onSuccess?.();
+        onComplete?.();
       },
       error: () => {
         this.toaster.warn('No se pudieron guardar las preferencias de notificación.', 'Atención');
+        onComplete?.();
       }
     });
   }
 
-  // Método auxiliar para no repetir la lógica de subida
-  subirSoloFoto() {
-    if (!this.archivoSeleccionado) return;
-
-    this.fotoService.subirFoto(this.archivoSeleccionado).subscribe({
-        next: () => {
-            this.toaster.success('Foto de perfil actualizada.', 'Éxito');
-            this.estaCargando.set(false);
-            
-            this.archivoSeleccionado = null; 
-            this.form.markAsPristine(); 
-            this.actualizarUrlImagen(); 
-        },
-        error: () => {
-            this.toaster.warn('Datos guardados pero hubo error con la imagen.', 'Atención');
-            this.estaCargando.set(false);
-        }
-    });
-  }
-  
   cargarImagenPorDefecto() {
     this.urlImagen = null;
   }

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Configuration;
 using Volo.Abp.Application.Services;
 
@@ -20,7 +19,6 @@ namespace AmmenTravel.ExternalService
             _configuration = configuration;
         }
 
-        [AllowAnonymous]
         public async Task<List<EventoTicketmasterDto>> ObtenerEventosPorUbicacionAsync(string latitud, string longitud)
         {
             var baseUrl = _configuration["Ticketmaster:BaseUrl"];
