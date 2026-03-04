@@ -138,10 +138,11 @@ namespace AmmenTravel.Notificaciones
                     await _notificacionRepo.InsertAsync(notificacion);
                 }
 
-                // Email
+                // Email (HTML)
                 if (porEmail && !string.IsNullOrEmpty(item.EmailDestino))
                 {
-                    await _emailSender.SendAsync(item.EmailDestino, item.Titulo, item.Mensaje);
+                    var htmlBody = EmailTemplateHelper.GenerarEmailNotificacion(item.Titulo, item.Mensaje, "/favoritos", "Ver en AmmenTravel");
+                    await _emailSender.SendAsync(item.EmailDestino, item.Titulo, htmlBody, isBodyHtml: true);
                 }
 
                 // Marcar como procesado

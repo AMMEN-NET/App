@@ -148,14 +148,15 @@ namespace AmmenTravel.BackgroundWorkers
                                         await _notificacionRepository.InsertAsync(notificacion);
                                     }
 
-                                    // Email
+                                    // Email (HTML)
                                     if (porEmail)
                                     {
                                         var user = await _userManager.FindByIdAsync(userId.ToString());
                                         var email = user?.Email;
                                         if (!string.IsNullOrEmpty(email))
                                         {
-                                            await _emailSender.SendAsync(email, titulo, mensaje);
+                                            var htmlBody = EmailTemplateHelper.GenerarEmailEventoFavorito(titulo, mensaje);
+                                            await _emailSender.SendAsync(email, titulo, htmlBody, isBodyHtml: true);
                                         }
                                     }
                                 }

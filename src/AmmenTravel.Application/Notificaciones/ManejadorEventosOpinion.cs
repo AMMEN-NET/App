@@ -2,19 +2,22 @@
 using AmmenTravel.ListaFavoritos;
 using AmmenTravel.Opiniones;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Volo.Abp.DependencyInjection;
-using Volo.Abp.Domain.Entities.Events; // Para EntityCreatedEventData
+using Volo.Abp.Domain.Entities.Events;
 using Volo.Abp.Domain.Repositories;
+using Volo.Abp.Emailing;
 using Volo.Abp.EventBus;
 using Volo.Abp.Guids;
+using Volo.Abp.Identity;
 
 namespace AmmenTravel.Notificaciones
 {
     public class ManejadorEventosOpinion :
-        ILocalEventHandler<EntityCreatedEventData<Opinion>>, // Escucha cuando se CREA una opinión
+        ILocalEventHandler<EntityCreatedEventData<Opinion>>,
         ITransientDependency
     {
         private readonly IRepository<Notificacion, Guid> _notificacionRepository;
@@ -22,7 +25,12 @@ namespace AmmenTravel.Notificaciones
         private readonly IRepository<DestinoTuristico, Guid> _destinoRepository;
         private readonly IRepository<LineaListaFavorito, Guid> _favoritosRepository;
         private readonly IRepository<ListaFavorito, Guid> _listaFavoritoRepository;
+        private readonly IRepository<PreferenciasNotificacion, Guid> _preferenciasRepo;
+        private readonly IRepository<ColaResumenSemanalEmail, Guid> _colaEmailRepo;
+        private readonly IdentityUserManager _userManager;
+        private readonly IEmailSender _emailSender;
         private readonly IGuidGenerator _guidGenerator;
+        private readonly ILogger<ManejadorEventosOpinion> _logger;
 
         public ManejadorEventosOpinion(
             IRepository<Notificacion, Guid> notificacionRepository,
@@ -30,14 +38,24 @@ namespace AmmenTravel.Notificaciones
             IRepository<DestinoTuristico, Guid> destinoRepository,
             IRepository<LineaListaFavorito, Guid> favoritosRepository,
             IRepository<ListaFavorito, Guid> listaFavoritoRepository,
-            IGuidGenerator guidGenerator)
+            IRepository<PreferenciasNotificacion, Guid> preferenciasRepo,
+            IRepository<ColaResumenSemanalEmail, Guid> colaEmailRepo,
+            IdentityUserManager userManager,
+            IEmailSender emailSender,
+            IGuidGenerator guidGenerator,
+            ILogger<ManejadorEventosOpinion> logger)
         {
             _notificacionRepository = notificacionRepository;
             _opinionRepository = opinionRepository;
             _destinoRepository = destinoRepository;
             _favoritosRepository = favoritosRepository;
             _listaFavoritoRepository = listaFavoritoRepository;
+            _preferenciasRepo = preferenciasRepo;
+            _colaEmailRepo = colaEmailRepo;
+            _userManager = userManager;
+            _emailSender = emailSender;
             _guidGenerator = guidGenerator;
+            _logger = logger;
         }
 
         public async Task HandleEventAsync(EntityCreatedEventData<Opinion> eventData)
@@ -57,14 +75,14 @@ namespace AmmenTravel.Notificaciones
             // Primer Hito
             if (totalOpinionesUsuario == 1)
             {
-                await CrearNotificacion(userId, "¡Primer Hito Desbloqueado! 🚀",
+                await CrearNotificacionConEmail(userId, "¡Primer Hito Desbloqueado! 🚀",
                     "Has publicado tu primera reseña. Tu pasaporte virtual ha comenzado.",
                     TipoNotificacion.Exito, "fa-passport");
             }
             // Nivel Experto
             else if (totalOpinionesUsuario == 10)
             {
-                await CrearNotificacion(userId, "¡Subiste de Nivel! 🌟",
+                await CrearNotificacionConEmail(userId, "¡Subiste de Nivel! 🌟",
                     "Con 10 reseñas, ahora eres un Viajero Experimentado.",
                     TipoNotificacion.Exito, "fa-star");
             }
@@ -80,7 +98,7 @@ namespace AmmenTravel.Notificaciones
             // Disparo de notificación cuando el usuario tiene 3 destinos distintos
             if (destinosDistintos == 3)
             {
-                await CrearNotificacion(userId, "¡Racha de Viajero! 🔥",
+                await CrearNotificacionConEmail(userId, "¡Racha de Viajero! 🔥",
                    "Estás compartiendo muchas experiencias. ¡Sigue así!",
                    TipoNotificacion.Exito, "fa-fire");
             }
@@ -93,7 +111,7 @@ namespace AmmenTravel.Notificaciones
             if (totalOpinionesDestino == 1)
             {
                 // Si es 1, significa que esta es la primera (o acaba de ser creada y es la única)
-                await CrearNotificacion(userId, "¡Sos un Pionero! 🚩",
+                await CrearNotificacionConEmail(userId, "¡Sos un Pionero! 🚩",
                     $"Abriste el camino. Sos el primero en opinar sobre {destino.Nombre}.",
                     TipoNotificacion.Exito, "fa-flag");
             }
@@ -116,28 +134,77 @@ namespace AmmenTravel.Notificaciones
             {
                 if (ownerId == Guid.Empty || ownerId == userId) continue;
 
-                await CrearNotificacion(ownerId, "¡Novedades en tus favoritos! 🔔",
-                    $"Alguien acaba de opinar sobre {destino.Nombre}. Mira qué dicen.",
-                    TipoNotificacion.Social, "fa-heart", $"/destinos/{destinoId}");
+                var tituloFav = "¡Novedades en tus favoritos! 🔔";
+                var mensajeFav = $"Alguien acaba de opinar sobre {destino.Nombre}. Mira qué dicen.";
+
+                await CrearNotificacionConEmail(ownerId, tituloFav, mensajeFav,
+                    TipoNotificacion.Social, "fa-heart", $"/destinos/{destinoId}", destinoId);
             }
         }
 
-        private async Task CrearNotificacion(Guid userId, string titulo, string mensaje, TipoNotificacion tipo, string icono, string link = null)
+        /// <summary>
+        /// Crea una notificación en pantalla y/o envía email según las preferencias del usuario.
+        /// Respeta la frecuencia: inmediata o resumen semanal.
+        /// </summary>
+        private async Task CrearNotificacionConEmail(
+            Guid userId, string titulo, string mensaje,
+            TipoNotificacion tipo, string icono,
+            string link = null, Guid? destinoId = null)
         {
-            await _notificacionRepository.InsertAsync(
-                new Notificacion(_guidGenerator.Create(), userId, titulo, mensaje, tipo, link, icono)
-            );
-        }
+            try
+            {
+                var preferencias = await _preferenciasRepo.FirstOrDefaultAsync(p => p.UserId == userId);
+                bool enPantalla = preferencias?.EnPantalla ?? true;
+                bool porEmail = preferencias?.PorEmail ?? true;
+                FrecuenciaNotificacion frecuencia = preferencias?.Frecuencia ?? FrecuenciaNotificacion.Inmediata;
 
-        // Helper auxiliar (implementar lógica real con repositorios)
-        private async Task<Guid> ObtenerDueñoLista(Guid listaId)
-        {
-            if (listaId == Guid.Empty) return Guid.Empty;
+                if (frecuencia == FrecuenciaNotificacion.Inmediata)
+                {
+                    // Campanita
+                    if (enPantalla)
+                    {
+                        await _notificacionRepository.InsertAsync(
+                            new Notificacion(_guidGenerator.Create(), userId, titulo, mensaje, tipo, link, icono)
+                        );
+                    }
 
-            // Intentamos obtener la lista; FirstOrDefaultAsync evita excepciones si no existe
-            var lista = await _listaFavoritoRepository.FirstOrDefaultAsync(l => l.Id == listaId);
+                    // Email inmediato
+                    if (porEmail)
+                    {
+                        var user = await _userManager.FindByIdAsync(userId.ToString());
+                        var email = user?.Email;
+                        if (!string.IsNullOrEmpty(email))
+                        {
+                            string htmlBody;
+                            if (tipo == TipoNotificacion.Social && destinoId.HasValue)
+                                htmlBody = EmailTemplateHelper.GenerarEmailOpinionFavorito(titulo, mensaje, destinoId);
+                            else
+                                htmlBody = EmailTemplateHelper.GenerarEmailLogro(titulo, mensaje);
 
-            return lista?.UserId ?? Guid.Empty;
+                            await _emailSender.SendAsync(email, titulo, htmlBody, isBodyHtml: true);
+                        }
+                    }
+                }
+                else
+                {
+                    // Modo semanal: encolar para el resumen del domingo
+                    var user = await _userManager.FindByIdAsync(userId.ToString());
+                    var email = user?.Email ?? "";
+
+                    var colaEmail = new ColaResumenSemanalEmail(
+                        _guidGenerator.Create(),
+                        userId,
+                        email,
+                        titulo,
+                        mensaje
+                    );
+                    await _colaEmailRepo.InsertAsync(colaEmail);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al enviar notificación/email para usuario {UserId}", userId);
+            }
         }
     }
 }
