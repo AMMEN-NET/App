@@ -1955,6 +1955,106 @@
             }
           }
         },
+        "AmmenTravel.ExternalService.EventosExternosAppService": {
+          "controllerName": "EventosExternos",
+          "controllerGroupName": "EventosExternos",
+          "isRemoteService": true,
+          "isIntegrationService": false,
+          "apiVersion": null,
+          "type": "AmmenTravel.ExternalService.EventosExternosAppService",
+          "interfaces": [
+            {
+              "type": "AmmenTravel.ExternalService.IEventosExternosAppService",
+              "name": "IEventosExternosAppService",
+              "methods": [
+                {
+                  "name": "ObtenerEventosPorUbicacionAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "latitud",
+                      "typeAsString": "System.String, System.Private.CoreLib",
+                      "type": "System.String",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    },
+                    {
+                      "name": "longitud",
+                      "typeAsString": "System.String, System.Private.CoreLib",
+                      "type": "System.String",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Collections.Generic.List<AmmenTravel.ExternalService.EventoTicketmasterDto>",
+                    "typeSimple": "[AmmenTravel.ExternalService.EventoTicketmasterDto]"
+                  }
+                }
+              ]
+            }
+          ],
+          "actions": {
+            "ObtenerEventosPorUbicacionAsyncByLatitudAndLongitud": {
+              "uniqueName": "ObtenerEventosPorUbicacionAsyncByLatitudAndLongitud",
+              "name": "ObtenerEventosPorUbicacionAsync",
+              "httpMethod": "POST",
+              "url": "api/app/eventos-externos/obtener-eventos-por-ubicacion",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "latitud",
+                  "typeAsString": "System.String, System.Private.CoreLib",
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                },
+                {
+                  "name": "longitud",
+                  "typeAsString": "System.String, System.Private.CoreLib",
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "latitud",
+                  "name": "latitud",
+                  "jsonName": null,
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "longitud",
+                  "name": "longitud",
+                  "jsonName": null,
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Collections.Generic.List<AmmenTravel.ExternalService.EventoTicketmasterDto>",
+                "typeSimple": "[AmmenTravel.ExternalService.EventoTicketmasterDto]"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "AmmenTravel.ExternalService.IEventosExternosAppService"
+            }
+          }
+        },
         "AmmenTravel.ListaDeFavoritos.ListaDeFavoritosAppService": {
           "controllerName": "ListaDeFavoritos",
           "controllerGroupName": "ListaDeFavoritos",
@@ -5562,6 +5662,75 @@
           "jsonName": null,
           "type": "[AmmenTravel.ExternalService.CiudadDTO]",
           "typeSimple": "[AmmenTravel.ExternalService.CiudadDTO]",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "AmmenTravel.ExternalService.EventoTicketmasterDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "Id",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Nombre",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "UrlTicket",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "FechaInicio",
+          "jsonName": null,
+          "type": "System.DateTime",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "ImagenUrl",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
           "isRequired": false,
           "minLength": null,
           "maxLength": null,

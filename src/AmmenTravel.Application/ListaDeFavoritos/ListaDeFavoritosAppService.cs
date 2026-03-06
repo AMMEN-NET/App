@@ -15,6 +15,7 @@ using AmmenTravel.Destinos;
 using AmmenTravel.Favoritos.FavoritosDTO;
 using AmmenTravel.Opiniones;
 using Microsoft.EntityFrameworkCore;
+using Volo.Abp.EventBus.Local; // NUEVO: Para el bus de eventos
 
 namespace AmmenTravel.ListaDeFavoritos
 {
@@ -27,6 +28,7 @@ namespace AmmenTravel.ListaDeFavoritos
         private readonly IDestinoAppService _destinoAppService;
         private readonly IRepository<DestinoTuristico, Guid> _destinoRepository;
         private readonly IRepository<Opinion, Guid> _opinionRepository;
+        private readonly ILocalEventBus _localEventBus; // NUEVO
 
         public ListaDeFavoritosAppService(
             IRepository<ListaFavorito, Guid> listaRepository,
@@ -34,7 +36,8 @@ namespace AmmenTravel.ListaDeFavoritos
             ICurrentUser currentUser,
             IDestinoAppService destinoAppService,
             IRepository<DestinoTuristico, Guid> destinoRepository,
-            IRepository<Opinion, Guid> opinionRepository)
+            IRepository<Opinion, Guid> opinionRepository,
+            ILocalEventBus localEventBus) // NUEVO
         {
             _listaRepository = listaRepository;
             _lineaRepository = lineaRepository;
@@ -42,6 +45,7 @@ namespace AmmenTravel.ListaDeFavoritos
             _destinoAppService = destinoAppService;
             _destinoRepository = destinoRepository;
             _opinionRepository = opinionRepository;
+            _localEventBus = localEventBus; // NUEVO
         }
 
         public async Task<ListaFavorito> GetOrCreateListaAsync()
@@ -74,12 +78,20 @@ namespace AmmenTravel.ListaDeFavoritos
 
             if (existe == null)
             {
+                // 1. Guardamos rápido en base de datos
                 var linea = new LineaListaFavorito
                 {
                     ListaFavoritoId = lista.Id,
                     DestinoTuristicoId = destinoId
                 };
                 await _lineaRepository.InsertAsync(linea);
+
+                // 2. Disparamos el evento de forma asíncrona (¡Desacoplado!)
+                await _localEventBus.PublishAsync(new DestinoAgregadoAFavoritosEto
+                {
+                    UserId = _currentUser.Id.Value,
+                    DestinoId = destinoId
+                });
             }
         }
 
