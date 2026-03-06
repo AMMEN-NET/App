@@ -2,8 +2,8 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RestService, ConfigStateService } from '@abp/ng.core';
 import { ToasterService } from '@abp/ng.theme.shared';
-import { FotoPerfilService } from '../services/foto-perfil.service';
 import { CommonModule } from '@angular/common';
+import { environment } from '../../environments/environment';
 import { ConfirmationService, Confirmation } from '@abp/ng.theme.shared';
 import { AuthService } from '@abp/ng.core';
 import { CuentaService } from '../proxy/cuentas/cuenta.service';
@@ -18,7 +18,6 @@ import { PreferenciasNotificacionService, FrecuenciaNotificacion } from '../prox
 export class MiPerfilPersonalizadoComponent implements OnInit {
   private fb = inject(FormBuilder);
   private rest = inject(RestService);
-  private fotoService = inject(FotoPerfilService);
   private toaster = inject(ToasterService);
   private configState = inject(ConfigStateService);
   private confirmation = inject(ConfirmationService); 
@@ -96,8 +95,9 @@ export class MiPerfilPersonalizadoComponent implements OnInit {
 
   actualizarUrlImagen() {
     if (this.usuarioId) {
-        // Timestamp para evitar caché del navegador
-        this.urlImagen = `${this.fotoService.obtenerUrlFoto(this.usuarioId)}?t=${new Date().getTime()}`;
+        // URL completa del backend con timestamp para evitar caché
+        const apiUrl = environment.apis.default.url;
+        this.urlImagen = `${apiUrl}/api/app/foto-perfil/obtener/${this.usuarioId}?t=${new Date().getTime()}`;
     }
   }
 
@@ -178,9 +178,16 @@ export class MiPerfilPersonalizadoComponent implements OnInit {
         this.guardarPreferencias(finalizarOperacion, () => { exitoAlguno = true; });
     }
 
-    // --- OPERACIÓN 3: Foto de perfil ---
+    // --- OPERACIÓN 3: Foto de perfil (enviada al servidor) ---
     if (hayFoto) {
-        this.fotoService.subirFoto(this.archivoSeleccionado!).subscribe({
+        const formData = new FormData();
+        formData.append('archivo', this.archivoSeleccionado!);
+        
+        this.rest.request<any, any>({
+            method: 'POST',
+            url: '/api/app/foto-perfil/subir',
+            body: formData,
+        }).subscribe({
             next: () => {
                 exitoAlguno = true;
                 this.archivoSeleccionado = null;
