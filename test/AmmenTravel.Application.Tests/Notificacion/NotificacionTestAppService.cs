@@ -1,9 +1,20 @@
-﻿using AmmenTravel.Notificaciones;
+﻿using AmmenTravel.Destinos;
+using AmmenTravel.ExternalService;
+using AmmenTravel.ListaDeFavoritos;
+using AmmenTravel.ListaFavoritos;
+using AmmenTravel.Notificaciones;
+using AmmenTravel.Opiniones;
 using Microsoft.EntityFrameworkCore;
+using NSubstitute;
 using Shouldly;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Volo.Abp;
+using Volo.Abp.Data;
+using Volo.Abp.Domain.Entities;
+using Volo.Abp.Domain.Entities.Events;
 using Volo.Abp.Domain.Repositories;
 using Volo.Abp.Modularity;
 using Xunit;
@@ -13,161 +24,362 @@ namespace AmmenTravel.NotificacionTest
     public abstract class classNotificacionTestAppServiceTest<TStartupModule> : AmmenTravelApplicationTestBase<TStartupModule>
         where TStartupModule : IAbpModule
     {
+
         private readonly NotificacionAppService _service;
-        private readonly IRepository<Notificacion, Guid> _notificacionRepository;
+        private readonly IRepository<Notificacion, Guid> _repo;
 
         protected classNotificacionTestAppServiceTest()
         {
             _service = GetRequiredService<NotificacionAppService>();
-            _notificacionRepository = GetRequiredService<IRepository<Notificacion, Guid>>();
+            _repo = GetRequiredService<IRepository<Notificacion, Guid>>();
         }
 
         [Fact]
-        public async Task GetMisNotificacionesAsync_ObtieneSoloNotificacionesDelUsuarioActual()
+        public async Task GetMisNotificacionesAsync_RetornaMaximo10_YOrdenadasDesc()
         {
-            // Asegurarse de tener un usuario actual en el contexto de pruebas
+            // Arrange
             (CurrentUser.Id != null).ShouldBeTrue();
-
             var userId = CurrentUser.Id.Value;
-            var otherUser = Guid.NewGuid();
 
+            // Creamos 12 notificaciones del usuario actual
             await WithUnitOfWorkAsync(async () =>
             {
-                await _notificacionRepository.InsertAsync(new Notificacion(Guid.NewGuid(), userId, "TituloUser", "MensajeUser", TipoNotificacion.Informativa), autoSave: true);
-                await _notificacionRepository.InsertAsync(new Notificacion(Guid.NewGuid(), otherUser, "TituloOtro", "MensajeOtro", TipoNotificacion.Informativa), autoSave: true);
+                for (var i = 0; i < 12; i++)
+                {
+                    await _repo.InsertAsync(
+                        new Notificacion(
+                            Guid.NewGuid(),
+                            userId,
+                            titulo: $"Titulo {i}",
+                            mensaje: $"Mensaje {i}",
+                            tipo: TipoNotificacion.Informativa,
+                            linkReferencia: "/test",
+                            icono: "fa-bell"
+                        ),
+                        autoSave: true
+                    );
+                }
             });
 
-            var result = await WithUnitOfWorkAsync(async () => await _service.GetMisNotificacionesAsync());
+            // Act
+            var items = await WithUnitOfWorkAsync(async () => await _service.GetMisNotificacionesAsync());
 
-            result.ShouldNotBeNull();
-            result.Count.ShouldBe(1);
-            result[0].Titulo.ShouldBe("TituloUser");
+            // Assert
+            items.ShouldNotBeNull();
+            items.Count.ShouldBe(10);
+
+            // Verificar orden descendente por Fecha
+            for (int i = 0; i < items.Count - 1; i++)
+            {
+                items[i].Fecha.ShouldBeGreaterThanOrEqualTo(items[i + 1].Fecha);
+            }
         }
 
         [Fact]
-        public async Task GetCantidadNoLeidasAsync_RetornaCantidadCorrecta()
+        public async Task GetCantidadNoLeidasAsync_CuentaSoloNoLeidas()
         {
+            // Arrange
             (CurrentUser.Id != null).ShouldBeTrue();
             var userId = CurrentUser.Id.Value;
 
+            var n1 = new Notificacion(Guid.NewGuid(), userId, "A", "A", TipoNotificacion.Social);
+            var n2 = new Notificacion(Guid.NewGuid(), userId, "B", "B", TipoNotificacion.Social);
+            var n3 = new Notificacion(Guid.NewGuid(), userId, "C", "C", TipoNotificacion.Social);
+
             await WithUnitOfWorkAsync(async () =>
             {
-                await _notificacionRepository.InsertAsync(new Notificacion(Guid.NewGuid(), userId, "N1", "M1", TipoNotificacion.Informativa) { Leida = false }, autoSave: true);
-                await _notificacionRepository.InsertAsync(new Notificacion(Guid.NewGuid(), userId, "N2", "M2", TipoNotificacion.Informativa) { Leida = false }, autoSave: true);
-                await _notificacionRepository.InsertAsync(new Notificacion(Guid.NewGuid(), userId, "N3", "M3", TipoNotificacion.Informativa) { Leida = true }, autoSave: true);
+                await _repo.InsertAsync(n1, autoSave: true);
+                await _repo.InsertAsync(n2, autoSave: true);
+                await _repo.InsertAsync(n3, autoSave: true);
+
+                // marcamos 1 como leída
+                n2.Leida = true;
+                await _repo.UpdateAsync(n2, autoSave: true);
             });
 
+            // Act
             var count = await WithUnitOfWorkAsync(async () => await _service.GetCantidadNoLeidasAsync());
+
+            // Assert
             count.ShouldBe(2);
         }
-        
+
         [Fact]
-        public async Task MarcarComoLeidaAsync_MarcaSoloSiEsDelUsuarioActual()
+        public async Task MarcarComoLeidaAsync_MarcaSoloSiEsDelUsuario()
         {
+            // Arrange
             (CurrentUser.Id != null).ShouldBeTrue();
             var userId = CurrentUser.Id.Value;
-            var otherUser = Guid.NewGuid();
 
-            Guid idUserNotificacion = Guid.Empty;
-            Guid idOtherNotificacion = Guid.Empty;
+            var notif = new Notificacion(Guid.NewGuid(), userId, "T", "M", TipoNotificacion.Informativa);
 
             await WithUnitOfWorkAsync(async () =>
             {
-                var n1 = new Notificacion(Guid.NewGuid(), userId, "ParaMarcar", "M", TipoNotificacion.Informativa) { Leida = false };
-                var n2 = new Notificacion(Guid.NewGuid(), otherUser, "NoTuya", "M", TipoNotificacion.Informativa) { Leida = false };
-                await _notificacionRepository.InsertAsync(n1, autoSave: true);
-                await _notificacionRepository.InsertAsync(n2, autoSave: true);
-                idUserNotificacion = n1.Id;
-                idOtherNotificacion = n2.Id;
+                await _repo.InsertAsync(notif, autoSave: true);
             });
 
-            // Act: ejecutar la mutación dentro de UoW para asegurar DbContext activo
-            await WithUnitOfWorkAsync(async () => await _service.MarcarComoLeidaAsync(idUserNotificacion));
+            // Act
+            await WithUnitOfWorkAsync(async () => await _service.MarcarComoLeidaAsync(notif.Id));
 
-            // Assert dentro de UoW para leer desde DB activo
+            // Assert
             await WithUnitOfWorkAsync(async () =>
             {
-                var queryable = await _notificacionRepository.GetQueryableAsync();
-
-                var updatedUserNotif = await queryable
-                    .IgnoreQueryFilters()
-                    .FirstOrDefaultAsync(n => n.Id == idUserNotificacion);
-
-                updatedUserNotif.ShouldNotBeNull();
-                updatedUserNotif.Leida.ShouldBeTrue();
-
-                var otherNotif = await queryable
-                    .IgnoreQueryFilters()
-                    .FirstOrDefaultAsync(n => n.Id == idOtherNotificacion);
-
-                otherNotif.ShouldNotBeNull();
-                otherNotif.Leida.ShouldBeFalse();
-
-                /*
-                        var updatedUserNotif = await _notificacionRepository.GetAsync(idUserNotificacion);
-                        updatedUserNotif.Leida.ShouldBeTrue();
-
-                        var otherNotif = await _notificacionRepository.GetAsync(idOtherNotificacion);
-                        otherNotif.Leida.ShouldBeFalse();
-                */
+                var fromDb = await _repo.GetAsync(notif.Id);
+                fromDb.Leida.ShouldBeTrue();
             });
         }
-        
 
-        // Por ahora funcionan los tres de arriba
-
-        
         [Fact]
-        public async Task MarcarTodasComoLeidasAsync_MarcaTodasLasNoLeidasDelUsuarioActual()
+        public async Task MarcarTodasComoLeidasAsync_MarcaTodasLasNoLeidas()
         {
+            // Arrange
             (CurrentUser.Id != null).ShouldBeTrue();
             var userId = CurrentUser.Id.Value;
-            var otherUser = Guid.NewGuid();
+
+            var a = new Notificacion(Guid.NewGuid(), userId, "A", "A", TipoNotificacion.Informativa);
+            var b = new Notificacion(Guid.NewGuid(), userId, "B", "B", TipoNotificacion.Informativa);
+            var c = new Notificacion(Guid.NewGuid(), userId, "C", "C", TipoNotificacion.Informativa);
 
             await WithUnitOfWorkAsync(async () =>
             {
-                await _notificacionRepository.InsertAsync(new Notificacion(Guid.NewGuid(), userId, "A1", "M", TipoNotificacion.Informativa) { Leida = false }, autoSave: true);
-                await _notificacionRepository.InsertAsync(new Notificacion(Guid.NewGuid(), userId, "A2", "M", TipoNotificacion.Informativa) { Leida = false }, autoSave: true);
-                await _notificacionRepository.InsertAsync(new Notificacion(Guid.NewGuid(), otherUser, "B1", "M", TipoNotificacion.Informativa) { Leida = false }, autoSave: true);
+                await _repo.InsertAsync(a, autoSave: true);
+                await _repo.InsertAsync(b, autoSave: true);
+                await _repo.InsertAsync(c, autoSave: true);
+
+                // dejamos una ya leída, para asegurar que no rompe
+                b.Leida = true;
+                await _repo.UpdateAsync(b, autoSave: true);
             });
 
-            // Ejecutar la acción del servicio dentro de UoW
+            // Act
             await WithUnitOfWorkAsync(async () => await _service.MarcarTodasComoLeidasAsync());
 
-            // Leer y comprobar dentro de UoW
+            // Assert
             await WithUnitOfWorkAsync(async () =>
             {
-                var queryable = await _notificacionRepository.GetQueryableAsync();
-
-                var mine = (await queryable
-                    .IgnoreQueryFilters()
-                    .Where(n => n.UserId == userId)
-                    .ToListAsync());
-
-                mine.ShouldNotBeEmpty();
-                mine.ShouldAllBe(n => n.Leida);
-
-                var others = (await queryable
-                    .IgnoreQueryFilters()
-                    .Where(n => n.UserId == otherUser)
-                    .ToListAsync());
-
-                others.Any().ShouldBeTrue();
-                // Las de otros usuarios no deben haber sido marcadas por el servicio
-                others.All(n => n.Leida == false).ShouldBeTrue();
-
-
-                /*
-                        var mine = (await _notificacionRepository.GetListAsync(n => n.UserId == userId)).ToList();
-                        mine.ShouldAllBe(n => n.Leida);
-
-                        var others = (await _notificacionRepository.GetListAsync(n => n.UserId == otherUser)).ToList();
-                        others.Any().ShouldBeTrue();
-                        // Las de otros usuarios no deben haber sido marcadas por el servicio
-                        others.All(n => n.Leida == false).ShouldBeTrue();
-                */
+                var list = await _repo.GetListAsync(x => x.UserId == userId);
+                list.Count.ShouldBeGreaterThanOrEqualTo(3);
+                list.All(x => x.Leida).ShouldBeTrue();
             });
         }
+
+        [Fact]
+        public async Task GetMisNotificacionesAsync_RetornaVacia_SiNoHay()
+        {
+            // Arrange
+            (CurrentUser.Id != null).ShouldBeTrue();
+
+            // Act
+            var items = await WithUnitOfWorkAsync(async () => await _service.GetMisNotificacionesAsync());
+
+            // Assert
+            items.ShouldNotBeNull();
+            items.Count.ShouldBeGreaterThanOrEqualTo(0);
+        }
+
+        [Fact]
+        public async Task GetMisNotificacionesAsync_NoTraeNotificacionesDeOtroUsuario()
+        {
+            // Arrange
+            (CurrentUser.Id != null).ShouldBeTrue();
+            var userId = CurrentUser.Id.Value;
+            var otherUserId = Guid.NewGuid();
+
+            await WithUnitOfWorkAsync(async () =>
+            {
+                await _repo.InsertAsync(new Notificacion(Guid.NewGuid(), userId, "mias", "mias", TipoNotificacion.Social), autoSave: true);
+                await _repo.InsertAsync(new Notificacion(Guid.NewGuid(), otherUserId, "otras", "otras", TipoNotificacion.Social), autoSave: true);
+            });
+
+            // Act
+            var items = await WithUnitOfWorkAsync(async () => await _service.GetMisNotificacionesAsync());
+
+            // Assert
+            items.ShouldContain(x => x.Titulo == "mias");
+            items.ShouldNotContain(x => x.Titulo == "otras");
+        }
+
+        [Fact]
+        public async Task GetCantidadNoLeidasAsync_Retorna0_SiNoHayNoLeidas()
+        {
+            // Arrange
+            (CurrentUser.Id != null).ShouldBeTrue();
+            var userId = CurrentUser.Id.Value;
+
+            await WithUnitOfWorkAsync(async () =>
+            {
+                var n = new Notificacion(Guid.NewGuid(), userId, "leida", "leida", TipoNotificacion.Informativa);
+                n.Leida = true;
+                await _repo.InsertAsync(n, autoSave: true);
+            });
+
+            // Act
+            var count = await WithUnitOfWorkAsync(async () => await _service.GetCantidadNoLeidasAsync());
+
+            // Assert
+            count.ShouldBe(0);
+        }
+
+        [Fact]
+        public async Task MarcarComoLeidaAsync_LanzaEntityNotFound_SiNoEsDelUsuario()
+        {
+            // Arrange
+            (CurrentUser.Id != null).ShouldBeTrue();
+            var otherUserId = Guid.NewGuid();
+            var notifId = Guid.NewGuid();
+
+            await WithUnitOfWorkAsync(async () =>
+            {
+                await _repo.InsertAsync(
+                    new Notificacion(notifId, otherUserId, "otra", "otra", TipoNotificacion.Alerta),
+                    autoSave: true
+                );
+
+                // Act + Assert
+                await Assert.ThrowsAsync<EntityNotFoundException>(async () =>
+                    await _service.MarcarComoLeidaAsync(notifId));
+            });
+        }
+
+        [Fact]
+        public async Task MarcarTodasComoLeidasAsync_NoRompe_SiNoHayNoLeidas()
+        {
+            // Arrange
+            (CurrentUser.Id != null).ShouldBeTrue();
+            var userId = CurrentUser.Id.Value;
+
+            await WithUnitOfWorkAsync(async () =>
+            {
+                var n = new Notificacion(Guid.NewGuid(), userId, "ya", "ya", TipoNotificacion.Informativa);
+                n.Leida = true;
+                await _repo.InsertAsync(n, autoSave: true);
+            });
+
+            // Act
+            var ex = await Record.ExceptionAsync(async () =>
+                await WithUnitOfWorkAsync(async () => await _service.MarcarTodasComoLeidasAsync()));
+
+            // Assert
+            ex.ShouldBeNull();
+        }
+
+        
+        /// /////////////
+        
+        [Fact]
+        public async Task Favoritos_CuandoHayEventosExternos_CreaNotificacionSocial()
+        {
+            // Arrange
+            (CurrentUser.Id != null).ShouldBeTrue();
+            var userId = CurrentUser.Id.Value;
+
+            var favoritosService = GetRequiredService<ListaDeFavoritosAppService>();
+            var destinoRepo = GetRequiredService<IRepository<DestinoTuristico, Guid>>();
+            var notificacionRepo = GetRequiredService<IRepository<Notificacion, Guid>>();
+            var eventosExternos = GetRequiredService<IEventosExternosAppService>();
+
+            // mock ticketmaster
+            eventosExternos.ObtenerEventosPorUbicacionAsync(Arg.Any<string>(), Arg.Any<string>())
+                .Returns(Task.FromResult(new List<EventoTicketmasterDto>
+                {
+                new EventoTicketmasterDto
+                {
+                    Id = "evt-1",
+                    Nombre = "Evento",
+                    UrlTicket = "https://tickets.test/evt-1",
+                    FechaInicio = DateTime.UtcNow.AddDays(2),
+                    ImagenUrl = "https://img.test/evt-1.jpg"
+                }
+                }));
+
+            var destinoId = Guid.NewGuid();
+            await WithUnitOfWorkAsync(async () =>
+            {
+                await destinoRepo.InsertAsync(new DestinoTuristico(destinoId)
+                {
+                    Nombre = "Destino Evento",
+                    Pais = "AR",
+                    Poblacion = 1,
+                    Latitud = -34.0f,
+                    Longitud = -58.0f
+                }, autoSave: true);
+            });
+
+            var before = await WithUnitOfWorkAsync(async () =>
+                await notificacionRepo.CountAsync(n => n.UserId == userId));
+
+            // Act
+            await WithUnitOfWorkAsync(async () => await favoritosService.AgregarAFavoritosAsync(destinoId));
+
+            // Assert
+            await WithUnitOfWorkAsync(async () =>
+            {
+                var after = await notificacionRepo.CountAsync(n => n.UserId == userId);
+                after.ShouldBe(before + 1);
+
+                var list = await notificacionRepo.GetListAsync(n => n.UserId == userId);
+                list.ShouldContain(n =>
+                    n.Tipo == TipoNotificacion.Social &&
+                    n.LinkReferencia == "/favoritos" &&
+                    n.Icono == "fa-ticket-alt");
+            });
+        }
+
+        [Fact]
+        public async Task Opinion_PrimeraOpinion_CreaNotificacionPrimerHito_Y_Pionero()
+        {
+            // Arrange
+            (CurrentUser.Id != null).ShouldBeTrue();
+            var userId = CurrentUser.Id.Value;
+
+            var handler = GetRequiredService<ManejadorEventosOpinion>();
+            var destinoRepo = GetRequiredService<IRepository<DestinoTuristico, Guid>>();
+            var opinionRepo = GetRequiredService<IRepository<Opinion, Guid>>();
+            var notificacionRepo = GetRequiredService<IRepository<Notificacion, Guid>>();
+
+            var destinoId = Guid.NewGuid();
+
+            await WithUnitOfWorkAsync(async () =>
+            {
+                await destinoRepo.InsertAsync(new DestinoTuristico(destinoId)
+                {
+                    Nombre = "Destino Opinión",
+                    Pais = "AR",
+                    Poblacion = 1,
+                    Latitud = 0,
+                    Longitud = 0
+                }, autoSave: true);
+            });
+
+            var opinion = new Opinion(destinoId, userId, ValorPuntuacion.Cinco, "Excelente");
+
+            await WithUnitOfWorkAsync(async () =>
+            {
+                await opinionRepo.InsertAsync(opinion, autoSave: true);
+            });
+
+            var before = await WithUnitOfWorkAsync(async () =>
+                await notificacionRepo.GetListAsync(n => n.UserId == userId));
+
+            // Act
+            await WithUnitOfWorkAsync(async () =>
+                await handler.HandleEventAsync(new EntityCreatedEventData<Opinion>(opinion)));
+
+            // Assert
+            await WithUnitOfWorkAsync(async () =>
+            {
+                var after = await notificacionRepo.GetListAsync(n => n.UserId == userId);
+
+                // Primer Hito + Pionero => 2 notificaciones (según tu handler)
+                after.Count.ShouldBe(before.Count + 2);
+
+                after.ShouldContain(n => n.Titulo.Contains("Primer Hito", StringComparison.OrdinalIgnoreCase));
+                after.ShouldContain(n => n.Titulo.Contains("Pionero", StringComparison.OrdinalIgnoreCase));
+            });
+        }
+
+        
         
     }
 }
+

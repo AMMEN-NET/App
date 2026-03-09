@@ -23,6 +23,9 @@ public class AmmenTravelApplicationTestModule : AbpModule
         // Siempre usar un mock para ICitySearchService en los tests
         var citySearchServiceMock = Substitute.For<IBuscarCiudadService>();
         context.Services.AddSingleton(citySearchServiceMock);
+
+        var eventosExternosMock = Substitute.For<IEventosExternosAppService>();
+        context.Services.AddSingleton(eventosExternosMock);
     }
 
 }

@@ -1,4 +1,5 @@
 ﻿using AmmenTravel.Destinos;
+using AmmenTravel.EntityFrameworkCore;
 using AmmenTravel.InterfaceDestinoAppService;
 using AmmenTravel.ListaFavoritos;
 using AmmenTravel.Opiniones;
@@ -10,10 +11,8 @@ using Xunit;
 namespace AmmenTravel.Favoritos
 {
     [Collection(AmmenTravelTestConsts.CollectionDefinitionName)]
-    public class EFCoreFavoritosAppService_Test : ListaDeFavoritosAppServiceTest
+    public class EFCoreFavoritosAppService_Test : classListaDeFavoritosAppServiceTest<AmmenTravelEntityFrameworkCoreTestModule>
     {
-        public EFCoreFavoritosAppService_Test(IRepository<ListaFavorito, Guid> listaRepository, IRepository<LineaListaFavorito, Guid> lineaRepository, ICurrentUser currentUser, IDestinoAppService destinoAppService, IRepository<DestinoTuristico, Guid> destinoRepository, IRepository<Opinion, Guid> opinionRepository) : base(listaRepository, lineaRepository, currentUser, destinoAppService, destinoRepository, opinionRepository)
-        {
-        }
+        
     }
 }
