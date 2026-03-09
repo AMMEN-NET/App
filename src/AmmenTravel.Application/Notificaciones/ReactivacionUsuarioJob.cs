@@ -6,7 +6,8 @@ using Microsoft.Extensions.Logging;
 using Volo.Abp.BackgroundJobs;
 using Volo.Abp.DependencyInjection;
 using Volo.Abp.Domain.Repositories;
-using Volo.Abp.Identity; // Para usuarios
+using Volo.Abp.Identity;
+using Volo.Abp.Emailing;
 using Volo.Abp.Guids;
 using AmmenTravel.Opiniones;
 
@@ -17,6 +18,10 @@ namespace AmmenTravel.Notificaciones
         private readonly IRepository<IdentityUser, Guid> _userRepository;
         private readonly IRepository<Opinion, Guid> _opinionRepository;
         private readonly IRepository<Notificacion, Guid> _notificacionRepository;
+        private readonly IRepository<PreferenciasNotificacion, Guid> _preferenciasRepo;
+        private readonly IRepository<ColaResumenSemanalEmail, Guid> _colaEmailRepo;
+        private readonly IdentityUserManager _userManager;
+        private readonly IEmailSender _emailSender;
         private readonly IGuidGenerator _guidGenerator;
         private readonly ILogger<ReactivacionUsuarioJob> _logger;
 
@@ -24,12 +29,20 @@ namespace AmmenTravel.Notificaciones
             IRepository<IdentityUser, Guid> userRepository,
             IRepository<Opinion, Guid> opinionRepository,
             IRepository<Notificacion, Guid> notificacionRepository,
+            IRepository<PreferenciasNotificacion, Guid> preferenciasRepo,
+            IRepository<ColaResumenSemanalEmail, Guid> colaEmailRepo,
+            IdentityUserManager userManager,
+            IEmailSender emailSender,
             IGuidGenerator guidGenerator,
             ILogger<ReactivacionUsuarioJob> logger)
         {
             _userRepository = userRepository;
             _opinionRepository = opinionRepository;
             _notificacionRepository = notificacionRepository;
+            _preferenciasRepo = preferenciasRepo;
+            _colaEmailRepo = colaEmailRepo;
+            _userManager = userManager;
+            _emailSender = emailSender;
             _guidGenerator = guidGenerator;
             _logger = logger;
         }
@@ -96,17 +109,58 @@ namespace AmmenTravel.Notificaciones
                         {
                             var titulo = "Te extrañamos en AmmenTravel";
                             var mensaje = "Hace tiempo que no compartes una reseña. ¿Querés contar tu última experiencia?";
-                            var notificacion = new Notificacion(
-                                _guidGenerator.Create(),
-                                userId,
-                                titulo,
-                                mensaje,
-                                TipoNotificacion.Recordatorio,
-                                linkReferencia: "/mi-perfil/mis-calificaciones",
-                                icono: "fa-clock"
-                            );
 
-                            await _notificacionRepository.InsertAsync(notificacion, autoSave: true);
+                            // Obtener preferencias del usuario
+                            var preferencias = await _preferenciasRepo.FirstOrDefaultAsync(p => p.UserId == userId);
+                            bool enPantalla = preferencias?.EnPantalla ?? true;
+                            bool porEmail = preferencias?.PorEmail ?? true;
+                            FrecuenciaNotificacion frecuencia = preferencias?.Frecuencia ?? FrecuenciaNotificacion.Inmediata;
+
+                            if (frecuencia == FrecuenciaNotificacion.Inmediata)
+                            {
+                                // Campanita
+                                if (enPantalla)
+                                {
+                                    var notificacion = new Notificacion(
+                                        _guidGenerator.Create(),
+                                        userId,
+                                        titulo,
+                                        mensaje,
+                                        TipoNotificacion.Recordatorio,
+                                        linkReferencia: "/mi-perfil/mis-calificaciones",
+                                        icono: "fa-clock"
+                                    );
+                                    await _notificacionRepository.InsertAsync(notificacion, autoSave: true);
+                                }
+
+                                // Email inmediato (HTML)
+                                if (porEmail)
+                                {
+                                    var user = await _userManager.FindByIdAsync(userId.ToString());
+                                    var email = user?.Email;
+                                    if (!string.IsNullOrEmpty(email))
+                                    {
+                                        var htmlBody = EmailTemplateHelper.GenerarEmailReactivacion(titulo, mensaje);
+                                        await _emailSender.SendAsync(email, titulo, htmlBody, isBodyHtml: true);
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                // Modo semanal: encolar
+                                var user = await _userManager.FindByIdAsync(userId.ToString());
+                                var email = user?.Email ?? "";
+
+                                var colaEmail = new ColaResumenSemanalEmail(
+                                    _guidGenerator.Create(),
+                                    userId,
+                                    email,
+                                    titulo,
+                                    mensaje
+                                );
+                                await _colaEmailRepo.InsertAsync(colaEmail, autoSave: true);
+                            }
+
                             createdCount++;
                         }
                         catch (Exception ex)

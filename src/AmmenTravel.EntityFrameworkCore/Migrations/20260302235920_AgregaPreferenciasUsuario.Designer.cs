@@ -4,17 +4,20 @@ using AmmenTravel.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Volo.Abp.EntityFrameworkCore;
 
 #nullable disable
 
-namespace AmmenTravel.src.AmmenTravel.EntityFrameworkCore.Migrations
+namespace AmmenTravel.Migrations
 {
     [DbContext(typeof(AmmenTravelDbContext))]
-    partial class AmmenTravelDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260302235920_AgregaPreferenciasUsuario")]
+    partial class AgregaPreferenciasUsuario
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -296,47 +299,6 @@ namespace AmmenTravel.src.AmmenTravel.EntityFrameworkCore.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("AppListasFavoritos", (string)null);
-                });
-
-            modelBuilder.Entity("AmmenTravel.Notificaciones.ColaResumenSemanalEmail", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("CreationTime")
-                        .HasColumnType("datetime2")
-                        .HasColumnName("CreationTime");
-
-                    b.Property<Guid?>("CreatorId")
-                        .HasColumnType("uniqueidentifier")
-                        .HasColumnName("CreatorId");
-
-                    b.Property<string>("EmailDestino")
-                        .IsRequired()
-                        .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
-
-                    b.Property<string>("Mensaje")
-                        .IsRequired()
-                        .HasMaxLength(2000)
-                        .HasColumnType("nvarchar(2000)");
-
-                    b.Property<bool>("Procesado")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Titulo")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId", "Procesado");
-
-                    b.ToTable("AppColaResumenSemanalEmails", (string)null);
                 });
 
             modelBuilder.Entity("AmmenTravel.Notificaciones.HistorialNotificacionEvento", b =>

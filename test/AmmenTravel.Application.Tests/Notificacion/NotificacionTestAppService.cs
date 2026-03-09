@@ -17,6 +17,7 @@ using Volo.Abp.Domain.Entities;
 using Volo.Abp.Domain.Entities.Events;
 using Volo.Abp.Domain.Repositories;
 using Volo.Abp.Modularity;
+using Volo.Abp.Testing;
 using Xunit;
 
 namespace AmmenTravel.NotificacionTest
@@ -237,7 +238,7 @@ namespace AmmenTravel.NotificacionTest
 
                 // Act + Assert
                 await Assert.ThrowsAsync<EntityNotFoundException>(async () =>
-                    await _service.MarcarComoLeidaAsync(notifId));
+        await WithUnitOfWorkAsync(async () => await _service.MarcarComoLeidaAsync(notifId)));
             });
         }
 

@@ -57,14 +57,14 @@
             <div class="flex items-center justify-between p-3 border border-gray-200 rounded bg-gray-50">
                 <span class="text-sm font-medium text-gray-700"> <i class="fa fa-bell text-blue-500 mr-2"></i> Pantalla</span>
                 <label class="relative inline-flex items-center cursor-pointer">
-                    <input type="checkbox" formControlName="notifyScreen" class="sr-only peer">
+                    <input type="checkbox" formControlName="notifyScreen" (change)="form.markAsDirty()" class="sr-only peer">
                     <div class="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
                 </label>
             </div>
             <div class="flex items-center justify-between p-3 border border-gray-200 rounded bg-gray-50">
                 <span class="text-sm font-medium text-gray-700"> <i class="fa fa-envelope text-yellow-500 mr-2"></i> Email</span>
                 <label class="relative inline-flex items-center cursor-pointer">
-                    <input type="checkbox" formControlName="notifyEmail" class="sr-only peer">
+                    <input type="checkbox" formControlName="notifyEmail" (change)="form.markAsDirty()" class="sr-only peer">
                     <div class="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
                 </label>
             </div>
@@ -74,11 +74,11 @@
             <label class="block text-sm font-medium text-gray-700 mb-2">Frecuencia de envío</label>
             <div class="flex gap-4">
                 <label class="flex items-center cursor-pointer">
-                    <input type="radio" formControlName="notifyFrequency" value="immediate" class="text-blue-600 focus:ring-blue-500 border-gray-300">
+                    <input type="radio" formControlName="notifyFrequency" value="immediate" (change)="form.markAsDirty()" class="text-blue-600 focus:ring-blue-500 border-gray-300">
                     <span class="ml-2 text-sm text-gray-700">Inmediata</span>
                 </label>
                 <label class="flex items-center cursor-pointer">
-                    <input type="radio" formControlName="notifyFrequency" value="weekly" class="text-blue-600 focus:ring-blue-500 border-gray-300">
+                    <input type="radio" formControlName="notifyFrequency" value="weekly" (change)="form.markAsDirty()" class="text-blue-600 focus:ring-blue-500 border-gray-300">
                     <span class="ml-2 text-sm text-gray-700">Semanal</span>
                 </label>
             </div>
@@ -87,7 +87,7 @@
 
     <div class="pt-4">
       <button type="submit" 
-        [disabled]="(form.pristine && !archivoSeleccionado) || form.invalid || estaCargando()"
+        [disabled]="(form.pristine && !archivoSeleccionado) || estaCargando()"
         class="w-full bg-blue-600 text-white font-bold py-2 px-4 rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex justify-center items-center gap-2">
           @if (estaCargando()) {
               <i class="fa fa-spinner fa-spin"></i> Guardando...
