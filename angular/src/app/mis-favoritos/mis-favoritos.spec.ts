@@ -6,6 +6,9 @@ import { MisFavoritosComponent } from './mis-favoritos';
 import { ListaDeFavoritosService } from '../proxy/lista-de-favoritos';
 import { ToasterService } from '@abp/ng.theme.shared';
 import { FavoritoDto } from '../proxy/favoritos/favoritos-dto';
+import { EventosExternosService } from '../proxy/external-service';
+import { EventoTicketmasterDto } from '../proxy/external-service/models';
+
 
 describe('MisFavoritosComponent', () => {
   let component: MisFavoritosComponent;
@@ -56,16 +59,22 @@ describe('MisFavoritosComponent', () => {
       'warn'
     ]);
 
+    const eventosExternosSpy = jasmine.createSpyObj('EventosExternosService', [
+      'obtenerEventosPorUbicacion'
+    ]);
+
     await TestBed.configureTestingModule({
       imports: [MisFavoritosComponent, RouterTestingModule],
       providers: [
         { provide: ListaDeFavoritosService, useValue: listadeFavoritosSpy },
-        { provide: ToasterService, useValue: toasterSpy }
+        { provide: ToasterService, useValue: toasterSpy },
+        { provide: EventosExternosService, useValue: eventosExternosSpy }
       ]
     }).compileComponents();
 
     listadeFavoritosService = TestBed.inject(ListaDeFavoritosService) as jasmine.SpyObj<ListaDeFavoritosService>;
     toasterService = TestBed.inject(ToasterService) as jasmine.SpyObj<ToasterService>;
+    //eventosExternosService = TestBed.inject(EventosExternosService) as jasmine.SpyObj<EventosExternosService>;
 
     fixture = TestBed.createComponent(MisFavoritosComponent);
     component = fixture.componentInstance;
@@ -302,4 +311,78 @@ describe('MisFavoritosComponent', () => {
       expect(component.favoritos().length).toBe(mockFavoritos.length);
     });
   });
+
+   describe('Eventos Ticketmaster', () => {
+    let eventosExternosService: jasmine.SpyObj<EventosExternosService>;
+    const mockEventos: EventoTicketmasterDto[] = [
+      { id: 'ev1', nombre: 'Concierto París', urlTicket: 'https://ticket.com/ev1' },
+      { id: 'ev2', nombre: 'Festival Barcelona', urlTicket: 'https://ticket.com/ev2' }
+    ];
+
+    beforeEach(() => {
+      eventosExternosService = TestBed.inject(EventosExternosService) as jasmine.SpyObj<EventosExternosService>;
+    });
+
+    it('debería abrir el modal y cargar eventos exitosamente', fakeAsync(() => {
+      eventosExternosService.obtenerEventosPorUbicacion.and.returnValue(of(mockEventos));
+      
+      component.abrirModalEventos('48.8566', '2.3522');
+      tick();
+
+      expect(component.mostrarModalEventos).toBeTrue();
+      expect(component.cargandoEventos).toBeFalse();
+      expect(component.eventos.length).toBe(2);
+      expect(component.eventos[0].nombre).toBe('Concierto París');
+    }));
+
+    it('debería mostrar estado de carga al buscar eventos', () => {
+      eventosExternosService.obtenerEventosPorUbicacion.and.returnValue(new Observable(() => {}));
+      
+      component.abrirModalEventos('48.8566', '2.3522');
+      
+      expect(component.cargandoEventos).toBeTrue();
+      expect(component.eventos.length).toBe(0);
+    });
+
+    it('debería manejar error al buscar eventos', fakeAsync(() => {
+      eventosExternosService.obtenerEventosPorUbicacion.and.returnValue(throwError(() => new Error('Error Ticketmaster')));
+      
+      component.abrirModalEventos('48.8566', '2.3522');
+      tick();
+      
+      expect(component.cargandoEventos).toBeFalse();
+      expect(component.eventos.length).toBe(0);
+    }));
+
+    it('debería cerrar el modal de eventos', () => {
+      component.mostrarModalEventos = true;
+      
+      component.cerrarModalEventos();
+      
+      expect(component.mostrarModalEventos).toBeFalse();
+    });
+
+    it('debería limpiar eventos al abrir un nuevo modal', fakeAsync(() => {
+      component.eventos = mockEventos;
+      eventosExternosService.obtenerEventosPorUbicacion.and.returnValue(of([]));
+      
+      component.abrirModalEventos('41.3874', '2.1686');
+      tick();
+
+      expect(component.eventos.length).toBe(0);
+    }));
+
+    it('debería manejar error al buscar eventos', fakeAsync(() => {
+      spyOn(console, 'error');
+      eventosExternosService.obtenerEventosPorUbicacion.and.returnValue(
+        throwError(() => new Error('Error Ticketmaster'))
+      );
+
+      component.abrirModalEventos('48.8566', '2.3522');
+      tick();
+
+      expect(component.cargandoEventos).toBeFalse();
+      expect(component.eventos.length).toBe(0);
+    }));
+   });
 });

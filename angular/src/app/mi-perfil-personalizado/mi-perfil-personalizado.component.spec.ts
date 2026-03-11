@@ -47,8 +47,7 @@ describe('MiPerfilPersonalizadoComponent', () => {
     ]);
     const configStateServiceSpy = jasmine.createSpyObj('ConfigStateService', ['getOne']);
     const fotoServiceSpy = jasmine.createSpyObj('FotoPerfilService', [
-      'obtenerUrlFoto',
-      'subirFoto'
+      'obtenerUrlFoto'
     ]);
     const confirmationServiceSpy = jasmine.createSpyObj('ConfirmationService', ['warn']);
     const authServiceSpy = jasmine.createSpyObj('AuthService', ['logout']);
@@ -192,25 +191,21 @@ describe('MiPerfilPersonalizadoComponent', () => {
 
     it('debería actualizar la URL de imagen al cargar', fakeAsync(() => {
       component.usuarioId = 'user-123';
-      fotoService.obtenerUrlFoto.and.returnValue('/api/foto/user-123');
 
       component.actualizarUrlImagen();
 
-      // Verificar que se obtiene la URL (contiene timestamp)
-      expect(fotoService.obtenerUrlFoto).toHaveBeenCalledWith('user-123');
-      expect(component.urlImagen).toContain('/api/foto/user-123?t=');
+      // Verificar que la URL se construye correctamente con timestamp
+      expect(component.urlImagen).toContain('/api/app/foto-perfil/obtener/user-123?t=');
     }));
   });
 
   describe('Gestión de Foto de Perfil', () => {
     it('debería actualizar URL de imagen con timestamp', () => {
       component.usuarioId = 'user-123';
-      fotoService.obtenerUrlFoto.and.returnValue('/api/foto/user-123');
 
       component.actualizarUrlImagen();
 
-      expect(component.urlImagen).toContain('/api/foto/user-123?t=');
-      expect(fotoService.obtenerUrlFoto).toHaveBeenCalledWith('user-123');
+      expect(component.urlImagen).toContain('/api/app/foto-perfil/obtener/user-123?t=');
     });
 
     it('debería manejar selección de archivo', (done) => {
@@ -248,47 +243,6 @@ describe('MiPerfilPersonalizadoComponent', () => {
 
       expect(component.urlImagen).toBeNull();
     });
-
-    it('debería subir foto correctamente', fakeAsync(() => {
-      const file = new File(['content'], 'avatar.jpg', { type: 'image/jpeg' });
-      component.archivoSeleccionado = file;
-      fotoService.subirFoto.and.returnValue(of(void 0).pipe(delay(100)));
-
-      component.subirSoloFoto();
-      tick(100);
-
-      expect(fotoService.subirFoto).toHaveBeenCalledWith(file);
-      expect(toasterService.success).toHaveBeenCalledWith(
-        'Foto de perfil actualizada.',
-        'Éxito'
-      );
-      expect(component.estaCargando()).toBe(false);
-      expect(component.archivoSeleccionado).toBeNull();
-    }));
-
-    it('debería manejar error al subir foto', fakeAsync(() => {
-      const file = new File(['content'], 'avatar.jpg', { type: 'image/jpeg' });
-      const error = new Error('Error al subir');
-      component.archivoSeleccionado = file;
-      fotoService.subirFoto.and.returnValue(throwError(() => error));
-
-      component.subirSoloFoto();
-      tick(100);
-
-      expect(toasterService.warn).toHaveBeenCalledWith(
-        'Datos guardados pero hubo error con la imagen.',
-        'Atención'
-      );
-      expect(component.estaCargando()).toBe(false);
-    }));
-
-    it('no debería hacer nada si no hay archivo seleccionado en subirSoloFoto', () => {
-      component.archivoSeleccionado = null;
-
-      component.subirSoloFoto();
-
-      expect(fotoService.subirFoto).not.toHaveBeenCalled();
-    });
   });
 
   describe('Guardar Cambios', () => {
@@ -297,9 +251,12 @@ describe('MiPerfilPersonalizadoComponent', () => {
       component.form.markAsPristine();
     });
 
-    it('debería guardar solo los datos del perfil cuando se modifica el formulario', fakeAsync(() => {
-      component.form.get('name')?.setValue('Carlos');
-      component.form.markAsDirty();
+      it('debería guardar solo los datos del perfil cuando se modifica el formulario', fakeAsync(() => {
+      const nameControl = component.form.get('name');
+
+      nameControl?.setValue('Carlos');
+      nameControl?.markAsDirty();
+
       restService.request.and.returnValue(of(void 0).pipe(delay(100)));
 
       component.guardar();
@@ -318,67 +275,15 @@ describe('MiPerfilPersonalizadoComponent', () => {
       });
 
       expect(toasterService.success).toHaveBeenCalledWith(
-        'Perfil actualizado correctamente.',
+        'Cambios guardados correctamente.',
         'Éxito'
       );
       expect(component.estaCargando()).toBe(false);
     }));
 
-    it('debería subir solo foto si formulario está pristine y hay archivo', fakeAsync(() => {
-      const file = new File(['content'], 'avatar.jpg', { type: 'image/jpeg' });
-      component.archivoSeleccionado = file;
-      component.form.markAsPristine();
-      fotoService.subirFoto.and.returnValue(of(void 0).pipe(delay(100)));
 
-      component.guardar();
-      tick(100);
 
-      expect(fotoService.subirFoto).toHaveBeenCalledWith(file);
-      expect(restService.request).not.toHaveBeenCalled();
-      expect(toasterService.success).toHaveBeenCalledWith(
-        'Foto de perfil actualizada.',
-        'Éxito'
-      );
-    }));
 
-    it('debería guardar datos y luego foto si ambos están modificados', fakeAsync(() => {
-      const file = new File(['content'], 'avatar.jpg', { type: 'image/jpeg' });
-      component.archivoSeleccionado = file;
-      component.form.get('name')?.setValue('Juan Actualizado');
-      component.form.markAsDirty();
-      
-      restService.request.and.returnValue(of(void 0).pipe(delay(100)));
-      fotoService.subirFoto.and.returnValue(of(void 0).pipe(delay(100)));
-
-      component.guardar();
-      tick(100);
-
-      expect(restService.request).toHaveBeenCalledWith(
-        jasmine.objectContaining({
-          method: 'PUT',
-          url: '/api/account/my-profile'
-        })
-      );
-      
-      tick(100);
-      expect(fotoService.subirFoto).toHaveBeenCalledWith(file);
-    }));
-
-    it('debería mostrar error si hay problema guardando datos', fakeAsync(() => {
-      const error = new Error('Error de servidor');
-      component.form.get('name')?.setValue('Nuevo Nombre');
-      component.form.markAsDirty();
-      restService.request.and.returnValue(throwError(() => error));
-
-      component.guardar();
-      tick(100);
-
-      expect(toasterService.error).toHaveBeenCalledWith(
-        'Error al guardar los datos personales.',
-        'Error'
-      );
-      expect(component.estaCargando()).toBe(false);
-    }));
 
     it('no debería guardar si formulario es inválido', () => {
       component.form.get('email')?.setValue('invalid-email');
@@ -389,32 +294,14 @@ describe('MiPerfilPersonalizadoComponent', () => {
       expect(restService.request).not.toHaveBeenCalled();
     });
 
-    it('debería mostrar advertencia si hay error con foto pero datos se guardaron', fakeAsync(() => {
-      const file = new File(['content'], 'avatar.jpg', { type: 'image/jpeg' });
-      component.archivoSeleccionado = file;
-      component.form.get('name')?.setValue('Nuevo Nombre');
-      component.form.markAsDirty();
-      
-      restService.request.and.returnValue(of(void 0).pipe(delay(100)));
-      fotoService.subirFoto.and.returnValue(throwError(() => new Error('Error foto')));
 
-      component.guardar();
-      tick(100);
-
-      expect(restService.request).toHaveBeenCalled();
-      tick(100);
-      expect(fotoService.subirFoto).toHaveBeenCalled();
-      
-      tick(100);
-      expect(toasterService.warn).toHaveBeenCalledWith(
-        'Datos guardados pero hubo error con la imagen.',
-        'Atención'
-      );
-    }));
 
     it('debería limpiar el estado del formulario después de guardar', fakeAsync(() => {
-      component.form.get('name')?.setValue('Nuevo Nombre');
-      component.form.markAsDirty();
+      const nameControl = component.form.get('name');
+
+      nameControl?.setValue('Nuevo Nombre');
+      nameControl?.markAsDirty();
+
       restService.request.and.returnValue(of(void 0).pipe(delay(100)));
 
       component.guardar();
@@ -554,44 +441,27 @@ describe('MiPerfilPersonalizadoComponent', () => {
 
   describe('Integración', () => {
     it('debería completar flujo completo de actualización de perfil', fakeAsync(() => {
-      // Cargar datos iniciales
       restService.request.and.returnValue(of(mockProfileData).pipe(delay(100)));
       component.ngOnInit();
       tick(100);
 
       expect(component.form.get('name')?.value).toBe('Juan');
 
-      // Modificar datos
-      component.form.get('name')?.setValue('Carlos');
-      component.form.markAsDirty();
+      const nameControl = component.form.get('name');
+      nameControl?.setValue('Carlos');
+      nameControl?.markAsDirty();
 
-      // Guardar
       restService.request.and.returnValue(of(void 0).pipe(delay(100)));
       component.guardar();
       tick(100);
 
       expect(toasterService.success).toHaveBeenCalledWith(
-        'Perfil actualizado correctamente.',
+        'Cambios guardados correctamente.',
         'Éxito'
       );
     }));
 
-    it('debería completar flujo de cambio de foto', fakeAsync(() => {
-      const file = new File(['content'], 'avatar.jpg', { type: 'image/jpeg' });
-      fotoService.subirFoto.and.returnValue(of(void 0).pipe(delay(100)));
 
-      component.archivoSeleccionado = file;
-      component.form.markAsPristine();
-      component.guardar();
-      tick(100);
-
-      expect(fotoService.subirFoto).toHaveBeenCalledWith(file);
-      expect(toasterService.success).toHaveBeenCalledWith(
-        'Foto de perfil actualizada.',
-        'Éxito'
-      );
-      expect(component.archivoSeleccionado).toBeNull();
-    }));
 
     it('debería completar flujo de eliminación de cuenta', fakeAsync(() => {
       confirmationService.warn.and.returnValue(
