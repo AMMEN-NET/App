@@ -8,8 +8,10 @@ using AmmenTravel.ListaDeFavoritos;
 using Microsoft.Extensions.Logging;
 using Volo.Abp.DependencyInjection;
 using Volo.Abp.Domain.Repositories;
+using Volo.Abp.Emailing;
 using Volo.Abp.EventBus;
 using Volo.Abp.Guids;
+using Volo.Abp.Identity;
 
 namespace AmmenTravel.Notificaciones
 {
@@ -18,6 +20,10 @@ namespace AmmenTravel.Notificaciones
         private readonly IRepository<DestinoTuristico, Guid> _destinoRepository;
         private readonly IEventosExternosAppService _eventosExternosService;
         private readonly IRepository<Notificacion, Guid> _notificacionRepository;
+        private readonly IRepository<PreferenciasNotificacion, Guid> _preferenciasRepo;
+        private readonly IRepository<ColaResumenSemanalEmail, Guid> _colaEmailRepo;
+        private readonly IdentityUserManager _userManager;
+        private readonly IEmailSender _emailSender;
         private readonly IGuidGenerator _guidGenerator;
         private readonly ILogger<ManejadorEventosFavoritos> _logger;
 
@@ -25,12 +31,20 @@ namespace AmmenTravel.Notificaciones
             IRepository<DestinoTuristico, Guid> destinoRepository,
             IEventosExternosAppService eventosExternosService,
             IRepository<Notificacion, Guid> notificacionRepository,
+            IRepository<PreferenciasNotificacion, Guid> preferenciasRepo,
+            IRepository<ColaResumenSemanalEmail, Guid> colaEmailRepo,
+            IdentityUserManager userManager,
+            IEmailSender emailSender,
             IGuidGenerator guidGenerator,
             ILogger<ManejadorEventosFavoritos> logger)
         {
             _destinoRepository = destinoRepository;
             _eventosExternosService = eventosExternosService;
             _notificacionRepository = notificacionRepository;
+            _preferenciasRepo = preferenciasRepo;
+            _colaEmailRepo = colaEmailRepo;
+            _userManager = userManager;
+            _emailSender = emailSender;
             _guidGenerator = guidGenerator;
             _logger = logger;
         }
@@ -49,28 +63,63 @@ namespace AmmenTravel.Notificaciones
                 if (eventos != null && eventos.Any())
                 {
                     int cantidadEventos = eventos.Count;
-                    string mensaje;
+                    string titulo = $"¡Planazo en {destino.Nombre}! 🎟️";
+                    string mensaje = cantidadEventos == 1
+                        ? $"Acabas de guardar {destino.Nombre} y hay un evento próximo esperandote. ¡Revisalo antes de que se agote!"
+                        : $"Acabas de guardar {destino.Nombre} y hay {cantidadEventos} eventos próximos esperando. ¡Sacá tus tickets!";
 
-                    if (cantidadEventos == 1)
+                    // Obtenemos las preferencias del usuario (o valores por defecto)
+                    var preferencias = await _preferenciasRepo.FirstOrDefaultAsync(p => p.UserId == eventData.UserId);
+                    bool enPantalla = preferencias?.EnPantalla ?? true;
+                    bool porEmail = preferencias?.PorEmail ?? true;
+                    FrecuenciaNotificacion frecuencia = preferencias?.Frecuencia ?? FrecuenciaNotificacion.Inmediata;
+
+                    if (frecuencia == FrecuenciaNotificacion.Inmediata)
                     {
-                        mensaje = $"Acabas de guardar {destino.Nombre} y hay un evento próximo espereandote. ¡Revisalo antes de que se agote!";
+                        // === MODO INMEDIATO: todo al instante ===
+
+                        // Campanita
+                        if (enPantalla)
+                        {
+                            var notificacion = new Notificacion(
+                                _guidGenerator.Create(),
+                                eventData.UserId,
+                                titulo,
+                                mensaje,
+                                TipoNotificacion.Social,
+                                "/favoritos", 
+                                "fa-ticket-alt"
+                            );
+                            await _notificacionRepository.InsertAsync(notificacion);
+                        }
+
+                        // Email (HTML)
+                        if (porEmail)
+                        {
+                            var user = await _userManager.FindByIdAsync(eventData.UserId.ToString());
+                            var email = user?.Email;
+                            if (!string.IsNullOrEmpty(email))
+                            {
+                                var htmlBody = EmailTemplateHelper.GenerarEmailEventoFavorito(titulo, mensaje);
+                                await _emailSender.SendAsync(email, titulo, htmlBody, isBodyHtml: true);
+                            }
+                        }
                     }
                     else
                     {
-                        mensaje = $"Acabas de guardar {destino.Nombre} y hay {cantidadEventos} eventos próximos esperando. ¡Sacá tus tickets!";
+                        // === MODO SEMANAL: todo se encola para el domingo ===
+                        var user = await _userManager.FindByIdAsync(eventData.UserId.ToString());
+                        var email = user?.Email ?? "";
+
+                        var colaEmail = new ColaResumenSemanalEmail(
+                            _guidGenerator.Create(),
+                            eventData.UserId,
+                            email,
+                            titulo,
+                            mensaje
+                        );
+                        await _colaEmailRepo.InsertAsync(colaEmail);
                     }
-
-                    var notificacion = new Notificacion(
-                        _guidGenerator.Create(),
-                        eventData.UserId,
-                        $"¡Planazo en {destino.Nombre}! 🎟️",
-                        mensaje,
-                        TipoNotificacion.Social,
-                        "/favoritos", 
-                        "fa-ticket-alt"
-                    );
-
-                    await _notificacionRepository.InsertAsync(notificacion);
                 }
             }
             catch (Exception ex)

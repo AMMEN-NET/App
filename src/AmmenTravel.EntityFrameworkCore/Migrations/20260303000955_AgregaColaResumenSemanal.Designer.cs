@@ -4,17 +4,20 @@ using AmmenTravel.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Volo.Abp.EntityFrameworkCore;
 
 #nullable disable
 
-namespace AmmenTravel.src.AmmenTravel.EntityFrameworkCore.Migrations
+namespace AmmenTravel.Migrations
 {
     [DbContext(typeof(AmmenTravelDbContext))]
-    partial class AmmenTravelDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260303000955_AgregaColaResumenSemanal")]
+    partial class AgregaColaResumenSemanal
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

@@ -1,6 +1,4 @@
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
-using AmmenTravel.Localization;
 using AmmenTravel.MultiTenancy;
 using Volo.Abp.Localization;
 using Volo.Abp.Modularity;
@@ -42,9 +40,5 @@ public class AmmenTravelDomainModule : AbpModule
             options.IsEnabled = MultiTenancyConsts.IsEnabled;
         });
 
-
-#if DEBUG
-        context.Services.Replace(ServiceDescriptor.Singleton<IEmailSender, NullEmailSender>());
-#endif
     }
 }

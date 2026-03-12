@@ -41,6 +41,8 @@ public class AmmenTravelDbContext :
     public DbSet<Notificacion> Notificaciones { get; set; }
 
     public DbSet<HistorialNotificacionEvento> HistorialNotificacionesEventos { get; set; }
+    public DbSet<PreferenciasNotificacion> PreferenciasNotificaciones { get; set; }
+    public DbSet<ColaResumenSemanalEmail> ColaResumenSemanalEmails { get; set; }
 
 
     #region Entities from the modules
@@ -58,13 +60,13 @@ public class AmmenTravelDbContext :
 
     #endregion
 
-    // Hacemos nullable para poder tener un constructor solo con DbContextOptions (diseño/migraciones)
+    // Hacemos nullable para poder tener un constructor solo con DbContextOptions (diseï¿½o/migraciones)
     private readonly ICurrentUser? _currentUser;
 
     // Propiedad de instancia usada por el HasQueryFilter (permite cambiar por instancia de DbContext)
     private Guid? CurrentUserId { get; set; }
 
-    // Constructor principal usado en runtime (inyección de ICurrentUser)
+    // Constructor principal usado en runtime (inyecciï¿½n de ICurrentUser)
     public AmmenTravelDbContext(DbContextOptions<AmmenTravelDbContext> options, ICurrentUser currentUser)
         : base(options)
     {
@@ -72,7 +74,7 @@ public class AmmenTravelDbContext :
         CurrentUserId = _currentUser?.Id;
     }
 
-    // Constructor adicional para tiempo de diseño / migraciones (IDesignTimeDbContextFactory)
+    // Constructor adicional para tiempo de diseï¿½o / migraciones (IDesignTimeDbContextFactory)
     // Deja _currentUser nulo y CurrentUserId a null para evitar dependencias en el factory.
     public AmmenTravelDbContext(DbContextOptions<AmmenTravelDbContext> options)
         : base(options)
@@ -85,7 +87,7 @@ public class AmmenTravelDbContext :
     {
         base.OnModelCreating(builder);
 
-        /* Configuración de módulos ABP */
+        /* Configuraciï¿½n de mï¿½dulos ABP */
         builder.ConfigurePermissionManagement();
         builder.ConfigureSettingManagement();
         builder.ConfigureBackgroundJobs();
@@ -95,7 +97,7 @@ public class AmmenTravelDbContext :
         builder.ConfigureOpenIddict();
         builder.ConfigureBlobStoring();
 
-        /* Configuración de tus entidades */
+        /* Configuraciï¿½n de tus entidades */
         builder.Entity<DestinoTuristico>(b =>
         {
             b.ToTable(AmmenTravelConsts.DbTablePrefix + "Destinos", AmmenTravelConsts.DbSchema);
@@ -119,38 +121,38 @@ public class AmmenTravelDbContext :
             b.Property(x => x.UserId).IsRequired();
 
             // --- AGREGAR ESTO ---
-            // Define la relación explícita: Una Opinión tiene UN Destino
+            // Define la relaciï¿½n explï¿½cita: Una Opiniï¿½n tiene UN Destino
             b.HasOne(x => x.DestinoTuristico)
-             .WithMany() // Un destino puede tener muchas opiniones (aunque no esté en la clase Destino)
+             .WithMany() // Un destino puede tener muchas opiniones (aunque no estï¿½ en la clase Destino)
              .HasForeignKey(x => x.DestinoTuristicoId)
-             .OnDelete(DeleteBehavior.Cascade); // O Restrict, según prefieras
+             .OnDelete(DeleteBehavior.Cascade); // O Restrict, segï¿½n prefieras
         });
 
-        /* Configuración de LISTA DE FAVORITOS (Contenedor) */
+        /* Configuraciï¿½n de LISTA DE FAVORITOS (Contenedor) */
         builder.Entity<ListaFavorito>(b =>
         {
             b.ToTable(AmmenTravelConsts.DbTablePrefix + "ListasFavoritos", AmmenTravelConsts.DbSchema);
             b.ConfigureByConvention();
-            // Como es única por usuario, EF ya usa el UserId por la interfaz IUserOwned
+            // Como es ï¿½nica por usuario, EF ya usa el UserId por la interfaz IUserOwned
         });
 
-        /* Configuración de LINEAS DE FAVORITOS */
+        /* Configuraciï¿½n de LINEAS DE FAVORITOS */
         builder.Entity<LineaListaFavorito>(b =>
         {
             b.ToTable(AmmenTravelConsts.DbTablePrefix + "LineasListasFavoritos", AmmenTravelConsts.DbSchema);
             b.ConfigureByConvention();
 
-            // RELACIÓN 1: Una línea pertenece a UNA Lista
+            // RELACIï¿½N 1: Una lï¿½nea pertenece a UNA Lista
             b.HasOne(x => x.ListaFavorito)
-                .WithMany() // Una lista tiene muchas líneas (aunque no lo definamos en la clase Lista, EF lo entiende)
+                .WithMany() // Una lista tiene muchas lï¿½neas (aunque no lo definamos en la clase Lista, EF lo entiende)
                 .HasForeignKey(x => x.ListaFavoritoId)
-                .OnDelete(DeleteBehavior.Cascade); // IMPORTANTE: Si un día borras la lista, se borran las líneas.
+                .OnDelete(DeleteBehavior.Cascade); // IMPORTANTE: Si un dï¿½a borras la lista, se borran las lï¿½neas.
 
-            // RELACIÓN 2: Una línea apunta a UN Destino
+            // RELACIï¿½N 2: Una lï¿½nea apunta a UN Destino
             b.HasOne(x => x.DestinoTuristico)
                 .WithMany()
                 .HasForeignKey(x => x.DestinoTuristicoId)
-                .OnDelete(DeleteBehavior.Cascade); // Si borras el destino (ej. París), desaparece de los favoritos de todos.
+                .OnDelete(DeleteBehavior.Cascade); // Si borras el destino (ej. Parï¿½s), desaparece de los favoritos de todos.
         });
 
         builder.Entity<Experiencia>(b =>
@@ -186,8 +188,29 @@ public class AmmenTravelDbContext :
 
             b.Property(x => x.EventoTicketmasterId).IsRequired().HasMaxLength(100);
 
-            // Índice compuesto fundamental para que el worker vuele buscando coincidencias
+            // ï¿½ndice compuesto fundamental para que el worker vuele buscando coincidencias
             b.HasIndex(x => new { x.UserId, x.DestinoTuristicoId });
+        });
+        builder.Entity<PreferenciasNotificacion>(b =>
+        {
+            b.ToTable(AmmenTravelConsts.DbTablePrefix + "PreferenciasNotificaciones", AmmenTravelConsts.DbSchema);
+            b.ConfigureByConvention();
+
+            // Ãndice Ãºnico para relaciÃ³n 1:1 con usuario
+            b.HasIndex(x => x.UserId).IsUnique();
+        });
+
+        builder.Entity<ColaResumenSemanalEmail>(b =>
+        {
+            b.ToTable(AmmenTravelConsts.DbTablePrefix + "ColaResumenSemanalEmails", AmmenTravelConsts.DbSchema);
+            b.ConfigureByConvention();
+
+            b.Property(x => x.EmailDestino).IsRequired().HasMaxLength(256);
+            b.Property(x => x.Titulo).IsRequired().HasMaxLength(200);
+            b.Property(x => x.Mensaje).IsRequired().HasMaxLength(2000);
+
+            // Ãndice para procesar eficientemente por usuario y estado
+            b.HasIndex(x => new { x.UserId, x.Procesado });
         });
 
         /* Filtro global para entidades que implementen IUserOwned */

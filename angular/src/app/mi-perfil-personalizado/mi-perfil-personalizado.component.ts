@@ -2,11 +2,12 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RestService, ConfigStateService } from '@abp/ng.core';
 import { ToasterService } from '@abp/ng.theme.shared';
-import { FotoPerfilService } from '../services/foto-perfil.service';
 import { CommonModule } from '@angular/common';
+import { environment } from '../../environments/environment';
 import { ConfirmationService, Confirmation } from '@abp/ng.theme.shared';
 import { AuthService } from '@abp/ng.core';
 import { CuentaService } from '../proxy/cuentas/cuenta.service';
+import { PreferenciasNotificacionService, FrecuenciaNotificacion } from '../proxy/notificaciones';
 
 @Component({
   selector: 'app-mi-perfil-personalizado',
@@ -17,12 +18,12 @@ import { CuentaService } from '../proxy/cuentas/cuenta.service';
 export class MiPerfilPersonalizadoComponent implements OnInit {
   private fb = inject(FormBuilder);
   private rest = inject(RestService);
-  private fotoService = inject(FotoPerfilService);
   private toaster = inject(ToasterService);
   private configState = inject(ConfigStateService);
   private confirmation = inject(ConfirmationService); 
   private authService = inject(AuthService);          
-  private cuentaService = inject(CuentaService);      
+  private cuentaService = inject(CuentaService);
+  private preferenciasService = inject(PreferenciasNotificacionService);      
 
   form: FormGroup;
   estaCargando = signal(false);
@@ -57,6 +58,24 @@ export class MiPerfilPersonalizadoComponent implements OnInit {
 
     // 3. Cargamos los datos del formulario
     this.cargarDatos();
+
+    // 4. Cargamos las preferencias de notificación
+    this.cargarPreferencias();
+  }
+
+  cargarPreferencias() {
+    this.preferenciasService.getMiPreferencia().subscribe({
+      next: (prefs) => {
+        this.form.patchValue({
+          notifyScreen: prefs.enPantalla,
+          notifyEmail: prefs.porEmail,
+          notifyFrequency: prefs.frecuencia === FrecuenciaNotificacion.Inmediata ? 'immediate' : 'weekly'
+        });
+      },
+      error: () => {
+        // Si falla, dejamos los valores por defecto del form
+      }
+    });
   }
 
   cargarDatos() {
@@ -76,8 +95,9 @@ export class MiPerfilPersonalizadoComponent implements OnInit {
 
   actualizarUrlImagen() {
     if (this.usuarioId) {
-        // Timestamp para evitar caché del navegador
-        this.urlImagen = `${this.fotoService.obtenerUrlFoto(this.usuarioId)}?t=${new Date().getTime()}`;
+        // URL completa del backend con timestamp para evitar caché
+        const apiUrl = environment.apis.default.url;
+        this.urlImagen = `${apiUrl}/api/app/foto-perfil/obtener/${this.usuarioId}?t=${new Date().getTime()}`;
     }
   }
 
@@ -93,83 +113,116 @@ export class MiPerfilPersonalizadoComponent implements OnInit {
   }
 
   guardar() {
-    // Validamos: Si el formulario es inválido y se intentó cambiar texto, paramos.
-    if (this.form.invalid && !this.form.pristine) return;
+    if (this.form.invalid) return;
 
     this.estaCargando.set(true);
 
-    // ESCENARIO 1: Solo se seleccionó foto nueva (Texto sin cambios)
-    if (this.form.pristine && this.archivoSeleccionado) {
-        this.subirSoloFoto();
+    // Detectamos QUÉ cambió para ejecutar solo las llamadas necesarias
+    const perfilCambio = ['email', 'name', 'surname', 'phoneNumber']
+        .some(f => this.form.get(f)?.dirty);
+    const prefsCambio = ['notifyScreen', 'notifyEmail', 'notifyFrequency']
+        .some(f => this.form.get(f)?.dirty);
+    const hayFoto = !!this.archivoSeleccionado;
+
+    // Contamos operaciones pendientes para saber cuándo terminó todo
+    let operacionesPendientes = 0;
+    if (perfilCambio) operacionesPendientes++;
+    if (prefsCambio) operacionesPendientes++;
+    if (hayFoto) operacionesPendientes++;
+
+    // Si nada cambió (no debería pasar, pero por seguridad)
+    if (operacionesPendientes === 0) {
+        this.estaCargando.set(false);
         return;
     }
 
-    // ESCENARIO 2: Se cambió texto (y quizás también foto)
-    
-    // --- CAMBIO IMPORTANTE AQUÍ ---
-    // Obtenemos todos los valores del formulario
-    const formValues = this.form.getRawValue();
+    let exitoAlguno = false;
 
-    // Filtramos SOLO los datos que el Backend actual entiende (ProfileUpdateDto)
-    // Dejamos fuera 'notifyScreen', 'notifyEmail', etc. para que no rompa la API.
-    const datosParaApi = {
-        userName: formValues.userName,
-        email: formValues.email,
-        name: formValues.name,
-        surname: formValues.surname,
-        phoneNumber: formValues.phoneNumber
-    };
-    
-    // Aquí podrías guardar las preferencias en LocalStorage temporalmente si quisieras
-    // console.log('Preferencias seleccionadas:', { 
-    //    screen: formValues.notifyScreen, 
-    //    email: formValues.notifyEmail,
-    //    freq: formValues.notifyFrequency 
-    // });
-
-    this.rest.request<any, any>({
-      method: 'PUT',
-      url: '/api/account/my-profile',
-      body: datosParaApi // <--- Enviamos el objeto filtrado, no el form completo
-    }).subscribe({
-      next: () => {
-        // Si además había foto seleccionada, la subimos ahora
-        if (this.archivoSeleccionado) {
-            this.subirSoloFoto();
-        } else {
-            // Solo texto cambiado
-            this.toaster.success('Perfil actualizado correctamente.', 'Éxito');
-            this.form.markAsPristine(); // Reseteamos estado del form
+    const finalizarOperacion = () => {
+        operacionesPendientes--;
+        if (operacionesPendientes <= 0) {
+            if (exitoAlguno) {
+                this.toaster.success('Cambios guardados correctamente.', 'Éxito');
+            }
+            this.form.markAsPristine();
             this.estaCargando.set(false);
         }
+    };
+
+    // --- OPERACIÓN 1: Datos del perfil ---
+    if (perfilCambio) {
+        const formValues = this.form.getRawValue();
+        const datosParaApi = {
+            userName: formValues.userName,
+            email: formValues.email,
+            name: formValues.name,
+            surname: formValues.surname,
+            phoneNumber: formValues.phoneNumber
+        };
+
+        this.rest.request<any, any>({
+            method: 'PUT',
+            url: '/api/account/my-profile',
+            body: datosParaApi
+        }).subscribe({
+            next: () => { exitoAlguno = true; finalizarOperacion(); },
+            error: () => {
+                this.toaster.error('Error al guardar los datos personales.', 'Error');
+                finalizarOperacion();
+            }
+        });
+    }
+
+    // --- OPERACIÓN 2: Preferencias de notificación (INDEPENDIENTE del perfil) ---
+    if (prefsCambio) {
+        this.guardarPreferencias(finalizarOperacion, () => { exitoAlguno = true; });
+    }
+
+    // --- OPERACIÓN 3: Foto de perfil (enviada al servidor) ---
+    if (hayFoto) {
+        const formData = new FormData();
+        formData.append('archivo', this.archivoSeleccionado!);
+        
+        this.rest.request<any, any>({
+            method: 'POST',
+            url: '/api/app/foto-perfil/subir',
+            body: formData,
+        }).subscribe({
+            next: () => {
+                exitoAlguno = true;
+                this.archivoSeleccionado = null;
+                this.actualizarUrlImagen();
+                finalizarOperacion();
+            },
+            error: () => {
+                this.toaster.warn('Hubo un error al subir la imagen.', 'Atención');
+                finalizarOperacion();
+            }
+        });
+    }
+  }
+
+  guardarPreferencias(onComplete?: () => void, onSuccess?: () => void) {
+    const formValues = this.form.getRawValue();
+    
+    this.preferenciasService.updateMiPreferencia({
+      enPantalla: formValues.notifyScreen,
+      porEmail: formValues.notifyEmail,
+      frecuencia: formValues.notifyFrequency === 'immediate' 
+        ? FrecuenciaNotificacion.Inmediata 
+        : FrecuenciaNotificacion.ResumenSemanal
+    }).subscribe({
+      next: () => {
+        onSuccess?.();
+        onComplete?.();
       },
-      error: (err) => {
-        this.toaster.error('Error al guardar los datos personales.', 'Error');
-        this.estaCargando.set(false);
+      error: () => {
+        this.toaster.warn('No se pudieron guardar las preferencias de notificación.', 'Atención');
+        onComplete?.();
       }
     });
   }
 
-  // Método auxiliar para no repetir la lógica de subida
-  subirSoloFoto() {
-    if (!this.archivoSeleccionado) return;
-
-    this.fotoService.subirFoto(this.archivoSeleccionado).subscribe({
-        next: () => {
-            this.toaster.success('Foto de perfil actualizada.', 'Éxito');
-            this.estaCargando.set(false);
-            
-            this.archivoSeleccionado = null; 
-            this.form.markAsPristine(); 
-            this.actualizarUrlImagen(); 
-        },
-        error: () => {
-            this.toaster.warn('Datos guardados pero hubo error con la imagen.', 'Atención');
-            this.estaCargando.set(false);
-        }
-    });
-  }
-  
   cargarImagenPorDefecto() {
     this.urlImagen = null;
   }
